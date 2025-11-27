@@ -14,14 +14,16 @@ class Customer extends Model
         'email',
         'phone',
         'address',
+        'customer_type',
         'total_orders',
         'total_spent',
-        'last_order_at'
+        'last_order_at',
+        'notes',
     ];
 
     protected $casts = [
         'last_order_at' => 'datetime',
-        'total_spent' => 'decimal:2'
+        'total_spent'   => 'decimal:2',
     ];
 
     public function orders()
