@@ -27,8 +27,26 @@ class FortifyServiceProvider extends ServiceProvider
                 public function toResponse($request)
                 {
                     $user = $request->user();
-                    $target = $user && $user->role === 'admin' ? '/admin' : '/dashboard';
-                    return redirect()->intended($target);
+
+                    // Default targets by role
+                    $defaultTarget = $user && $user->role === 'admin' ? route('admin.dashboard') : route('dashboard');
+
+                    // Read and remove intended URL from session to control redirect behavior
+                    $intended = $request->session()->pull('url.intended');
+
+                    if ($user && $user->role === 'admin') {
+                        // For admins, only honor intended URL if it points to an admin path
+                        if ($intended) {
+                            $path = parse_url($intended, PHP_URL_PATH) ?? '';
+                            if (\Illuminate\Support\Str::startsWith($path, '/admin')) {
+                                return redirect()->to($intended);
+                            }
+                        }
+                        return redirect()->to($defaultTarget);
+                    }
+
+                    // For non-admin users, always send to user dashboard
+                    return redirect()->to($defaultTarget);
                 }
             };
         });
