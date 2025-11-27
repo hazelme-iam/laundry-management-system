@@ -29,7 +29,7 @@ class OrderController extends Controller
      */
     public function create()
     {
-        $customers = Customer::all(); // You need to pass customers to the create form
+        $customers = Customer::all();
         return view('admin.orders.create', compact('customers'));
     }
 
@@ -40,7 +40,6 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'status' => 'required|in:pending,in_progress,ready,completed,cancelled',
             'weight' => 'required|numeric',
             'add_ons' => 'nullable|array',
             'subtotal' => 'required|numeric',
@@ -49,10 +48,11 @@ class OrderController extends Controller
             'amount_paid' => 'required|numeric',
             'pickup_date' => 'nullable|date',
             'estimated_finish' => 'required|date',
-            'finished_at' => 'nullable|date',
             'remarks' => 'nullable|string',
         ]);
 
+        // Set default status to 'pending' for new orders
+        $data['status'] = 'pending';
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 
