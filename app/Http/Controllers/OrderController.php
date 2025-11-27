@@ -3,26 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
     /**
-     * Apply auth middleware
-     */
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
-    /**
      * Display a listing of the orders.
      */
     public function index()
     {
         $orders = Order::with(['customer', 'creator', 'updater'])->latest()->paginate(10);
-        return view('orders.index', compact('orders'));
+        
+        // Add statistics for the dashboard cards
+        $pendingCount = Order::where('status', 'pending')->count();
+        $inProgressCount = Order::where('status', 'in_progress')->count();
+        $completedCount = Order::where('status', 'completed')->count();
+
+        return view('admin.orders.index', compact('orders', 'pendingCount', 'inProgressCount', 'completedCount'));
     }
 
     /**
@@ -30,7 +29,8 @@ class OrderController extends Controller
      */
     public function create()
     {
-        return view('orders.create');
+        $customers = Customer::all(); // You need to pass customers to the create form
+        return view('admin.orders.create', compact('customers'));
     }
 
     /**
@@ -58,7 +58,7 @@ class OrderController extends Controller
 
         Order::create($data);
 
-        return redirect()->route('orders.index')->with('success', 'Order created successfully.');
+        return redirect()->route('admin.orders.index')->with('success', 'Order created successfully.');
     }
 
     /**
@@ -67,7 +67,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load(['customer', 'creator', 'updater']);
-        return view('orders.show', compact('order'));
+        return view('admin.orders.show', compact('order'));
     }
 
     /**
@@ -75,7 +75,8 @@ class OrderController extends Controller
      */
     public function edit(Order $order)
     {
-        return view('orders.edit', compact('order'));
+        $customers = Customer::all();
+        return view('admin.orders.edit', compact('order', 'customers'));
     }
 
     /**
@@ -102,7 +103,7 @@ class OrderController extends Controller
 
         $order->update($data);
 
-        return redirect()->route('orders.index')->with('success', 'Order updated successfully.');
+        return redirect()->route('admin.orders.index')->with('success', 'Order updated successfully.');
     }
 
     /**
@@ -111,6 +112,6 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         $order->delete();
-        return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
+        return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
     }
 }

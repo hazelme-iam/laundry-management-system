@@ -1,81 +1,148 @@
 {{-- resources/views/admin/orders/create.blade.php --}}
-@extends('layouts.app')
+<x-app-layout>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="p-6">
+                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Create New Order</h1>
 
-@section('content')
-<div class="container">
-    <h1>Create Order</h1>
+                    <form action="{{ route('admin.orders.store') }}" method="POST">
+                        @csrf
 
-    <form action="{{ route('admin.orders.store') }}" method="POST">
-        @csrf
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Customer Selection -->
+                            <div>
+                                <label for="customer_id" class="block text-sm font-medium text-gray-700">Customer</label>
+                                <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                        id="customer_id" name="customer_id" required>
+                                    <option value="">Select Customer</option>
+                                    @foreach($customers as $customer)
+                                        <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                            {{ $customer->name }} - {{ $customer->phone }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('customer_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-        <div class="mb-3">
-            <label for="customer_id" class="form-label">Customer</label>
-            <select class="form-select" id="customer_id" name="customer_id" required>
-                <option value="">Select Customer</option>
-                @foreach($customers as $customer)
-                    <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-                @endforeach
-            </select>
+                            <!-- Status -->
+                            <div>
+                                <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                                <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                        id="status" name="status" required>
+                                    <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="in_progress" {{ old('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                    <option value="ready" {{ old('status') == 'ready' ? 'selected' : '' }}>Ready</option>
+                                    <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                                    <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                </select>
+                                @error('status')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Weight -->
+                            <div>
+                                <label for="weight" class="block text-sm font-medium text-gray-700">Weight (KG)</label>
+                                <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="weight" name="weight" value="{{ old('weight') }}" required>
+                                @error('weight')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Add-ons -->
+                            <div>
+                                <label for="add_ons" class="block text-sm font-medium text-gray-700">Add-ons</label>
+                                <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="add_ons" name="add_ons" value="{{ old('add_ons') }}" 
+                                       placeholder="Comma separated e.g. stain_removal, fragrance">
+                                @error('add_ons')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Financial Information -->
+                            <div>
+                                <label for="subtotal" class="block text-sm font-medium text-gray-700">Subtotal (₱)</label>
+                                <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="subtotal" name="subtotal" value="{{ old('subtotal') }}" required>
+                                @error('subtotal')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="discount" class="block text-sm font-medium text-gray-700">Discount (₱)</label>
+                                <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="discount" name="discount" value="{{ old('discount', 0) }}">
+                                @error('discount')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="total_amount" class="block text-sm font-medium text-gray-700">Total Amount (₱)</label>
+                                <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="total_amount" name="total_amount" value="{{ old('total_amount') }}" required>
+                                @error('total_amount')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="amount_paid" class="block text-sm font-medium text-gray-700">Amount Paid (₱)</label>
+                                <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="amount_paid" name="amount_paid" value="{{ old('amount_paid', 0) }}">
+                                @error('amount_paid')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Dates -->
+                            <div>
+                                <label for="pickup_date" class="block text-sm font-medium text-gray-700">Pickup Date</label>
+                                <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="pickup_date" name="pickup_date" value="{{ old('pickup_date') }}">
+                                @error('pickup_date')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="estimated_finish" class="block text-sm font-medium text-gray-700">Estimated Finish</label>
+                                <input type="datetime-local" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="estimated_finish" name="estimated_finish" value="{{ old('estimated_finish') }}" required>
+                                @error('estimated_finish')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Remarks -->
+                        <div class="mt-6">
+                            <label for="remarks" class="block text-sm font-medium text-gray-700">Remarks</label>
+                            <textarea class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                      id="remarks" name="remarks" rows="3">{{ old('remarks') }}</textarea>
+                            @error('remarks')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="mt-6 flex space-x-3">
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                Create Order
+                            </button>
+                            <a href="{{ route('admin.orders.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label for="status" class="form-label">Status</label>
-            <select class="form-select" id="status" name="status" required>
-                <option value="pending">Pending</option>
-                <option value="in_progress">In Progress</option>
-                <option value="ready">Ready</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label for="weight" class="form-label">Weight (KG)</label>
-            <input type="number" step="0.01" class="form-control" id="weight" name="weight" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="add_ons" class="form-label">Add-ons</label>
-            <input type="text" class="form-control" id="add_ons" name="add_ons" placeholder="Comma separated e.g. stain_removal, fragrance">
-        </div>
-
-        <div class="mb-3">
-            <label for="subtotal" class="form-label">Subtotal</label>
-            <input type="number" step="0.01" class="form-control" id="subtotal" name="subtotal" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="discount" class="form-label">Discount</label>
-            <input type="number" step="0.01" class="form-control" id="discount" name="discount" value="0">
-        </div>
-
-        <div class="mb-3">
-            <label for="total_amount" class="form-label">Total Amount</label>
-            <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="amount_paid" class="form-label">Amount Paid</label>
-            <input type="number" step="0.01" class="form-control" id="amount_paid" name="amount_paid" value="0">
-        </div>
-
-        <div class="mb-3">
-            <label for="pickup_date" class="form-label">Pickup Date</label>
-            <input type="date" class="form-control" id="pickup_date" name="pickup_date">
-        </div>
-
-        <div class="mb-3">
-            <label for="estimated_finish" class="form-label">Estimated Finish</label>
-            <input type="datetime-local" class="form-control" id="estimated_finish" name="estimated_finish" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="remarks" class="form-label">Remarks</label>
-            <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Create Order</button>
-        <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary">Cancel</a>
-    </form>
-</div>
-@endsection
+    </div>
+</x-app-layout>
