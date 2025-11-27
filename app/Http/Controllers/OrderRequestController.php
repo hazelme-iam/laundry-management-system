@@ -20,83 +20,96 @@ class OrderRequestController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('order_requests.index', compact('requests'));
+        return view('admin.order_requests.index', compact('requests')); // Match the plural directory
     }
 
     // Show create form
     public function create()
     {
-        return view('order_requests.create');
+        return view('admin.order_requests.create'); // Plural
     }
 
-    // Store a new order request
+    // Store new order request
     public function store(Request $request)
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'status' => 'required|in:pending,in_progress,ready,completed,cancelled',
-            'weight' => 'required|numeric',
+            'weight' => 'required|numeric|min:0',
             'add_ons' => 'nullable|array',
-            'subtotal' => 'required|numeric',
-            'discount' => 'required|numeric',
-            'total_amount' => 'required|numeric',
-            'amount_paid' => 'required|numeric',
+            'subtotal' => 'required|numeric|min:0',
+            'discount' => 'required|numeric|min:0',
+            'total_amount' => 'required|numeric|min:0',
+            'amount_paid' => 'required|numeric|min:0',
             'pickup_date' => 'nullable|date',
             'estimated_finish' => 'required|date',
             'finished_at' => 'nullable|date',
-            'remarks' => 'nullable|string',
+            'remarks' => 'nullable|string|max:500',
         ]);
 
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 
+        if (isset($data['add_ons'])) {
+            $data['add_ons'] = json_encode($data['add_ons']);
+        }
+
         OrderRequest::create($data);
 
-        return redirect()->route('order_requests.index')->with('success', 'Order request created successfully.');
+        return redirect()->route('admin.order_request.index')
+            ->with('success', 'Order request created successfully.');
     }
 
     // Show a single order request
     public function show(OrderRequest $orderRequest)
     {
         $orderRequest->load(['customer', 'order', 'creator', 'updater']);
-        return view('order_requests.show', compact('orderRequest'));
+
+        return view('admin.order_requests.show', compact('orderRequest')); // Plural
     }
 
-    // Show edit form
+    // Edit form
     public function edit(OrderRequest $orderRequest)
     {
-        return view('order_requests.edit', compact('orderRequest'));
+        return view('admin.order_requests.edit', compact('orderRequest')); // Plural
     }
 
-    // Update order request
+    // Update
     public function update(Request $request, OrderRequest $orderRequest)
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'status' => 'required|in:pending,in_progress,ready,completed,cancelled',
-            'weight' => 'required|numeric',
+            'weight' => 'required|numeric|min:0',
             'add_ons' => 'nullable|array',
-            'subtotal' => 'required|numeric',
-            'discount' => 'required|numeric',
-            'total_amount' => 'required|numeric',
-            'amount_paid' => 'required|numeric',
+            'subtotal' => 'required|numeric|min:0',
+            'discount' => 'required|numeric|min:0',
+            'total_amount' => 'required|numeric|min:0',
+            'amount_paid' => 'required|numeric|min:0',
             'pickup_date' => 'nullable|date',
             'estimated_finish' => 'required|date',
             'finished_at' => 'nullable|date',
-            'remarks' => 'nullable|string',
+            'remarks' => 'nullable|string|max:500',
         ]);
 
         $data['updated_by'] = Auth::id();
 
+        if (isset($data['add_ons'])) {
+            $data['add_ons'] = json_encode($data['add_ons']);
+        }
+
         $orderRequest->update($data);
 
-        return redirect()->route('order_requests.index')->with('success', 'Order request updated successfully.');
+        return redirect()->route('admin.order_request.index')
+            ->with('success', 'Order request updated successfully.');
     }
 
-    // Delete order request
+    // Delete
     public function destroy(OrderRequest $orderRequest)
     {
         $orderRequest->delete();
-        return redirect()->route('order_requests.index')->with('success', 'Order request deleted successfully.');
+
+        return redirect()->route('admin.order_request.index')
+            ->with('success', 'Order request deleted successfully.');
     }
 }

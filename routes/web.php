@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderRequestController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -40,4 +42,13 @@ Route::middleware([
     Route::get('/orders/create', [OrderController::class, 'create'])->name('admin.orders.create');
     Route::post('/orders', [OrderController::class, 'store'])->name('admin.orders.store');  
 
+    Route::get('/order-requests', [OrderRequestController::class, 'index'])->name('admin.order_request.index');
+    Route::get('/order-requests/create', [OrderRequestController::class, 'create'])->name('admin.order_request.create');
+    Route::post('/order-requests', [OrderRequestController::class, 'store'])->name('admin.order_request.store');
+    Route::get('/order-requests/{orderRequest}', [OrderRequestController::class, 'show'])->name('admin.order_request.show');
+    Route::get('/order-requests/{orderRequest}/edit', [OrderRequestController::class, 'edit'])->name('admin.order_request.edit');
+    Route::put('/order-requests/{orderRequest}', [OrderRequestController::class, 'update'])->name('admin.order_request.update');
+    Route::delete('/order-requests/{orderRequest}', [OrderRequestController::class, 'destroy'])->name('admin.order_request.destroy');
 });
+
+
