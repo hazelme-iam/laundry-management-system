@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\OrderRequest;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -102,6 +103,67 @@ class OrderRequestController extends Controller
 
         return redirect()->route('admin.order_request.index')
             ->with('success', 'Order request updated successfully.');
+    }
+
+    // Approve order request and convert to order
+    public function approve(OrderRequest $orderRequest)
+    {
+        if ($orderRequest->status !== 'pending') {
+            return redirect()->route('admin.order_request.index')
+                ->with('error', 'Only pending requests can be approved.');
+        }
+
+        try {
+            // Create an order from the request
+            $orderData = [
+                'customer_id' => $orderRequest->customer_id,
+                'weight' => $orderRequest->weight,
+                'add_ons' => $orderRequest->add_ons,
+                'subtotal' => $orderRequest->subtotal,
+                'discount' => $orderRequest->discount,
+                'total_amount' => $orderRequest->total_amount,
+                'amount_paid' => $orderRequest->amount_paid,
+                'pickup_date' => $orderRequest->pickup_date,
+                'estimated_finish' => $orderRequest->estimated_finish,
+                'remarks' => $orderRequest->remarks,
+                'status' => 'pending', // Order starts as pending
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+            ];
+
+            $order = Order::create($orderData);
+
+            // Link the request to the created order and mark as approved
+            $orderRequest->update([
+                'status' => 'approved',
+                'order_id' => $order->id,
+                'updated_by' => Auth::id(),
+            ]);
+
+            return redirect()->route('admin.orders.index')
+                ->with('success', "Order request approved! Order #{$order->id} created successfully.");
+
+        } catch (\Exception $e) {
+            return redirect()->route('admin.order_request.index')
+                ->with('error', 'Failed to create order: ' . $e->getMessage());
+        }
+    }
+
+    // Decline order request
+    public function decline(OrderRequest $orderRequest)
+    {
+        if ($orderRequest->status !== 'pending') {
+            return redirect()->route('admin.order_request.index')
+                ->with('error', 'Only pending requests can be declined.');
+        }
+
+        $orderRequest->update([
+            'status' => 'rejected',
+            'updated_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('admin.order_request.index')
+            ->with('success', 'Order request declined successfully.');
     }
 
     // Delete

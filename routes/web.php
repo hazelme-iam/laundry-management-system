@@ -19,6 +19,12 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('user.dashboard');
     })->name('dashboard');
+
+    // User Order Routes
+    Route::get('/my-orders', [OrderController::class, 'userIndex'])->name('user.orders.index');
+    Route::get('/my-orders/create', [OrderController::class, 'userCreate'])->name('user.orders.create');
+    Route::post('/my-orders', [OrderController::class, 'userStore'])->name('user.orders.store');
+    Route::get('/my-orders/{order}', [OrderController::class, 'userShow'])->name('user.orders.show');
 });
 
 Route::middleware([
@@ -40,7 +46,11 @@ Route::middleware([
 
     Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
     Route::get('/orders/create', [OrderController::class, 'create'])->name('admin.orders.create');
-    Route::post('/orders', [OrderController::class, 'store'])->name('admin.orders.store');  
+    Route::post('/orders', [OrderController::class, 'store'])->name('admin.orders.store');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
+    Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('admin.orders.edit');
+    Route::put('/orders/{order}', [OrderController::class, 'update'])->name('admin.orders.update');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');  
 
     Route::get('/order-requests', [OrderRequestController::class, 'index'])->name('admin.order_request.index');
     Route::get('/order-requests/create', [OrderRequestController::class, 'create'])->name('admin.order_request.create');
@@ -48,6 +58,8 @@ Route::middleware([
     Route::get('/order-requests/{orderRequest}', [OrderRequestController::class, 'show'])->name('admin.order_request.show');
     Route::get('/order-requests/{orderRequest}/edit', [OrderRequestController::class, 'edit'])->name('admin.order_request.edit');
     Route::put('/order-requests/{orderRequest}', [OrderRequestController::class, 'update'])->name('admin.order_request.update');
+    Route::post('/order-requests/{orderRequest}/approve', [OrderRequestController::class, 'approve'])->name('admin.order_request.approve');
+    Route::post('/order-requests/{orderRequest}/decline', [OrderRequestController::class, 'decline'])->name('admin.order_request.decline');
     Route::delete('/order-requests/{orderRequest}', [OrderRequestController::class, 'destroy'])->name('admin.order_request.destroy');
 });
 

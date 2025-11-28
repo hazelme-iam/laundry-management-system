@@ -65,4 +65,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the customer record for the user.
+     */
+    public function customer()
+    {
+        return $this->hasOne(Customer::class);
+    }
+
+    /**
+     * Get the orders for the user through customer relationship.
+     */
+    public function orders()
+    {
+        return $this->hasManyThrough(Order::class, Customer::class);
+    }
 }

@@ -10,31 +10,7 @@
                 
             </div>
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white rounded-lg p-4 shadow border">
-                    <div class="text-sm text-gray-500">Total Requests</div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $requests->total() }}</div>
-                </div>
-                <div class="bg-white rounded-lg p-4 shadow border">
-                    <div class="text-sm text-gray-500">Pending</div>
-                    <div class="text-2xl font-bold text-yellow-600">
-                        {{ $requests->where('status','pending')->count() }}
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg p-4 shadow border">
-                    <div class="text-sm text-gray-500">In Progress</div>
-                    <div class="text-2xl font-bold text-blue-600">
-                        {{ $requests->where('status','in_progress')->count() }}
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg p-4 shadow border">
-                    <div class="text-sm text-gray-500">Completed</div>
-                    <div class="text-2xl font-bold text-green-600">
-                        {{ $requests->where('status','completed')->count() }}
-                    </div>
-                </div>
-            </div>
+            
 
             <!-- Order Requests Table -->
             <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -47,6 +23,8 @@
                         <select class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option>All Statuses</option>
                             <option>Pending</option>
+                            <option>Approved</option>
+                            <option>Rejected</option>
                             <option>In Progress</option>
                             <option>Ready</option>
                             <option>Completed</option>
@@ -92,12 +70,14 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                         @if($req->status == 'pending') bg-yellow-100 text-yellow-800
+                                        @elseif($req->status == 'approved') bg-green-100 text-green-800
+                                        @elseif($req->status == 'rejected') bg-red-100 text-red-800
                                         @elseif($req->status == 'in_progress') bg-blue-100 text-blue-800
                                         @elseif($req->status == 'ready') bg-indigo-100 text-indigo-800
                                         @elseif($req->status == 'completed') bg-green-100 text-green-800
                                         @elseif($req->status == 'cancelled') bg-red-100 text-red-800
                                         @endif">
-                                        {{ ucfirst(str_replace('_', ' ', $req->status)) }}
+                                        {{ ucfirst($req->status) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -108,10 +88,45 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
+                                        <!-- View link -->
                                         <a href="{{ route('admin.order_request.show', $req->id) }}" 
                                            class="text-blue-600 hover:text-blue-900">View</a>
-                                        <a href="{{ route('admin.order_request.edit', $req->id) }}" 
-                                           class="text-green-600 hover:text-green-900">Edit</a>
+                                        
+                                        @if($req->status === 'pending')
+                                            <!-- Approve button (checkmark) -->
+                                            <form action="{{ route('admin.order_request.approve', $req->id) }}" 
+                                                  method="POST" 
+                                                  class="inline"
+                                                  onsubmit="return confirm('Approve this request and convert it to an order?')">
+                                                @csrf
+                                                <button type="submit" 
+                                                        class="text-green-600 hover:text-green-900 font-bold text-lg"
+                                                        title="Approve Request">
+                                                    ✓
+                                                </button>
+                                            </form>
+                                            
+                                            <!-- Decline button (X) -->
+                                            <form action="{{ route('admin.order_request.decline', $req->id) }}" 
+                                                  method="POST" 
+                                                  class="inline"
+                                                  onsubmit="return confirm('Decline this request?')">
+                                                @csrf
+                                                <button type="submit" 
+                                                        class="text-red-600 hover:text-red-900 font-bold text-lg"
+                                                        title="Decline Request">
+                                                    ✗
+                                                </button>
+                                            </form>
+                                        @endif
+                                        
+                                        <!-- Edit link for non-pending requests -->
+                                        @if($req->status !== 'pending')
+                                            <a href="{{ route('admin.order_request.edit', $req->id) }}" 
+                                               class="text-gray-600 hover:text-gray-900">Edit</a>
+                                        @endif
+                                        
+                                        <!-- Delete link -->
                                         <form action="{{ route('admin.order_request.destroy', $req->id) }}" 
                                               method="POST" 
                                               class="inline">

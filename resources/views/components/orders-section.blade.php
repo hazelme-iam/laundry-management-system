@@ -1,5 +1,5 @@
 <!-- Orders Section Component -->
-<div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+<div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 mx-4 sm:mx-0">
     <h2 class="text-xl font-semibold text-gray-800 mb-4">Orders</h2>
     
     <!-- Mobile: Horizontal scroll, Desktop: Grid layout -->

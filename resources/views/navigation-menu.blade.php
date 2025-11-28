@@ -30,6 +30,13 @@
                             {{ __('Overview') }}
                         </x-nav-link>
                     @endif
+                    
+                    <!-- Show My Orders for regular users -->
+                    @if (auth()->check() && auth()->user()->role !== 'admin')
+                        <x-nav-link href="{{ route('user.orders.index') }}" :active="request()->routeIs('user.orders.*')">
+                            {{ __('My Orders') }}
+                        </x-nav-link>
+                    @endif
                     <x-nav-link href="{{ url('/customers') }}" :active="request()->is('customers*')">
                         {{ __('Customers') }}
                     </x-nav-link>
@@ -190,6 +197,13 @@
             @else
                 <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                     {{ __('Overview') }}
+                </x-responsive-nav-link>
+            @endif
+            
+            <!-- Show My Orders for regular users -->
+            @if (auth()->check() && auth()->user()->role !== 'admin')
+                <x-responsive-nav-link href="{{ route('user.orders.index') }}" :active="request()->routeIs('user.orders.*')">
+                    {{ __('My Orders') }}
                 </x-responsive-nav-link>
             @endif
             <<x-responsive-nav-link 

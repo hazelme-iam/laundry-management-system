@@ -19,6 +19,7 @@ class Customer extends Model
         'total_spent',
         'last_order_at',
         'notes',
+        'user_id',
     ];
 
     protected $casts = [
@@ -29,5 +30,10 @@ class Customer extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

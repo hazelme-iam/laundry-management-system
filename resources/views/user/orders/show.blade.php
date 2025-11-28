@@ -1,0 +1,236 @@
+<x-app-layout>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0 px-4 sm:px-0">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Order Details</h1>
+                    <p class="text-gray-600">Order #{{ $order->id }}</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="{{ route('user.orders.index') }}" 
+                       class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                        Back to Orders
+                    </a>
+                    @if($order->status === 'pending' || $order->status === 'in_progress')
+                        <a href="{{ route('user.orders.create') }}" 
+                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            New Order
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Order Status Card -->
+            <div class="bg-white rounded-lg shadow overflow-hidden mx-4 sm:mx-0 mb-6">
+                <div class="p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900 mb-2">Order Status</h2>
+                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                                {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                   ($order->status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 
+                                   ($order->status === 'ready' ? 'bg-indigo-100 text-indigo-800' : 
+                                   ($order->status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'))) }}">
+                                {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                            </span>
+                        </div>
+                        <div class="mt-4 sm:mt-0 text-right">
+                            <div class="text-sm text-gray-500">Order Date</div>
+                            <div class="text-lg font-medium text-gray-900">{{ $order->created_at->format('M d, Y') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Details Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 sm:px-0">
+                <!-- Customer Information -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="p-6 border-b">
+                            <h3 class="text-lg font-semibold text-gray-900">Customer Information</h3>
+                        </div>
+                        <div class="p-6">
+                            <dl class="space-y-4">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Name</dt>
+                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->customer->name }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Email</dt>
+                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->customer->email ?? 'N/A' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Phone</dt>
+                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->customer->phone }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Address</dt>
+                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->customer->address ?? 'N/A' }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Details -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="p-6 border-b">
+                            <h3 class="text-lg font-semibold text-gray-900">Order Details</h3>
+                        </div>
+                        <div class="p-6">
+                            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Weight</dt>
+                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->weight }} kg</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Estimated Finish</dt>
+                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->estimated_finish->format('M d, Y') }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Pickup Date</dt>
+                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->pickup_date?->format('M d, Y') ?? 'Not set' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Finished Date</dt>
+                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->finished_at?->format('M d, Y') ?? 'Not finished yet' }}</dd>
+                                </div>
+                            </dl>
+
+                            <!-- Pricing Details -->
+                            <div class="mt-6 pt-6 border-t">
+                                <h4 class="text-md font-medium text-gray-900 mb-4">Pricing Details</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600">Subtotal</span>
+                                        <span class="text-sm text-gray-900">₱{{ number_format($order->subtotal, 2) }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600">Discount</span>
+                                        <span class="text-sm text-gray-900">-₱{{ number_format($order->discount, 2) }}</span>
+                                    </div>
+                                    <div class="flex justify-between font-medium text-gray-900 pt-2 border-t">
+                                        <span>Total Amount</span>
+                                        <span>₱{{ number_format($order->total_amount, 2) }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600">Amount Paid</span>
+                                        <span class="text-sm text-gray-900">₱{{ number_format($order->amount_paid, 2) }}</span>
+                                    </div>
+                                    <div class="flex justify-between font-medium {{ $order->amount_paid >= $order->total_amount ? 'text-green-600' : 'text-red-600' }}">
+                                        <span>Balance</span>
+                                        <span>₱{{ number_format($order->total_amount - $order->amount_paid, 2) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Remarks -->
+                            @if($order->remarks)
+                                <div class="mt-6 pt-6 border-t">
+                                    <h4 class="text-md font-medium text-gray-900 mb-2">Special Instructions</h4>
+                                    <p class="text-sm text-gray-600">{{ $order->remarks }}</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="bg-white rounded-lg shadow overflow-hidden mx-4 sm:mx-0 mt-6">
+                <div class="p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900">Order Timeline</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <!-- Order Created -->
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-900">Order Created</div>
+                                <div class="text-sm text-gray-500">{{ $order->created_at->format('M d, Y - h:i A') }}</div>
+                            </div>
+                        </div>
+
+                        <!-- In Progress -->
+                        @if($order->status !== 'pending')
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-gray-900">Order In Progress</div>
+                                    <div class="text-sm text-gray-500">Your order is being processed</div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Ready -->
+                        @if(in_array($order->status, ['ready', 'completed']))
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-gray-900">Ready for Pickup</div>
+                                    <div class="text-sm text-gray-500">Your order is ready for pickup</div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Completed -->
+                        @if($order->status === 'completed')
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-gray-900">Order Completed</div>
+                                    <div class="text-sm text-gray-500">{{ $order->finished_at?->format('M d, Y - h:i A') ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Cancelled -->
+                        @if($order->status === 'cancelled')
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-gray-900">Order Cancelled</div>
+                                    <div class="text-sm text-gray-500">This order has been cancelled</div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>

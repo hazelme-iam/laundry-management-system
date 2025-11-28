@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Customer;
+use App\Models\OrderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -113,5 +114,100 @@ class OrderController extends Controller
     {
         $order->delete();
         return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
+    }
+
+    // User-specific methods
+    public function userIndex()
+    {
+        // Get order requests (pending approval)
+        $orderRequests = OrderRequest::whereHas('customer', function($query) {
+            $query->where('user_id', auth()->id());
+        })->with(['customer', 'creator', 'updater'])->latest()->paginate(10);
+        
+        return view('user.orders.index', compact('orderRequests'));
+    }
+
+    public function userCreate()
+    {
+        // Get or create customer record for the logged-in user
+        $customer = Customer::firstOrCreate(
+            ['user_id' => auth()->id()],
+            [
+                'name' => auth()->user()->name,
+                'email' => auth()->user()->email,
+                'phone' => '',
+                'address' => '',
+                'customer_type' => 'regular',
+            ]
+        );
+        
+        return view('user.orders.create', compact('customer'));
+    }
+
+    public function userStore(Request $request)
+    {
+        $data = $request->validate([
+            'weight' => 'required|numeric',
+            'add_ons' => 'nullable|array',
+            'subtotal' => 'required|numeric',
+            'discount' => 'required|numeric',
+            'total_amount' => 'required|numeric',
+            'amount_paid' => 'required|numeric',
+            'pickup_date' => 'nullable|date',
+            'estimated_finish' => 'required|date',
+            'remarks' => 'nullable|string',
+            'customer_phone' => 'required|string',
+            'customer_address' => 'required|string',
+        ]);
+
+        // Get or create customer record for the logged-in user
+        $customer = Customer::firstOrCreate(
+            ['user_id' => auth()->id()],
+            [
+                'name' => auth()->user()->name,
+                'email' => auth()->user()->email,
+                'phone' => $data['customer_phone'],
+                'address' => $data['customer_address'],
+                'customer_type' => 'regular',
+            ]
+        );
+
+        // Update customer info if changed
+        $customer->update([
+            'phone' => $data['customer_phone'],
+            'address' => $data['customer_address'],
+        ]);
+
+        // Prepare order request data
+        $orderRequestData = [
+            'customer_id' => $customer->id,
+            'weight' => $data['weight'],
+            'add_ons' => $data['add_ons'] ?? null,
+            'subtotal' => $data['subtotal'],
+            'discount' => $data['discount'],
+            'total_amount' => $data['total_amount'],
+            'amount_paid' => $data['amount_paid'],
+            'pickup_date' => $data['pickup_date'],
+            'estimated_finish' => $data['estimated_finish'],
+            'remarks' => $data['remarks'],
+            'status' => 'pending', // Order Request status
+            'created_by' => auth()->id(),
+            'updated_by' => auth()->id(),
+        ];
+
+        OrderRequest::create($orderRequestData);
+
+        return redirect()->route('user.orders.index')->with('success', 'Order request submitted successfully! Awaiting admin approval.');
+    }
+
+    public function userShow(Order $order)
+    {
+        // Ensure user can only view their own orders
+        if ($order->customer->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $order->load(['customer', 'creator', 'updater']);
+        return view('user.orders.show', compact('order'));
     }
 }

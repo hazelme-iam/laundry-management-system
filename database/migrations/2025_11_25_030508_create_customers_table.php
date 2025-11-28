@@ -23,6 +23,8 @@ return new class extends Migration
             $table->dateTime('last_order_at')->nullable();
 
             $table->text('notes')->nullable();
+            
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
 
             $table->timestamps();
         });
