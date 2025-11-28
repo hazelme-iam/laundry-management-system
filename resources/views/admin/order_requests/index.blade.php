@@ -7,10 +7,7 @@
                     <h1 class="text-2xl font-bold text-gray-900">Order Requests</h1>
                     <p class="text-gray-600">Manage your laundry order requests</p>
                 </div>
-                <a href="{{ route('admin.order_request.create') }}" 
-                   class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
-                    <span class="mr-2">+</span> Add New Request
-                </a>
+                
             </div>
 
             <!-- Stats Cards -->

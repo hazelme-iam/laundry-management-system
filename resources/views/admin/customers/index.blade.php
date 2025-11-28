@@ -121,11 +121,11 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
-                                        <a href="{{ route('customers.show', $customer) }}" 
+                                        <a href="{{ route('admin.customers.show', $customer) }}" 
                                            class="text-blue-600 hover:text-blue-900">View</a>
-                                        <a href="{{ route('customers.edit', $customer) }}" 
+                                        <a href="{{ route('admin.customers.edit', $customer) }}" 
                                            class="text-green-600 hover:text-green-900">Edit</a>
-                                        <form action="{{ route('customers.destroy', $customer) }}" method="POST" class="inline">
+                                        <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" 

@@ -15,11 +15,11 @@ class CustomerController extends Controller
     }
 
     // Show create form
-    /*public function create()
+    public function create()
     {
-        return view('customers.create');
+        return view('admin.customers.create'); // Changed from 'customers.create' to 'admin.customers.create'
     }
-*/
+
     // Store a new customer
     public function store(Request $request)
     {

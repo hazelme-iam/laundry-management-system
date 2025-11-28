@@ -12,7 +12,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Customer Selection -->
                             <div>
-                                <label for="customer_id" class="block text-sm font-medium text-gray-700">Customer *</label>
+                                <label for="customer_id" class="block text-sm font-medium text-gray-700">Customer </label>
                                 <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                         id="customer_id" name="customer_id" required>
                                     <option value="">Select Customer</option>
@@ -29,7 +29,7 @@
 
                             <!-- Weight -->
                             <div>
-                                <label for="weight" class="block text-sm font-medium text-gray-700">Weight (KG) *</label>
+                                <label for="weight" class="block text-sm font-medium text-gray-700">Weight (KG) </label>
                                 <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                        id="weight" name="weight" value="{{ old('weight') }}" required>
                                 @error('weight')
@@ -50,7 +50,7 @@
 
                             <!-- Financial Information -->
                             <div>
-                                <label for="subtotal" class="block text-sm font-medium text-gray-700">Subtotal (₱) *</label>
+                                <label for="subtotal" class="block text-sm font-medium text-gray-700">Subtotal (₱) </label>
                                 <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                        id="subtotal" name="subtotal" value="{{ old('subtotal') }}" required>
                                 @error('subtotal')
@@ -68,7 +68,7 @@
                             </div>
 
                             <div>
-                                <label for="total_amount" class="block text-sm font-medium text-gray-700">Total Amount (₱) *</label>
+                                <label for="total_amount" class="block text-sm font-medium text-gray-700">Total Amount (₱) </label>
                                 <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                        id="total_amount" name="total_amount" value="{{ old('total_amount') }}" required>
                                 @error('total_amount')
@@ -96,7 +96,7 @@
                             </div>
 
                             <div>
-                                <label for="estimated_finish" class="block text-sm font-medium text-gray-700">Estimated Finish *</label>
+                                <label for="estimated_finish" class="block text-sm font-medium text-gray-700">Estimated Finish </label>
                                 <input type="datetime-local" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                        id="estimated_finish" name="estimated_finish" value="{{ old('estimated_finish') }}" required>
                                 @error('estimated_finish')
