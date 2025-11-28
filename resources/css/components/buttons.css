@@ -1,0 +1,14 @@
+/* ===== BUTTON COMPONENTS ===== */
+.btn {
+    @apply w-full px-7 py-3 rounded-full font-medium transition-colors text-center inline-block mb-4;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+.btn-primary {
+    @apply bg-[#1f58b6] text-white hover:bg-[#1b4fa3] shadow-lg;
+}
+
+.btn-secondary {
+    @apply border border-[#1f58b6]/30 text-[#1f58b6] hover:bg-[#1f58b6]/10 backdrop-blur-sm;
+}

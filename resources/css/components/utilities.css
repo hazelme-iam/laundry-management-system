@@ -1,0 +1,17 @@
+/* ===== UTILITY COMPONENTS ===== */
+.link {
+    @apply text-[#1f58b6] hover:underline;
+    text-decoration: none;
+}
+
+.text-center {
+    @apply text-center;
+}
+
+.relative {
+    @apply relative;
+}
+
+.z-10 {
+    @apply z-10;
+}

@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Contracts\LoginResponse;
+use Laravel\Fortify\Contracts\RegisterResponse;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -47,6 +48,22 @@ class FortifyServiceProvider extends ServiceProvider
 
                     // For non-admin users, always send to user dashboard
                     return redirect()->to($defaultTarget);
+                }
+            };
+        });
+
+        $this->app->singleton(RegisterResponse::class, function () {
+            return new class implements RegisterResponse {
+                public function toResponse($request)
+                {
+                    $user = $request->user();
+                    
+                    // For new registrations, always redirect to dashboard based on role
+                    if ($user && $user->role === 'admin') {
+                        return redirect()->route('admin.dashboard');
+                    }
+                    
+                    return redirect()->route('dashboard');
                 }
             };
         });
