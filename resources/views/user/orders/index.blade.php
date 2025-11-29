@@ -17,19 +17,19 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 px-4 sm:px-0">
                 <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
                     <div class="text-sm text-gray-500">Total Requests</div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $orderRequests->total() }}</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $laundryRequests->total() }}</div>
                 </div>
                 <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
                     <div class="text-sm text-gray-500">Pending Approval</div>
-                    <div class="text-2xl font-bold text-yellow-600">{{ $orderRequests->where('status', 'pending')->count() }}</div>
+                    <div class="text-2xl font-bold text-yellow-600">{{ $laundryRequests->where('status', 'pending')->count() }}</div>
                 </div>
                 <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
                     <div class="text-sm text-gray-500">Approved</div>
-                    <div class="text-2xl font-bold text-green-600">{{ $orderRequests->where('status', 'approved')->count() }}</div>
+                    <div class="text-2xl font-bold text-green-600">{{ $laundryRequests->where('status', 'approved')->count() }}</div>
                 </div>
                 <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
                     <div class="text-sm text-gray-500">Rejected</div>
-                    <div class="text-2xl font-bold text-red-600">{{ $orderRequests->where('status', 'rejected')->count() }}</div>
+                    <div class="text-2xl font-bold text-red-600">{{ $laundryRequests->where('status', 'rejected')->count() }}</div>
                 </div>
             </div>
 
@@ -40,7 +40,7 @@
                 </div>
                 
                 <div class="overflow-x-auto">
-                    @if($orderRequests->count() > 0)
+                    @if($laundryRequests->count() > 0)
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -68,7 +68,7 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($orderRequests as $request)
+                                @foreach($laundryRequests as $request)
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             #REQ-{{ $request->id }}
@@ -112,9 +112,9 @@
                 </div>
 
                 <!-- Pagination -->
-                @if($orderRequests->hasPages())
+                @if($laundryRequests->hasPages())
                     <div class="px-6 py-4 border-t">
-                        {{ $orderRequests->links() }}
+                        {{ $laundryRequests->links() }}
                     </div>
                 @endif
             </div>

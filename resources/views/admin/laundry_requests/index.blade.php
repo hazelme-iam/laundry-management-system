@@ -89,12 +89,12 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <!-- View link -->
-                                        <a href="{{ route('admin.order_request.show', $req->id) }}" 
+                                        <a href="{{ route('admin.laundry_request.show', $req->id) }}" 
                                            class="text-blue-600 hover:text-blue-900">View</a>
                                         
                                         @if($req->status === 'pending')
                                             <!-- Approve button (checkmark) -->
-                                            <form action="{{ route('admin.order_request.approve', $req->id) }}" 
+                                            <form action="{{ route('admin.laundry_request.approve', $req->id) }}" 
                                                   method="POST" 
                                                   class="inline"
                                                   onsubmit="return confirm('Approve this request and convert it to an order?')">
@@ -107,7 +107,7 @@
                                             </form>
                                             
                                             <!-- Decline button (X) -->
-                                            <form action="{{ route('admin.order_request.decline', $req->id) }}" 
+                                            <form action="{{ route('admin.laundry_request.decline', $req->id) }}" 
                                                   method="POST" 
                                                   class="inline"
                                                   onsubmit="return confirm('Decline this request?')">
@@ -122,12 +122,12 @@
                                         
                                         <!-- Edit link for non-pending requests -->
                                         @if($req->status !== 'pending')
-                                            <a href="{{ route('admin.order_request.edit', $req->id) }}" 
+                                            <a href="{{ route('admin.laundry_request.edit', $req->id) }}" 
                                                class="text-gray-600 hover:text-gray-900">Edit</a>
                                         @endif
                                         
                                         <!-- Delete link -->
-                                        <form action="{{ route('admin.order_request.destroy', $req->id) }}" 
+                                        <form action="{{ route('admin.laundry_request.destroy', $req->id) }}" 
                                               method="POST" 
                                               class="inline">
                                             @csrf
@@ -144,7 +144,7 @@
                             @empty
                             <tr>
                                 <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                    No order requests found. <a href="{{ route('admin.order_request.create') }}" class="text-blue-600 hover:underline">Add your first request</a>.
+                                    No order requests found. <a href="{{ route('admin.laundry_request.create') }}" class="text-blue-600 hover:underline">Add your first request</a>.
                                 </td>
                             </tr>
                             @endforelse

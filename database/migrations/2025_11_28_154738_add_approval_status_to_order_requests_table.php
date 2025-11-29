@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('order_requests', function (Blueprint $table) {
+        Schema::table('laundry_requests', function (Blueprint $table) {
             // Drop the existing enum column
             $table->dropColumn('status');
         });
         
-        Schema::table('order_requests', function (Blueprint $table) {
+        Schema::table('laundry_requests', function (Blueprint $table) {
             // Recreate the enum column with the new values
             $table->enum('status', ['pending', 'approved', 'rejected', 'in_progress', 'ready', 'completed', 'cancelled'])->default('pending');
         });
@@ -27,12 +27,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('order_requests', function (Blueprint $table) {
+        Schema::table('laundry_requests', function (Blueprint $table) {
             // Drop the updated enum column
             $table->dropColumn('status');
         });
         
-        Schema::table('order_requests', function (Blueprint $table) {
+        Schema::table('laundry_requests', function (Blueprint $table) {
             // Recreate the original enum column
             $table->enum('status', ['pending', 'in_progress', 'ready', 'completed', 'cancelled'])->default('pending');
         });

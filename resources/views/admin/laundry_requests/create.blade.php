@@ -5,7 +5,7 @@
 
     <h2 class="mb-4">Create Order Request</h2>
 
-    <form action="{{ route('admin.order_request.store') }}" method="POST">
+    <form action="{{ route('admin.laundry_request.store') }}" method="POST">
         @csrf
 
         {{-- Customer --}}
@@ -80,7 +80,7 @@
         </div>
 
         <button class="btn btn-primary">Create Request</button>
-        <a href="{{ route('admin.order_request.index') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ route('admin.laundry_request.index') }}" class="btn btn-secondary">Back</a>
 
     </form>
 

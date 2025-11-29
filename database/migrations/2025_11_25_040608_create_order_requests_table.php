@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('order_requests', function (Blueprint $table) {
+        Schema::create('laundry_requests', function (Blueprint $table) {
             $table->id(); // Primary key
             $table->foreignId('customer_id')->constrained('customers'); // Foreign key to customers
             $table->enum('status', ['pending', 'in_progress', 'ready', 'completed', 'cancelled']);
@@ -33,6 +33,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('order_requests');
+        Schema::dropIfExists('laundry_requests');
     }
 };

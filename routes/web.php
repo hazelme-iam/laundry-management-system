@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\OrderRequestController;
+use App\Http\Controllers\LaundryRequestController;
 
 
 Route::get('/', function () {
@@ -52,15 +52,15 @@ Route::middleware([
     Route::put('/orders/{order}', [OrderController::class, 'update'])->name('admin.orders.update');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');  
 
-    Route::get('/order-requests', [OrderRequestController::class, 'index'])->name('admin.order_request.index');
-    Route::get('/order-requests/create', [OrderRequestController::class, 'create'])->name('admin.order_request.create');
-    Route::post('/order-requests', [OrderRequestController::class, 'store'])->name('admin.order_request.store');
-    Route::get('/order-requests/{orderRequest}', [OrderRequestController::class, 'show'])->name('admin.order_request.show');
-    Route::get('/order-requests/{orderRequest}/edit', [OrderRequestController::class, 'edit'])->name('admin.order_request.edit');
-    Route::put('/order-requests/{orderRequest}', [OrderRequestController::class, 'update'])->name('admin.order_request.update');
-    Route::post('/order-requests/{orderRequest}/approve', [OrderRequestController::class, 'approve'])->name('admin.order_request.approve');
-    Route::post('/order-requests/{orderRequest}/decline', [OrderRequestController::class, 'decline'])->name('admin.order_request.decline');
-    Route::delete('/order-requests/{orderRequest}', [OrderRequestController::class, 'destroy'])->name('admin.order_request.destroy');
+    Route::get('/order-requests', [LaundryRequestController::class, 'index'])->name('admin.laundry_request.index');
+    Route::get('/order-requests/create', [LaundryRequestController::class, 'create'])->name('admin.laundry_request.create');
+    Route::post('/order-requests', [LaundryRequestController::class, 'store'])->name('admin.laundry_request.store');
+    Route::get('/order-requests/{laundryRequest}', [LaundryRequestController::class, 'show'])->name('admin.laundry_request.show');
+    Route::get('/order-requests/{laundryRequest}/edit', [LaundryRequestController::class, 'edit'])->name('admin.laundry_request.edit');
+    Route::put('/order-requests/{laundryRequest}', [LaundryRequestController::class, 'update'])->name('admin.laundry_request.update');
+    Route::post('/order-requests/{laundryRequest}/approve', [LaundryRequestController::class, 'approve'])->name('admin.laundry_request.approve');
+    Route::post('/order-requests/{laundryRequest}/decline', [LaundryRequestController::class, 'decline'])->name('admin.laundry_request.decline');
+    Route::delete('/order-requests/{laundryRequest}', [LaundryRequestController::class, 'destroy'])->name('admin.laundry_request.destroy');
 });
 
 

@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderRequest extends Model
+class LaundryRequest extends Model
 {
     use HasFactory;
 
-    protected $table = 'order_requests';
+    protected $table = 'laundry_requests';
 
     protected $fillable = [
         'customer_id',

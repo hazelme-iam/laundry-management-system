@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OrderRequest;
+use App\Models\LaundryRequest;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class OrderRequestController extends Controller
+class LaundryRequestController extends Controller
 {
     public function __construct()
     {
@@ -17,17 +17,17 @@ class OrderRequestController extends Controller
     // List all order requests
     public function index()
     {
-        $requests = OrderRequest::with(['customer', 'order', 'creator', 'updater'])
+        $requests = LaundryRequest::with(['customer', 'order', 'creator', 'updater'])
             ->latest()
             ->paginate(10);
 
-        return view('admin.order_requests.index', compact('requests')); // Match the plural directory
+        return view('admin.laundry_requests.index', compact('requests')); // Match the plural directory
     }
 
     // Show create form
     public function create()
     {
-        return view('admin.order_requests.create'); // Plural
+        return view('admin.laundry_requests.create'); // Plural
     }
 
     // Store new order request
@@ -55,28 +55,28 @@ class OrderRequestController extends Controller
             $data['add_ons'] = json_encode($data['add_ons']);
         }
 
-        OrderRequest::create($data);
+        LaundryRequest::create($data);
 
-        return redirect()->route('admin.order_request.index')
+        return redirect()->route('admin.laundry_request.index')
             ->with('success', 'Order request created successfully.');
     }
 
     // Show a single order request
-    public function show(OrderRequest $orderRequest)
+    public function show(LaundryRequest $laundryRequest)
     {
-        $orderRequest->load(['customer', 'order', 'creator', 'updater']);
+        $laundryRequest->load(['customer', 'order', 'creator', 'updater']);
 
-        return view('admin.order_requests.show', compact('orderRequest')); // Plural
+        return view('admin.laundry_requests.show', compact('laundryRequest')); // Plural
     }
 
     // Edit form
-    public function edit(OrderRequest $orderRequest)
+    public function edit(LaundryRequest $laundryRequest)
     {
-        return view('admin.order_requests.edit', compact('orderRequest')); // Plural
+        return view('admin.laundry_requests.edit', compact('laundryRequest')); // Plural
     }
 
     // Update
-    public function update(Request $request, OrderRequest $orderRequest)
+    public function update(Request $request, LaundryRequest $laundryRequest)
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
@@ -99,33 +99,33 @@ class OrderRequestController extends Controller
             $data['add_ons'] = json_encode($data['add_ons']);
         }
 
-        $orderRequest->update($data);
+        $laundryRequest->update($data);
 
-        return redirect()->route('admin.order_request.index')
+        return redirect()->route('admin.laundry_request.index')
             ->with('success', 'Order request updated successfully.');
     }
 
     // Approve order request and convert to order
-    public function approve(OrderRequest $orderRequest)
+    public function approve(LaundryRequest $laundryRequest)
     {
-        if ($orderRequest->status !== 'pending') {
-            return redirect()->route('admin.order_request.index')
+        if ($laundryRequest->status !== 'pending') {
+            return redirect()->route('admin.laundry_request.index')
                 ->with('error', 'Only pending requests can be approved.');
         }
 
         try {
             // Create an order from the request
             $orderData = [
-                'customer_id' => $orderRequest->customer_id,
-                'weight' => $orderRequest->weight,
-                'add_ons' => $orderRequest->add_ons,
-                'subtotal' => $orderRequest->subtotal,
-                'discount' => $orderRequest->discount,
-                'total_amount' => $orderRequest->total_amount,
-                'amount_paid' => $orderRequest->amount_paid,
-                'pickup_date' => $orderRequest->pickup_date,
-                'estimated_finish' => $orderRequest->estimated_finish,
-                'remarks' => $orderRequest->remarks,
+                'customer_id' => $laundryRequest->customer_id,
+                'weight' => $laundryRequest->weight,
+                'add_ons' => $laundryRequest->add_ons,
+                'subtotal' => $laundryRequest->subtotal,
+                'discount' => $laundryRequest->discount,
+                'total_amount' => $laundryRequest->total_amount,
+                'amount_paid' => $laundryRequest->amount_paid,
+                'pickup_date' => $laundryRequest->pickup_date,
+                'estimated_finish' => $laundryRequest->estimated_finish,
+                'remarks' => $laundryRequest->remarks,
                 'status' => 'pending', // Order starts as pending
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
@@ -134,7 +134,7 @@ class OrderRequestController extends Controller
             $order = Order::create($orderData);
 
             // Link the request to the created order and mark as approved
-            $orderRequest->update([
+            $laundryRequest->update([
                 'status' => 'approved',
                 'order_id' => $order->id,
                 'updated_by' => Auth::id(),
@@ -144,34 +144,34 @@ class OrderRequestController extends Controller
                 ->with('success', "Order request approved! Order #{$order->id} created successfully.");
 
         } catch (\Exception $e) {
-            return redirect()->route('admin.order_request.index')
+            return redirect()->route('admin.laundry_request.index')
                 ->with('error', 'Failed to create order: ' . $e->getMessage());
         }
     }
 
     // Decline order request
-    public function decline(OrderRequest $orderRequest)
+    public function decline(LaundryRequest $laundryRequest)
     {
-        if ($orderRequest->status !== 'pending') {
-            return redirect()->route('admin.order_request.index')
+        if ($laundryRequest->status !== 'pending') {
+            return redirect()->route('admin.laundry_request.index')
                 ->with('error', 'Only pending requests can be declined.');
         }
 
-        $orderRequest->update([
+        $laundryRequest->update([
             'status' => 'rejected',
             'updated_by' => Auth::id(),
         ]);
 
-        return redirect()->route('admin.order_request.index')
+        return redirect()->route('admin.laundry_request.index')
             ->with('success', 'Order request declined successfully.');
     }
 
     // Delete
-    public function destroy(OrderRequest $orderRequest)
+    public function destroy(LaundryRequest $laundryRequest)
     {
-        $orderRequest->delete();
+        $laundryRequest->delete();
 
-        return redirect()->route('admin.order_request.index')
+        return redirect()->route('admin.laundry_request.index')
             ->with('success', 'Order request deleted successfully.');
     }
 }

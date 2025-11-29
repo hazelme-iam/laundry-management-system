@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Customer;
-use App\Models\OrderRequest;
+use App\Models\LaundryRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -120,11 +120,11 @@ class OrderController extends Controller
     public function userIndex()
     {
         // Get order requests (pending approval)
-        $orderRequests = OrderRequest::whereHas('customer', function($query) {
+        $laundryRequests = LaundryRequest::whereHas('customer', function($query) {
             $query->where('user_id', auth()->id());
         })->with(['customer', 'creator', 'updater'])->latest()->paginate(10);
         
-        return view('user.orders.index', compact('orderRequests'));
+        return view('user.orders.index', compact('laundryRequests'));
     }
 
     public function userCreate()
@@ -195,7 +195,7 @@ class OrderController extends Controller
             'updated_by' => auth()->id(),
         ];
 
-        OrderRequest::create($orderRequestData);
+        LaundryRequest::create($orderRequestData);
 
         return redirect()->route('user.orders.index')->with('success', 'Order request submitted successfully! Awaiting admin approval.');
     }
