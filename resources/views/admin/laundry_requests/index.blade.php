@@ -4,8 +4,8 @@
             <!-- Header -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Order Requests</h1>
-                    <p class="text-gray-600">Manage your laundry order requests</p>
+                    <h1 class="text-2xl font-bold text-gray-900">Laundry Requests</h1>
+                    <p class="text-gray-600">Manage your laundry requests</p>
                 </div>
                 
             </div>
@@ -144,7 +144,7 @@
                             @empty
                             <tr>
                                 <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                    No order requests found. <a href="{{ route('admin.laundry_request.create') }}" class="text-blue-600 hover:underline">Add your first request</a>.
+                                    No laundry requests found. <a href="{{ route('admin.laundry_request.create') }}" class="text-blue-600 hover:underline">Add your first request</a>.
                                 </td>
                             </tr>
                             @endforelse

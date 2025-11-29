@@ -44,7 +44,7 @@
                         {{ __('Orders') }}
                     </x-nav-link>
                     <x-nav-link href="{{ url('/order-requests') }}" :active="request()->is('order-requests*')">
-                        {{ __('Order Requests') }}
+                        {{ __('Laundry Requests') }}
                     </x-nav-link>
                     <x-nav-link href="{{ url('/reports') }}" :active="request()->is('reports*')">
                         {{ __('Reports') }}
@@ -215,7 +215,7 @@
                 {{ __('Orders') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ url('/order-requests') }}" :active="request()->is('order-requests*')">
-                {{ __('Order Requests') }}
+                {{ __('Laundry Requests') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ url('/reports') }}" :active="request()->is('reports*')">
                 {{ __('Reports') }}

@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
 
-    <h2 class="mb-4">Create Order Request</h2>
+    <h2 class="mb-4">Create Laundry Request</h2>
 
     <form action="{{ route('admin.laundry_request.store') }}" method="POST">
         @csrf

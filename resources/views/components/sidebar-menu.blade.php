@@ -18,7 +18,7 @@
         </a>
        <a href="{{ route('admin.order-request.index') }}"
    class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('order-requests*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">
-    {{ __('Order Requests') }}
+    {{ __('Laundry Requests') }}
 </a>
 
         <a href="{{ url('/reports') }}"

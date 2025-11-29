@@ -36,7 +36,7 @@
             <!-- Orders Table -->
             <div class="bg-white rounded-lg shadow overflow-hidden mx-4 sm:mx-0">
                 <div class="p-4 sm:p-6 border-b">
-                    <h2 class="text-lg font-semibold text-gray-900">Order Requests</h2>
+                    <h2 class="text-lg font-semibold text-gray-900">Laundry Requests</h2>
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -102,7 +102,7 @@
                         </table>
                     @else
                         <div class="text-center py-8">
-                            <div class="text-gray-500 mb-4">You haven't submitted any order requests yet.</div>
+                            <div class="text-gray-500 mb-4">You haven't submitted any laundry requests yet.</div>
                             <a href="{{ route('user.orders.create') }}" 
                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition inline-block">
                                 Submit Your First Request
