@@ -42,7 +42,7 @@
                         <input type="text" 
                                placeholder="Search orders..." 
                                class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <select class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select class="px-8 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option>All Statuses</option>
                             <option>Pending</option>
                             <option>In Progress</option>

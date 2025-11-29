@@ -41,7 +41,7 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'weight' => 'required|numeric',
+            'weight' => 'required|numeric|min:1',
             'add_ons' => 'nullable|array',
             'subtotal' => 'required|numeric',
             'discount' => 'required|numeric',
@@ -88,7 +88,7 @@ class OrderController extends Controller
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'status' => 'required|in:pending,in_progress,ready,completed,cancelled',
-            'weight' => 'required|numeric',
+            'weight' => 'required|numeric|min:1',
             'add_ons' => 'nullable|array',
             'subtotal' => 'required|numeric',
             'discount' => 'required|numeric',
@@ -114,6 +114,49 @@ class OrderController extends Controller
     {
         $order->delete();
         return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
+    }
+
+    /**
+     * Calculate order total based on weight and add-ons
+     */
+    public function calculate(Request $request)
+    {
+        $request->validate([
+            'weight' => 'required|numeric|min:1',
+            'add_ons' => 'nullable|array',
+        ]);
+
+        $weight = $request->weight;
+        $addOns = $request->add_ons ?? [];
+        
+        // Base price: 150 per kilo (minimum)
+        $basePrice = 150;
+        $subtotal = $weight * $basePrice;
+        
+        // Add-ons pricing
+        $addOnPrices = [
+            'folding' => 20,
+            'hanger' => 15,
+            'ironing' => 30,
+            'detergent' => 25,
+            'fabric_conditioner' => 20,
+        ];
+        
+        $addOnsTotal = 0;
+        foreach ($addOns as $addOn) {
+            if (isset($addOnPrices[$addOn])) {
+                $addOnsTotal += $addOnPrices[$addOn];
+            }
+        }
+        
+        $subtotal += $addOnsTotal;
+        
+        return response()->json([
+            'subtotal' => $subtotal,
+            'total_amount' => $subtotal, // Initially same as subtotal before discount
+            'add_ons_total' => $addOnsTotal,
+            'base_amount' => $weight * $basePrice,
+        ]);
     }
 
     // User-specific methods
@@ -147,7 +190,7 @@ class OrderController extends Controller
     public function userStore(Request $request)
     {
         $data = $request->validate([
-            'weight' => 'required|numeric',
+            'weight' => 'required|numeric|min:1',
             'add_ons' => 'nullable|array',
             'subtotal' => 'required|numeric',
             'discount' => 'required|numeric',
@@ -209,5 +252,13 @@ class OrderController extends Controller
 
         $order->load(['customer', 'creator', 'updater']);
         return view('user.orders.show', compact('order'));
+    }
+
+    /**
+     * Calculate order total for user orders
+     */
+    public function userCalculate(Request $request)
+    {
+        return $this->calculate($request);
     }
 }

@@ -79,8 +79,8 @@
             <textarea name="remarks" class="form-control"></textarea>
         </div>
 
-        <button class="btn btn-primary">Create Request</button>
-        <a href="{{ route('admin.laundry_request.index') }}" class="btn btn-secondary">Back</a>
+        <button type="submit" class="btn btn-primary">Create Laundry Request</button>
+        <a href="{{ route('admin.laundry_request.index') }}" class="btn btn-secondary">Cancel</a>
 
     </form>
 

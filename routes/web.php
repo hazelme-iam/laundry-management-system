@@ -51,6 +51,9 @@ Route::middleware([
     Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('admin.orders.edit');
     Route::put('/orders/{order}', [OrderController::class, 'update'])->name('admin.orders.update');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');  
+    // Add these routes for the calculation functionality
+    Route::post('/admin/orders/calculate', [OrderController::class, 'calculate'])->name('admin.orders.calculate');
+    Route::post('/user/orders/calculate', [OrderController::class, 'userCalculate'])->name('user.orders.calculate');
 
     Route::get('/order-requests', [LaundryRequestController::class, 'index'])->name('admin.laundry_request.index');
     Route::get('/order-requests/create', [LaundryRequestController::class, 'create'])->name('admin.laundry_request.create');
@@ -61,6 +64,7 @@ Route::middleware([
     Route::post('/order-requests/{laundryRequest}/approve', [LaundryRequestController::class, 'approve'])->name('admin.laundry_request.approve');
     Route::post('/order-requests/{laundryRequest}/decline', [LaundryRequestController::class, 'decline'])->name('admin.laundry_request.decline');
     Route::delete('/order-requests/{laundryRequest}', [LaundryRequestController::class, 'destroy'])->name('admin.laundry_request.destroy');
+    
 });
 
 

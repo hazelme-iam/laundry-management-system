@@ -21,13 +21,13 @@ class LaundryRequestController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('admin.laundry_requests.index', compact('requests')); // Match the plural directory
+        return view('admin.laundry_requests.index', compact('requests'));
     }
 
     // Show create form
     public function create()
     {
-        return view('admin.laundry_requests.create'); // Plural
+        return view('admin.laundry_requests.create');
     }
 
     // Store new order request
@@ -58,7 +58,7 @@ class LaundryRequestController extends Controller
         LaundryRequest::create($data);
 
         return redirect()->route('admin.laundry_request.index')
-            ->with('success', 'Order request created successfully.');
+            ->with('success', 'Laundry request created successfully.');
     }
 
     // Show a single order request
@@ -66,13 +66,13 @@ class LaundryRequestController extends Controller
     {
         $laundryRequest->load(['customer', 'order', 'creator', 'updater']);
 
-        return view('admin.laundry_requests.show', compact('laundryRequest')); // Plural
+        return view('admin.laundry_requests.show', compact('laundryRequest'));
     }
 
     // Edit form
     public function edit(LaundryRequest $laundryRequest)
     {
-        return view('admin.laundry_requests.edit', compact('laundryRequest')); // Plural
+        return view('admin.laundry_requests.edit', compact('laundryRequest'));
     }
 
     // Update
@@ -102,7 +102,7 @@ class LaundryRequestController extends Controller
         $laundryRequest->update($data);
 
         return redirect()->route('admin.laundry_request.index')
-            ->with('success', 'Order request updated successfully.');
+            ->with('success', 'Laundry request updated successfully.');
     }
 
     // Approve order request and convert to order
@@ -141,7 +141,7 @@ class LaundryRequestController extends Controller
             ]);
 
             return redirect()->route('admin.orders.index')
-                ->with('success', "Order request approved! Order #{$order->id} created successfully.");
+                ->with('success', "Laundry request approved! Order #{$order->id} created successfully.");
 
         } catch (\Exception $e) {
             return redirect()->route('admin.laundry_request.index')
@@ -163,7 +163,7 @@ class LaundryRequestController extends Controller
         ]);
 
         return redirect()->route('admin.laundry_request.index')
-            ->with('success', 'Order request declined successfully.');
+            ->with('success', 'Laundry request declined successfully.');
     }
 
     // Delete
@@ -172,6 +172,6 @@ class LaundryRequestController extends Controller
         $laundryRequest->delete();
 
         return redirect()->route('admin.laundry_request.index')
-            ->with('success', 'Order request deleted successfully.');
+            ->with('success', 'Laundry request deleted successfully.');
     }
 }
