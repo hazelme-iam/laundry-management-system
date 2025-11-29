@@ -20,27 +20,30 @@
     <body class="font-sans antialiased">
         <x-banner />
 
-        <div class="min-h-screen bg-gray-100">
-            @if (auth()->check() && auth()->user()->role === 'admin')
+        @if (auth()->check() && auth()->user()->role === 'admin')
+            <!-- Admin sidebar would go here -->
+            <div class="min-h-screen bg-gray-100">
                 @include('partials.navigation-menu-admin')
-            @else
-                @include('partials.navigation-menu-user')
-            @endif
+                <!-- Page Heading -->
+                @if (isset($header))
+                    <header class="bg-white shadow">
+                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endif
 
-            <!-- Page Heading -->
-            @if (isset($header))
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endif
-
-            <!-- Page Content -->
-            <main>
+                <!-- Page Content -->
+                <main>
+                    {{ $slot }}
+                </main>
+            </div>
+        @else
+            <!-- User Sidebar Layout -->
+            <x-sidebar-user>
                 {{ $slot }}
-            </main>
-        </div>
+            </x-sidebar-user>
+        @endif
 
         @stack('modals')
 
