@@ -1,6 +1,6 @@
 <aside class="w-64 bg-white border-r">
     <div class="h-16 flex items-center px-6 border-b">
-        <span class="text-lg font-semibold">{{ config('app.name', 'Laundry Management System') }}</span>
+        <span class="text-lg font-semibold">{{ config('app.name', 'Laundry System') }}</span>
     </div>
 
     <nav class="p-4 space-y-1">

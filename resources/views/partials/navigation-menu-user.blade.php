@@ -16,7 +16,12 @@
                     <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Overview') }}
                     </x-nav-link>
-                    <!-- Add more user-specific links here when needed -->
+                    <x-nav-link href="{{ route('user.orders.create') }}" :active="request()->routeIs('user.orders.create')">
+                        {{ __('Create Order') }}
+                    </x-nav-link>
+                    <x-nav-link href="{{ route('user.orders.index') }}" :active="request()->routeIs('user.orders.index')">
+                        {{ __('History') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -158,6 +163,12 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Overview') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="{{ route('user.orders.create') }}" :active="request()->routeIs('user.orders.create')">
+                {{ __('Create Order') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="{{ route('user.orders.index') }}" :active="request()->routeIs('user.orders.index')">
+                {{ __('History') }}
             </x-responsive-nav-link>
         </div>
 
