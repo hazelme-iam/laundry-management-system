@@ -21,23 +21,10 @@
         <x-banner />
 
         @if (auth()->check() && auth()->user()->role === 'admin')
-            <!-- Admin sidebar would go here -->
-            <div class="min-h-screen bg-gray-100">
-                @include('partials.navigation-menu-admin')
-                <!-- Page Heading -->
-                @if (isset($header))
-                    <header class="bg-white shadow">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                            {{ $header }}
-                        </div>
-                    </header>
-                @endif
-
-                <!-- Page Content -->
-                <main>
-                    {{ $slot }}
-                </main>
-            </div>
+            <!-- Admin Sidebar Layout -->
+            <x-sidebar-admin>
+                {{ $slot }}
+            </x-sidebar-admin>
         @else
             <!-- User Sidebar Layout -->
             <x-sidebar-user>
