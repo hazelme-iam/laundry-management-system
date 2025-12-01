@@ -50,7 +50,12 @@ Route::middleware([
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
     Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('admin.orders.edit');
     Route::put('/orders/{order}', [OrderController::class, 'update'])->name('admin.orders.update');
-    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');  
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');
+
+    // Reports
+    Route::get('/reports', function () {
+        return view('admin.reports');
+    })->name('admin.reports');  
     // Add these routes for the calculation functionality
     Route::post('/admin/orders/calculate', [OrderController::class, 'calculate'])->name('admin.orders.calculate');
     Route::post('/user/orders/calculate', [OrderController::class, 'userCalculate'])->name('user.orders.calculate');
