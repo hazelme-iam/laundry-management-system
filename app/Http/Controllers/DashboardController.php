@@ -8,6 +8,8 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $breadcrumbs = [];
+        
         // Sample orders data
         $orders = [
             [
@@ -57,6 +59,9 @@ class DashboardController extends Controller
             ],
         ];
 
-        return view('admin.dashboard', compact('orders'));
+        return view('admin.dashboard', [
+            'orders' => $orders,
+            'breadcrumbs' => $breadcrumbs
+        ]);
     }
 }
