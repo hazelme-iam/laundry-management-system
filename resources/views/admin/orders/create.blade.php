@@ -4,13 +4,13 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <!-- Breadcrumb Navigation -->
             <x-breadcrumbs :items="[
-                'Orders' => route('admin.orders.index'),
-                'Create Order' => null
+                'Laundry List' => route('admin.orders.index'),
+                'Add New Laundry' => null
             ]" />
             
             <div class="bg-white rounded-lg shadow overflow-hidden">
                 <div class="p-6">
-                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Create New Order</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Add New Laundry</h1>
 
                     <form action="{{ route('admin.orders.store') }}" method="POST" id="orderForm">
                         @csrf
@@ -18,7 +18,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Customer Selection -->
                             <div>
-                                <label for="customer_id" class="block text-sm font-medium text-gray-700">Customer *</label>
+                                <label for="customer_id" class="block text-sm font-medium text-gray-700">Customer </label>
                                 <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                         id="customer_id" name="customer_id" required>
                                     <option value="">Select Customer</option>
@@ -35,7 +35,7 @@
 
                             <!-- Weight -->
                             <div>
-                                <label for="weight" class="block text-sm font-medium text-gray-700">Weight (KG) *</label>
+                                <label for="weight" class="block text-sm font-medium text-gray-700">Weight (KG) </label>
                                 <input type="number" step="0.01" min="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                        id="weight" name="weight" value="{{ old('weight') }}" required 
                                        oninput="calculateTotal()">
@@ -176,7 +176,7 @@
                         <!-- Buttons -->
                         <div class="mt-6 flex space-x-3">
                             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                                Create Order
+                                Create New Laundry
                             </button>
                             <a href="{{ route('admin.orders.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
                                 Cancel
