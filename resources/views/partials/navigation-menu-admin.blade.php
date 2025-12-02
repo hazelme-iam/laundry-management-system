@@ -19,11 +19,11 @@
                     <x-nav-link href="{{ route('admin.customers.index') }}" :active="request()->is('customers*')">
                         {{ __('Customers') }}
                     </x-nav-link>
-                    <x-nav-link href="{{ url('/orders') }}" :active="request()->is('orders*')">
-                        {{ __('Orders') }}
-                    </x-nav-link>
-                    <x-nav-link href="{{ url('/order-requests') }}" :active="request()->is('order-requests*')">
+                      <x-nav-link href="{{ url('/order-requests') }}" :active="request()->is('order-requests*')">
                         {{ __('Laundry Requests') }}
+                    </x-nav-link>
+                    <x-nav-link href="{{ url('/orders') }}" :active="request()->is('orders*')">
+                        {{ __('Laundry List') }}
                     </x-nav-link>
                     <x-nav-link href="{{ url('/reports') }}" :active="request()->is('reports*')">
                         {{ __('Reports') }}
@@ -175,12 +175,13 @@
                 :active="request()->is('customers*')">
                 {{ __('Customers') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link href="{{ url('/orders') }}" :active="request()->is('orders*')">
-                {{ __('Orders') }}
-            </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ url('/order-requests') }}" :active="request()->is('order-requests*')">
                 {{ __('Laundry Requests') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link href="{{ url('/orders') }}" :active="request()->is('orders*')">
+                {{ __('Laundry List') }}
+            </x-responsive-nav-link>
+            
             <x-responsive-nav-link href="{{ url('/reports') }}" :active="request()->is('reports*')">
                 {{ __('Reports') }}
             </x-responsive-nav-link>

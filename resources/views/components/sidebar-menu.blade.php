@@ -12,14 +12,14 @@
            class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('customers*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">
             {{ __('Customers') }}
         </a>
-        <a href="{{ url('/orders') }}"
-           class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('orders*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">
-            {{ __('Orders') }}
-        </a>
-       <a href="{{ route('admin.order-request.index') }}"
+        <a href="{{ route('admin.order-request.index') }}"
    class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('order-requests*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">
     {{ __('Laundry Requests') }}
-</a>
+        </a>
+        <a href="{{ url('/orders') }}"
+           class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('orders*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">
+            {{ __('Laundry List') }}
+        </a>
 
         <a href="{{ url('/reports') }}"
            class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('reports*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">

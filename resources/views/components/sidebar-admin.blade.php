@@ -50,14 +50,6 @@
                     {{ __('Customers') }}
                 </a>
 
-                <a href="{{ url('/orders') }}"
-                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {{ request()->is('orders*') ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <svg class="mr-3 h-5 w-5 {{ request()->is('orders*') ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                    </svg>
-                    {{ __('Orders') }}
-                </a>
-
                 <a href="{{ url('/order-requests') }}"
                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {{ request()->is('order-requests*') ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}">
                     <svg class="mr-3 h-5 w-5 {{ request()->is('order-requests*') ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,6 +58,16 @@
                     {{ __('Laundry Requests') }}
                 </a>
 
+
+                <a href="{{ url('/orders') }}"
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {{ request()->is('orders*') ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <svg class="mr-3 h-5 w-5 {{ request()->is('orders*') ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    {{ __('Laundry List') }}
+                </a>
+
+                
                 <a href="{{ url('/reports') }}"
                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg {{ request()->is('reports*') ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}">
                     <svg class="mr-3 h-5 w-5 {{ request()->is('reports*') ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
