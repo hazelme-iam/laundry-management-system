@@ -1,9 +1,21 @@
-@extends('layouts.app')
+<x-sidebar-app>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <!-- Breadcrumb Navigation -->
+            <x-breadcrumbs :items="[
+                'Laundry Requests' => route('admin.laundry_request.index'),
+                'Create Request' => null
+            ]" />
 
-@section('content')
-<div class="container">
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Create Laundry Request</h1>
+                    <p class="text-gray-600">Add a new laundry request for a customer</p>
+                </div>
+            </div>
 
-    <h2 class="mb-4">Create Laundry Request</h2>
+            <div class="bg-white shadow-sm rounded-lg p-6">
 
     <form action="{{ route('admin.laundry_request.store') }}" method="POST">
         @csrf
@@ -82,7 +94,7 @@
         <button type="submit" class="btn btn-primary">Create Laundry Request</button>
         <a href="{{ route('admin.laundry_request.index') }}" class="btn btn-secondary">Cancel</a>
 
-    </form>
-
-</div>
-@endsection
+            </form>
+        </div>
+    </div>
+</x-sidebar-app>

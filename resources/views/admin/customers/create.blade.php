@@ -1,7 +1,13 @@
 {{-- resources/views/admin/customers/create.blade.php --}}
 <x-sidebar-app>
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <!-- Breadcrumb Navigation -->
+            <x-breadcrumbs :items="[
+                'Customers' => route('admin.customers.index'),
+                'Create Customer' => null
+            ]" />
+            
             <div class="bg-white rounded-lg shadow overflow-hidden">
                 <div class="p-6">
                     <h1 class="text-2xl font-bold text-gray-900 mb-6">Create New Customer</h1>
