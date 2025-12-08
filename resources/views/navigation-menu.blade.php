@@ -43,9 +43,6 @@
                     <x-nav-link href="{{ url('/orders') }}" :active="request()->is('orders*')">
                         {{ __('Orders') }}
                     </x-nav-link>
-                    <x-nav-link href="{{ url('/order-requests') }}" :active="request()->is('order-requests*')">
-                        {{ __('Laundry Requests') }}
-                    </x-nav-link>
                     <x-nav-link href="{{ url('/reports') }}" :active="request()->is('reports*')">
                         {{ __('Reports') }}
                     </x-nav-link>
@@ -151,13 +148,10 @@
                                     {{ __('API Tokens') }}
                                 </x-dropdown-link>
                             @endif
-
                             <div class="border-t border-gray-200"></div>
-
                             <!-- Logout -->
                             <form method="POST" action="{{ route('logout') }}" x-data>
                                 @csrf
-
                                 <x-dropdown-link href="{{ route('logout') }}"
                                     @click.prevent="$root.submit();">
                                     {{ __('Log Out') }}
@@ -213,9 +207,6 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ url('/orders') }}" :active="request()->is('orders*')">
                 {{ __('Orders') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link href="{{ url('/order-requests') }}" :active="request()->is('order-requests*')">
-                {{ __('Laundry Requests') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ url('/reports') }}" :active="request()->is('reports*')">
                 {{ __('Reports') }}

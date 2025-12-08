@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Customer;
-use App\Models\LaundryRequest;
+use App\Models\Machine;
+use App\Models\Load;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,18 +14,44 @@ class OrderController extends Controller
     /**
      * Display a listing of the orders.
      */
-    public function index()
-    {
-        $orders = Order::with(['customer', 'creator', 'updater'])->latest()->paginate(10);
-        
-        // Add statistics for the dashboard cards
-        $pendingCount = Order::where('status', 'pending')->count();
-        $inProgressCount = Order::where('status', 'in_progress')->count();
-        $completedCount = Order::where('status', 'completed')->count();
+    // app/Http/Controllers/OrderController.php
 
-        return view('admin.orders.index', compact('orders', 'pendingCount', 'inProgressCount', 'completedCount'));
+public function index()
+{
+    $query = Order::with(['customer', 'creator', 'updater', 'loads', 'primaryWasher', 'primaryDryer']);
+
+    // Status filter
+    if (request('status')) {
+        $query->where('status', request('status'));
     }
 
+    // Source filter: online vs walk-in
+    if ($src = request('source')) {
+        if ($src === 'online') {
+            // Online: customer has a user_id and the order was created by that same user
+            $query->whereHas('customer', function ($q) {
+                $q->whereNotNull('customers.user_id')
+                  ->whereColumn('customers.user_id', 'orders.created_by');
+            });
+        } elseif ($src === 'walk_in') {
+            // Walk-in: either the customer has no user account, OR order was created by someone else (admin)
+            $query->whereHas('customer', function ($q) {
+                $q->where(function ($x) {
+                    $x->whereNull('customers.user_id')
+                      ->orWhereColumn('customers.user_id', '!=', 'orders.created_by');
+                });
+            });
+        }
+    }
+
+    $orders = $query->latest()->paginate(10);
+
+    $pendingCount = Order::where('status', 'pending')->count();
+    $inProgressCount = Order::whereIn('status', ['picked_up', 'washing', 'drying', 'folding', 'quality_check'])->count();
+    $completedCount = Order::where('status', 'completed')->count();
+
+    return view('admin.orders.index', compact('orders', 'pendingCount', 'inProgressCount', 'completedCount'));
+}
     /**
      * Show the form for creating a new order.
      */
@@ -41,7 +68,7 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'weight' => 'required|numeric|min:1',
+            'weight' => 'required|numeric|min:0.1',
             'add_ons' => 'nullable|array',
             'subtotal' => 'required|numeric',
             'discount' => 'required|numeric',
@@ -50,6 +77,8 @@ class OrderController extends Controller
             'pickup_date' => 'nullable|date',
             'estimated_finish' => 'required|date',
             'remarks' => 'nullable|string',
+            'priority' => 'nullable|in:low,normal,high,urgent',
+            'service_type' => 'nullable|in:standard,express,premium',
         ]);
 
         // Set default status to 'pending' for new orders
@@ -57,7 +86,10 @@ class OrderController extends Controller
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 
-        Order::create($data);
+        $order = Order::create($data);
+        
+        // Automatically create optimized loads
+        $loads = $order->createOptimizedLoads();
 
         return redirect()->route('admin.orders.index')->with('success', 'Order created successfully.');
     }
@@ -67,7 +99,7 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $order->load(['customer', 'creator', 'updater']);
+        $order->load(['customer', 'creator', 'updater', 'loads.washerMachine', 'loads.dryerMachine']);
         return view('admin.orders.show', compact('order'));
     }
 
@@ -87,8 +119,8 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'status' => 'required|in:pending,in_progress,ready,completed,cancelled',
-            'weight' => 'required|numeric|min:1',
+            'status' => 'required|in:pending,approved,rejected,picked_up,washing,drying,folding,quality_check,ready,delivery_pending,completed,cancelled',
+            'weight' => 'required|numeric|min:0.1',
             'add_ons' => 'nullable|array',
             'subtotal' => 'required|numeric',
             'discount' => 'required|numeric',
@@ -98,6 +130,10 @@ class OrderController extends Controller
             'estimated_finish' => 'required|date',
             'finished_at' => 'nullable|date',
             'remarks' => 'nullable|string',
+            'primary_washer_id' => 'nullable|exists:machines,id',
+            'primary_dryer_id' => 'nullable|exists:machines,id',
+            'priority' => 'nullable|in:low,normal,high,urgent',
+            'service_type' => 'nullable|in:standard,express,premium',
         ]);
 
         $data['updated_by'] = Auth::id();
@@ -162,12 +198,12 @@ class OrderController extends Controller
     // User-specific methods
     public function userIndex()
     {
-        // Get order requests (pending approval)
-        $laundryRequests = LaundryRequest::whereHas('customer', function($query) {
+        // Get orders for the logged-in user
+        $orders = Order::whereHas('customer', function($query) {
             $query->where('user_id', auth()->id());
-        })->with(['customer', 'creator', 'updater'])->latest()->paginate(10);
+        })->with(['customer', 'creator', 'updater', 'loads'])->latest()->paginate(10);
         
-        return view('user.orders.index', compact('laundryRequests'));
+        return view('user.orders.index', compact('orders'));
     }
 
     public function userCreate()
@@ -221,8 +257,8 @@ class OrderController extends Controller
             'address' => $data['customer_address'],
         ]);
 
-        // Prepare order request data
-        $orderRequestData = [
+        // Create order with pending status for admin approval
+        $orderData = [
             'customer_id' => $customer->id,
             'weight' => $data['weight'],
             'add_ons' => $data['add_ons'] ?? null,
@@ -233,14 +269,16 @@ class OrderController extends Controller
             'pickup_date' => $data['pickup_date'],
             'estimated_finish' => $data['estimated_finish'],
             'remarks' => $data['remarks'],
-            'status' => 'pending', // Order Request status
+            'status' => 'pending', // Pending admin approval
+            'priority' => 'normal',
+            'service_type' => 'standard',
             'created_by' => auth()->id(),
             'updated_by' => auth()->id(),
         ];
 
-        LaundryRequest::create($orderRequestData);
+        $order = Order::create($orderData);
 
-        return redirect()->route('user.orders.index')->with('success', 'Order request submitted successfully! Awaiting admin approval.');
+        return redirect()->route('user.orders.index')->with('success', 'Order submitted successfully! Awaiting admin approval.');
     }
 
     public function userShow(Order $order)
@@ -250,7 +288,7 @@ class OrderController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $order->load(['customer', 'creator', 'updater']);
+        $order->load(['customer', 'creator', 'updater', 'loads.washerMachine', 'loads.dryerMachine']);
         return view('user.orders.show', compact('order'));
     }
 
@@ -260,5 +298,53 @@ class OrderController extends Controller
     public function userCalculate(Request $request)
     {
         return $this->calculate($request);
+    }
+
+    // Admin approval methods
+    public function approve(Order $order)
+    {
+        if ($order->status !== 'pending') {
+            return redirect()->route('admin.orders.index')
+                ->with('error', 'Only pending orders can be approved.');
+        }
+
+        // Update order status to approved and create optimized loads
+        $order->update([
+            'status' => 'approved',
+            'updated_by' => Auth::id(),
+        ]);
+
+        // Create loads for the approved order
+        $loads = $order->createOptimizedLoads();
+
+        return redirect()->route('admin.orders.index')
+            ->with('success', "Order #{$order->id} approved successfully! Loads created.");
+    }
+
+    public function decline(Order $order)
+    {
+        if ($order->status !== 'pending') {
+            return redirect()->route('admin.orders.index')
+                ->with('error', 'Only pending orders can be declined.');
+        }
+
+        $order->update([
+            'status' => 'rejected',
+            'updated_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('admin.orders.index')
+            ->with('success', 'Order declined successfully.');
+    }
+
+    // Pending orders page
+    public function pending()
+    {
+        $orders = Order::with(['customer', 'creator', 'updater'])
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('admin.orders.pending', compact('orders'));
     }
 }

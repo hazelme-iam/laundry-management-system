@@ -9,10 +9,65 @@ class CustomerController extends Controller
 {
     // List customers
     public function index()
-    {
-        $customers = Customer::latest()->paginate(10);
-        return view('admin.customers.index', compact('customers'));
+{
+    $query = Customer::query()
+        ->withCount('orders')
+        ->withSum('orders', 'total_amount')
+        ->withCount([
+            // Orders placed online by the customer (created_by == customers.user_id)
+            'orders as online_orders_count' => function ($q) {
+                $q->whereColumn('orders.created_by', 'customers.user_id');
+            },
+            // Orders created by admins (walk-ins)
+            'orders as walkin_orders_count' => function ($q) {
+                $q->whereColumn('orders.created_by', '!=', 'customers.user_id');
+            },
+        ]);
+
+    // Existing "filter" (new/returning/active)
+    if (request('filter')) {
+        switch (request('filter')) {
+            case 'new':
+                $query->where('created_at', '>=', now()->subDays(30));
+                break;
+            case 'returning':
+                $query->whereHas('orders', function ($q) {
+                    $q->where('created_at', '<', now()->subDays(30));
+                })->where('created_at', '<', now()->subDays(30));
+                break;
+            case 'active':
+                $query->whereHas('orders', function ($q) {
+                    $q->whereDate('created_at', today());
+                });
+                break;
+        }
     }
+
+    // New "source" filter: walk-in (admin-created) vs online (customer-placed)
+    if (request('source')) {
+        if (request('source') === 'online') {
+            $query->whereHas('orders', function ($q) {
+                $q->whereColumn('orders.created_by', 'customers.user_id');
+            });
+        } elseif (request('source') === 'walk_in') {
+            $query->whereHas('orders', function ($q) {
+                $q->whereColumn('orders.created_by', '!=', 'customers.user_id');
+            });
+        }
+    }
+
+    // Optional text search
+    if ($term = request('q')) {
+        $query->where(function ($q) use ($term) {
+            $q->where('name', 'like', "%{$term}%")
+              ->orWhere('email', 'like', "%{$term}%")
+              ->orWhere('phone', 'like', "%{$term}%");
+        });
+    }
+
+    $customers = $query->latest()->paginate(10);
+    return view('admin.customers.index', compact('customers'));
+}
 
     // Show create form
     public function create()
