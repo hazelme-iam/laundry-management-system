@@ -27,6 +27,12 @@
 
             <!-- RIGHT SIDE: DROPDOWNS -->
             <div class="hidden sm:flex sm:items-center ml-auto">
+
+            <!-- Notification Icon -->
+                <div class="relative">
+                    <x-notification-icon :count="5" />
+                </div>
+                
                 <!-- Teams Dropdown -->
                 @if (Laravel\Jetstream\Jetstream::hasTeamFeatures())
                     <div class="ms-3 relative">
