@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\LaundryRequestController;
 
 
 Route::get('/', function () {
@@ -60,15 +59,12 @@ Route::middleware([
     Route::post('/admin/orders/calculate', [OrderController::class, 'calculate'])->name('admin.orders.calculate');
     Route::post('/user/orders/calculate', [OrderController::class, 'userCalculate'])->name('user.orders.calculate');
 
-    Route::get('/order-requests', [LaundryRequestController::class, 'index'])->name('admin.laundry_request.index');
-    Route::get('/order-requests/create', [LaundryRequestController::class, 'create'])->name('admin.laundry_request.create');
-    Route::post('/order-requests', [LaundryRequestController::class, 'store'])->name('admin.laundry_request.store');
-    Route::get('/order-requests/{laundryRequest}', [LaundryRequestController::class, 'show'])->name('admin.laundry_request.show');
-    Route::get('/order-requests/{laundryRequest}/edit', [LaundryRequestController::class, 'edit'])->name('admin.laundry_request.edit');
-    Route::put('/order-requests/{laundryRequest}', [LaundryRequestController::class, 'update'])->name('admin.laundry_request.update');
-    Route::post('/order-requests/{laundryRequest}/approve', [LaundryRequestController::class, 'approve'])->name('admin.laundry_request.approve');
-    Route::post('/order-requests/{laundryRequest}/decline', [LaundryRequestController::class, 'decline'])->name('admin.laundry_request.decline');
-    Route::delete('/order-requests/{laundryRequest}', [LaundryRequestController::class, 'destroy'])->name('admin.laundry_request.destroy');
+    // Order approval routes
+    Route::post('/orders/{order}/approve', [OrderController::class, 'approve'])->name('admin.orders.approve');
+    Route::post('/orders/{order}/decline', [OrderController::class, 'decline'])->name('admin.orders.decline');
+    
+    // Pending orders page
+    Route::get('/orders/pending', [OrderController::class, 'pending'])->name('admin.orders.pending');
     
 });
 

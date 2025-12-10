@@ -50,20 +50,6 @@
                                 @enderror
                             </div>
 
-                            <!-- Customer Type -->
-                            <div>
-                                <label for="customer_type" class="block text-sm font-medium text-gray-700">Customer Type </label>
-                                <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                        id="customer_type" name="customer_type" required>
-                                    <option value="">Select Type</option>
-                                    <option value="walk-in" {{ old('customer_type') == 'walk-in' ? 'selected' : '' }}>Walk-in</option>
-                                    <option value="regular" {{ old('customer_type') == 'regular' ? 'selected' : '' }}>Regular</option>
-                                    <option value="vip" {{ old('customer_type') == 'vip' ? 'selected' : '' }}>VIP</option>
-                                </select>
-                                @error('customer_type')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
                         </div>
 
                         <!-- Address Details -->

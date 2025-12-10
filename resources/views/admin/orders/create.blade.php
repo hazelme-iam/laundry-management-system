@@ -4,13 +4,13 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <!-- Breadcrumb Navigation -->
             <x-breadcrumbs :items="[
-                'Laundry List' => route('admin.orders.index'),
-                'Add New Laundry' => null
+                'Orders Management' => route('admin.orders.index'),
+                'New Order' => null
             ]" />
             
             <div class="bg-white rounded-lg shadow overflow-hidden">
                 <div class="p-6">
-                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Add New Laundry</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Create New Order</h1>
 
                     <form action="{{ route('admin.orders.store') }}" method="POST" id="orderForm">
                         @csrf
@@ -36,7 +36,7 @@
                             <!-- Weight -->
                             <div>
                                 <label for="weight" class="block text-sm font-medium text-gray-700">Weight (KG) </label>
-                                <input type="number" step="0.01" min="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                <input type="number" step="0.01" min="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                        id="weight" name="weight" value="{{ old('weight') }}" required 
                                        oninput="calculateTotal()">
                                 @error('weight')
@@ -163,6 +163,36 @@
                             </div>
                         </div>
 
+                        <!-- Priority and Service Type -->
+                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
+                                <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                        id="priority" name="priority">
+                                    <option value="low">Low Priority</option>
+                                    <option value="normal" selected>Normal</option>
+                                    <option value="high">High Priority</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                                @error('priority')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="service_type" class="block text-sm font-medium text-gray-700">Service Type</label>
+                                <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                        id="service_type" name="service_type">
+                                    <option value="standard" selected>Standard Service</option>
+                                    <option value="express">Express Service</option>
+                                    <option value="premium">Premium Service</option>
+                                </select>
+                                @error('service_type')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
                         <!-- Remarks -->
                         <div class="mt-6">
                             <label for="remarks" class="block text-sm font-medium text-gray-700">Remarks</label>
@@ -176,7 +206,7 @@
                         <!-- Buttons -->
                         <div class="mt-6 flex space-x-3">
                             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                                Create New Laundry
+                                Create Order
                             </button>
                             <a href="{{ route('admin.orders.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
                                 Cancel

@@ -12,7 +12,7 @@
                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
                         Back to Orders
                     </a>
-                    @if($order->status === 'pending' || $order->status === 'in_progress')
+                    @if($order->status === 'pending' || $order->status === 'approved')
                         <a href="{{ route('user.orders.create') }}" 
                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                             New Order
@@ -29,9 +29,9 @@
                             <h2 class="text-lg font-semibold text-gray-900 mb-2">Order Status</h2>
                             <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
                                 {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : 
-                                   ($order->status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 
-                                   ($order->status === 'ready' ? 'bg-indigo-100 text-indigo-800' : 
-                                   ($order->status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'))) }}">
+                                   ($order->status === 'cancelled' ? 'bg-red-100 text-red-800' : 
+                                   (in_array($order->status, ['picked_up', 'washing', 'drying', 'folding', 'quality_check']) ? 'bg-blue-100 text-blue-800' : 
+                                   ($order->status === 'ready' ? 'bg-indigo-100 text-indigo-800' : 'bg-yellow-100 text-yellow-800'))) }}">
                                 {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                             </span>
                         </div>
@@ -100,6 +100,21 @@
                                 </div>
                             </dl>
 
+                            <!-- Priority and Service Type -->
+                            <div class="mt-6 pt-6 border-t">
+                                <h4 class="text-md font-medium text-gray-900 mb-4">Service Information</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600">Priority</span>
+                                        <span class="text-sm text-gray-900">{{ ucfirst($order->priority ?? 'Normal') }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600">Service Type</span>
+                                        <span class="text-sm text-gray-900">{{ ucfirst(str_replace('_', ' ', $order->service_type ?? 'Standard')) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Pricing Details -->
                             <div class="mt-6 pt-6 border-t">
                                 <h4 class="text-md font-medium text-gray-900 mb-4">Pricing Details</h4>
@@ -138,6 +153,68 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Load Information -->
+            @if($order->loads && $order->loads->count() > 0)
+                <div class="bg-white rounded-lg shadow overflow-hidden mx-4 sm:mx-0 mt-6">
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-semibold text-gray-900">Load Information</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            @foreach($order->loads as $load)
+                                <div class="border rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h4 class="text-sm font-medium text-gray-900">Load #{{ $loop->index + 1 }}</h4>
+                                            <p class="text-sm text-gray-600">{{ $load->weight }} kg</p>
+                                        </div>
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                            {{ $load->status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                               ($load->status === 'washing' ? 'bg-blue-100 text-blue-800' : 
+                                               ($load->status === 'drying' ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800')) }}">
+                                            {{ ucfirst($load->status) }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        @if($load->washerMachine)
+                                            <div>
+                                                <span class="text-gray-600">Washer:</span>
+                                                <span class="text-gray-900">{{ $load->washerMachine->name }}</span>
+                                            </div>
+                                        @endif
+                                        @if($load->dryerMachine)
+                                            <div>
+                                                <span class="text-gray-600">Dryer:</span>
+                                                <span class="text-gray-900">{{ $load->dryerMachine->name }}</span>
+                                            </div>
+                                        @endif
+                                        @if($load->capacity_utilization)
+                                            <div>
+                                                <span class="text-gray-600">Utilization:</span>
+                                                <span class="text-gray-900">{{ number_format($load->capacity_utilization, 1) }}%</span>
+                                            </div>
+                                        @endif
+                                        @if($load->is_consolidated)
+                                            <div>
+                                                <span class="text-gray-600">Type:</span>
+                                                <span class="text-blue-600 font-medium">Consolidated</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    
+                                    @if($load->notes)
+                                        <div class="mt-2 text-sm text-gray-600">
+                                            <strong>Notes:</strong> {{ $load->notes }}
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <!-- Timeline -->
             <div class="bg-white rounded-lg shadow overflow-hidden mx-4 sm:mx-0 mt-6">
