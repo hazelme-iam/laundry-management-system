@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -10,58 +11,56 @@ class DashboardController extends Controller
     {
         $breadcrumbs = [];
         
-        // Sample orders data
-        $orders = [
-            [
-                'id' => '00012',
-                'customer_name' => 'John Doe',
-                'service' => 'Dry clean',
-                'weight' => 5,
-                'price' => 'Rp25,000',
-                'status' => 'On Progress',
-                'status_class' => 'bg-yellow-400'
-            ],
-            [
-                'id' => '00011',
-                'customer_name' => 'Ann Smith',
-                'service' => 'Clean and press',
-                'weight' => 3,
-                'price' => 'Rp31,500',
-                'status' => 'On Progress',
-                'status_class' => 'bg-yellow-400'
-            ],
-            [
-                'id' => '00010',
-                'customer_name' => 'Jim Park',
-                'service' => 'Clean and press',
-                'weight' => 2,
-                'price' => 'Rp19,000',
-                'status' => 'Pending',
-                'status_class' => 'bg-red-500'
-            ],
-            [
-                'id' => '00009',
-                'customer_name' => 'Sarah Johnson',
-                'service' => 'Dry clean',
-                'weight' => 4,
-                'price' => 'Rp28,000',
-                'status' => 'Completed',
-                'status_class' => 'bg-green-500'
-            ],
-            [
-                'id' => '00008',
-                'customer_name' => 'Mike Chen',
-                'service' => 'Wash only',
-                'weight' => 6,
-                'price' => 'Rp22,500',
-                'status' => 'Ready',
-                'status_class' => 'bg-blue-500'
-            ],
-        ];
+        // Fetch real order statistics from database
+        $totalOrders = Order::count();
+        $pendingOrders = Order::pending()->count();
+        $inProgressOrders = Order::whereIn('status', ['picked_up', 'washing', 'drying', 'folding', 'quality_check'])->count();
+        $completedOrders = Order::completed()->count();
+        
+        // Fetch recent orders for display
+        $orders = Order::with(['customer', 'creator', 'updater'])
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id' => str_pad($order->id, 5, '0', STR_PAD_LEFT),
+                    'customer_name' => $order->customer->name ?? 'Unknown',
+                    'service' => ucfirst($order->service_type ?? 'Standard'),
+                    'weight' => $order->weight,
+                    'price' => 'Rp' . number_format($order->total_amount, 0, ',', '.'),
+                    'status' => ucfirst(str_replace('_', ' ', $order->status)),
+                    'status_class' => $this->getStatusClass($order->status)
+                ];
+            });
 
         return view('admin.dashboard', [
+            'totalOrders' => $totalOrders,
+            'pendingOrders' => $pendingOrders,
+            'inProgressOrders' => $inProgressOrders,
+            'completedOrders' => $completedOrders,
             'orders' => $orders,
             'breadcrumbs' => $breadcrumbs
         ]);
+    }
+    
+    private function getStatusClass($status)
+    {
+        $statusClasses = [
+            'pending' => 'bg-red-500',
+            'approved' => 'bg-blue-500',
+            'picked_up' => 'bg-yellow-400',
+            'washing' => 'bg-yellow-400',
+            'drying' => 'bg-yellow-400',
+            'folding' => 'bg-yellow-400',
+            'quality_check' => 'bg-yellow-400',
+            'ready' => 'bg-blue-500',
+            'delivery_pending' => 'bg-purple-500',
+            'completed' => 'bg-green-500',
+            'cancelled' => 'bg-gray-500',
+            'rejected' => 'bg-red-500'
+        ];
+        
+        return $statusClasses[$status] ?? 'bg-gray-500';
     }
 }

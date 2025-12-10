@@ -174,8 +174,8 @@ public function index()
             'folding' => 20,
             'hanger' => 15,
             'ironing' => 30,
-            'detergent' => 25,
-            'fabric_conditioner' => 20,
+            'detergent' => 16,
+            'fabric_conditioner' => 14,
         ];
         
         $addOnsTotal = 0;

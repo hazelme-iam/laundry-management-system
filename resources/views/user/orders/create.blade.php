@@ -74,8 +74,8 @@
                                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                                     @php
                                         $addOns = [
-                                            'detergent' => 'Detergent (+₱25)',
-                                            'fabric_conditioner' => 'Fabric Conditioner (+₱20)'
+                                            'detergent' => 'Detergent (+₱16)',
+                                            'fabric_conditioner' => 'Fabric Conditioner (+₱14)'
                                         ];
                                     @endphp
                                     @foreach($addOns as $key => $label)
@@ -245,8 +245,8 @@
     <script>
         // Add-ons pricing configuration
         const addOnPrices = {
-            'detergent': 25,
-            'fabric_conditioner': 20
+            'detergent': 16,
+            'fabric_conditioner': 14
         };
 
         // Pricing rule constants

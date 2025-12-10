@@ -6,46 +6,54 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0 px-4 sm:px-0">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                    <p class="text-gray-600">Manage laundry orders and system overview</p>
+                </div>
+            </div>
+            
             <!-- Breadcrumb Navigation -->
-            <x-breadcrumbs :items="$breadcrumbs ?? []" />
+            <div class="px-4 sm:px-0 mb-6">
+                <x-breadcrumbs :items="$breadcrumbs ?? []" />
+            </div>
 
             <!-- Stats Section -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 px-4 sm:px-0">
                 <!-- Total Orders -->
-                <div class="bg-blue-700 text-white rounded-lg p-4 sm:p-6 shadow w-full">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-semibold text-sm sm:text-base">Total Orders</span>
-                    </div>
-                    <div class="text-2xl sm:text-3xl font-bold">40</div>
+                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                    <div class="text-sm text-gray-500">Total Orders</div>
+                    <div class="text-2xl font-bold text-blue-600">{{ $totalOrders ?? 0 }}</div>
                 </div>
 
                 <!-- Pending Orders -->
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow flex flex-col items-start justify-center w-full">
-                    <span class="text-gray-500 font-semibold text-sm sm:text-base">Pending Orders</span>
-                    <span class="text-2xl sm:text-3xl font-bold mt-2">0</span>
+                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                    <div class="text-sm text-gray-500">Pending Orders</div>
+                    <div class="text-2xl font-bold text-red-600">{{ $pendingOrders ?? 0 }}</div>
                 </div>
 
                 <!-- On Progress Orders -->
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow flex flex-col items-start justify-center w-full">
-                    <span class="text-gray-500 font-semibold text-sm sm:text-base">On Progress Orders</span>
-                    <span class="text-2xl sm:text-3xl font-bold mt-2">3</span>
+                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                    <div class="text-sm text-gray-500">In Progress Orders</div>
+                    <div class="text-2xl font-bold text-yellow-600">{{ $inProgressOrders ?? 0 }}</div>
                 </div>
 
                 <!-- Finished Orders -->
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow flex flex-col items-start justify-center w-full">
-                    <span class="text-gray-500 font-semibold text-sm sm:text-base">Finished Orders</span>
-                    <span class="text-2xl sm:text-3xl font-bold mt-2">9</span>
+                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                    <div class="text-sm text-gray-500">Completed Orders</div>
+                    <div class="text-2xl font-bold text-green-600">{{ $completedOrders ?? 0 }}</div>
                 </div>
             </div>
 
             <!-- Laundry Completion Chart Component -->
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mb-6">
+            <div>
                 @include('components.laundry-completion-chart')
             </div>
 
             <!-- Orders Section Component -->
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mx-4 sm:mx-0">
                 @include('components.orders-section', ['orders' => $orders])
             </div>
         </div>
