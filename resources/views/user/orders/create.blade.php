@@ -11,7 +11,7 @@
                 <div class="p-6">
                     <h1 class="text-2xl font-bold text-gray-900 mb-6">Create New Order</h1>
 
-                    <form action="{{ route('user.orders.store') }}" method="POST" id="orderForm">
+                    <form id="orderForm" action="{{ route('user.orders.store') }}" method="POST">
                         @csrf
 
                         <!-- Customer Information -->
@@ -33,15 +33,21 @@
                             <!-- Contact Information -->
                             <div>
                                 <label for="customer_phone" class="block text-sm font-medium text-gray-700">
-                                    Phone Number *
+                                    Phone Number (11 digits) *
                                 </label>
                                 <input type="tel" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                        id="customer_phone" name="customer_phone" required
                                        value="{{ old('customer_phone', $customer->phone) }}"
-                                       placeholder="Enter your phone number">
+                                       placeholder="09XXXXXXXXX"
+                                       maxlength="11"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, ''); validatePhoneLength()">
+                                <div id="phone_error" class="mt-1 text-sm text-red-600 hidden">
+                                    Phone number must be exactly 11 digits
+                                </div>
                                 @error('customer_phone')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
+                                <p class="mt-1 text-xs text-gray-500">Format: 09XXXXXXXXX (11 digits total)</p>
                             </div>
 
                             <div>
@@ -229,7 +235,9 @@
 
                         <!-- Buttons -->
                         <div class="mt-6 flex space-x-3">
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <button type="button" 
+                                    onclick="validateOrderForm()"
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                                 Create Order
                             </button>
                             <a href="{{ route('user.orders.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
@@ -242,6 +250,17 @@
         </div>
     </div>
 
+    <!-- Confirmation Modal -->
+    <x-confirmationmodal 
+        modalId="createOrderModal"
+        title="Create New Order"
+        message="Are you sure you want to create this new order? This action will submit your laundry request."
+        confirmText="Create Order"
+        cancelText="Cancel"
+        confirmColor="blue"
+        formId="orderForm"
+    />
+
     <script>
         // Add-ons pricing configuration
         const addOnPrices = {
@@ -253,6 +272,20 @@
         const BASE_PRICE = 150;
         const BASE_WEIGHT_LIMIT = 5;
         const EXCESS_PRICE_PER_KG = 30;
+
+        // Phone validation function
+        function validatePhoneLength() {
+            const phoneInput = document.getElementById('customer_phone');
+            const phoneError = document.getElementById('phone_error');
+            
+            if (phoneInput.value.length > 0 && phoneInput.value.length !== 11) {
+                phoneError.classList.remove('hidden');
+                return false;
+            } else {
+                phoneError.classList.add('hidden');
+                return true;
+            }
+        }
 
         function calculateTotal() {
             const weight = parseFloat(document.getElementById('weight').value) || 0;
@@ -341,6 +374,108 @@
             document.getElementById('balance_display').className = 'text-lg font-semibold';
         }
 
+        // Form validation function
+        function validateOrderForm() {
+            const phone = document.getElementById('customer_phone').value.trim();
+            const address = document.getElementById('customer_address').value.trim();
+            const weight = document.getElementById('weight').value.trim();
+            const estimatedFinish = document.getElementById('estimated_finish').value.trim();
+            
+            // Phone validation - exactly 11 digits
+            if (!phone || phone.length !== 11) {
+                document.getElementById('phone_error').classList.remove('hidden');
+                alert('Phone number must be exactly 11 digits');
+                document.getElementById('customer_phone').focus();
+                return false;
+            }
+            
+            // Phone validation - only numbers
+            const phonePattern = /^[0-9]{11}$/;
+            if (!phonePattern.test(phone)) {
+                alert('Phone number must contain only numbers (11 digits)');
+                document.getElementById('customer_phone').focus();
+                return false;
+            }
+            
+            // Address validation
+            if (!address) {
+                alert('Please enter your address');
+                document.getElementById('customer_address').focus();
+                return false;
+            }
+            
+            // Weight validation (minimum 1kg)
+            if (!weight || parseFloat(weight) < 1) {
+                alert('Weight must be at least 1kg');
+                document.getElementById('weight').focus();
+                return false;
+            }
+            
+            // Estimated finish validation
+            if (!estimatedFinish) {
+                alert('Please select estimated finish date and time');
+                document.getElementById('estimated_finish').focus();
+                return false;
+            }
+            
+            // Check if estimated finish is in the future
+            const estimatedFinishDate = new Date(estimatedFinish);
+            const now = new Date();
+            if (estimatedFinishDate <= now) {
+                alert('Estimated finish must be in the future');
+                document.getElementById('estimated_finish').focus();
+                return false;
+            }
+            
+            // Calculate order summary for confirmation message
+            const subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const totalAmount = parseFloat(document.getElementById('total_amount').value) || 0;
+            const amountPaid = parseFloat(document.getElementById('amount_paid').value) || 0;
+            const balance = totalAmount - amountPaid;
+            
+            // Update modal message with order summary
+            const modal = document.getElementById('createOrderModal');
+            const messageElement = modal.querySelector('.confirmation-message');
+            if (messageElement) {
+                messageElement.innerHTML = `
+                    <div class="space-y-2">
+                        <p>Are you sure you want to create this new order?</p>
+                        <div class="bg-gray-50 p-3 rounded-md mt-3">
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div class="font-medium">Weight:</div>
+                                <div>${weight} kg</div>
+                                
+                                <div class="font-medium">Subtotal:</div>
+                                <div>₱${subtotal.toFixed(2)}</div>
+                                
+                                ${discount > 0 ? `
+                                    <div class="font-medium">Discount:</div>
+                                    <div>-₱${discount.toFixed(2)}</div>
+                                ` : ''}
+                                
+                                <div class="font-medium">Total Amount:</div>
+                                <div class="font-semibold">₱${totalAmount.toFixed(2)}</div>
+                                
+                                <div class="font-medium">Amount Paid:</div>
+                                <div>₱${amountPaid.toFixed(2)}</div>
+                                
+                                <div class="font-medium">Balance:</div>
+                                <div class="${balance === 0 ? 'text-green-600' : balance > 0 ? 'text-orange-600' : 'text-red-600'} font-semibold">
+                                    ₱${balance.toFixed(2)}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mt-3 text-sm text-gray-600">This action will submit your laundry request.</p>
+                    </div>
+                `;
+            }
+            
+            // Show the confirmation modal
+            openModal('createOrderModal');
+            return true;
+        }
+
         // Initialize calculations when page loads
         document.addEventListener('DOMContentLoaded', function() {
             // Set minimum dates
@@ -355,6 +490,9 @@
             if (weightInput && weightInput.value) {
                 calculateTotal();
             }
+            
+            // Validate phone on load if there's a value
+            validatePhoneLength();
         });
 
         // Real-time validation for weight
@@ -365,6 +503,11 @@
             } else {
                 this.setCustomValidity('');
             }
+        });
+
+        // Real-time phone validation
+        document.getElementById('customer_phone').addEventListener('blur', function() {
+            validatePhoneLength();
         });
 
         // Show pricing examples when weight input is focused
@@ -386,6 +529,10 @@
         
         .bg-gray-50 {
             background-color: #f9fafb;
+        }
+        
+        #phone_error {
+            display: none;
         }
     </style>
 </x-sidebar-app>
