@@ -15,6 +15,7 @@
     <div :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}"
          class="fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-lg transform transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-auto lg:shadow-none lg:block">
         
+         
         <!-- Sidebar Header -->
         <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <div class="flex items-center min-w-0">
@@ -23,6 +24,8 @@
                     <span class="ml-3 text-lg font-semibold text-gray-900 whitespace-nowrap">Laundry System</span>
                 </a>
             </div>
+
+            
             <!-- Mobile close button -->
             <button @click="sidebarOpen = false" class="lg:hidden">
                 <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,6 +34,7 @@
             </button>
         </div>
 
+        
         <!-- Navigation -->
         <nav class="mt-6 px-3">
             <div class="space-y-1">
@@ -70,6 +74,7 @@
         </nav>
     </div>
 
+    
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col min-h-screen">
         <!-- Desktop Header with Profile Dropdown (right) -->
@@ -132,6 +137,11 @@
                         </div>
                     @endif
 
+                      <!-- Notification Icon -->
+                <div class="relative">
+                    <x-notification-icon :count="5" />
+                </div>
+                
                     <!-- User Account Dropdown -->
                     <div class="ms-3 relative">
                         <x-dropdown align="right" width="48">

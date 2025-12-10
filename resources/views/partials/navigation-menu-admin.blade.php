@@ -12,6 +12,8 @@
                     </a>
                 </div>
 
+                
+
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
                         {{ __('Overview') }}
@@ -29,7 +31,12 @@
             </div>
 
             <!-- RIGHT SIDE: DROPDOWNS -->
-            <div class="hidden sm:flex sm:items-center ml-auto">
+            <div class="hidden sm:flex sm:items-center ml-auto space-x-4">
+                <!-- Notification Icon -->
+                <div class="relative">
+                    <x-notification-icon :count="5" />
+                </div>
+                
                 <!-- Teams Dropdown -->
                 @if (Laravel\Jetstream\Jetstream::hasTeamFeatures())
                     <div class="ms-3 relative">
@@ -163,6 +170,18 @@
 
     <!-- RESPONSIVE MENU -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+        <!-- Mobile Notification -->
+        <div class="px-4 py-3 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-gray-700">Notifications</p>
+                <x-notification-icon :count="0" class="relative">
+                    <div class="px-4 py-3 text-center text-sm text-gray-500">
+                        No notifications yet
+                    </div>
+                </x-notification-icon>
+            </div>
+        </div>
+        
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
                 {{ __('Overview') }}

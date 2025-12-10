@@ -68,6 +68,12 @@
             <div class="flex items-center justify-end h-16 px-6">
                 <!-- Right: Profile Dropdown -->
                 <div class="flex items-center">
+
+                <!-- Notification Icon -->
+                <div class="relative">
+                    <x-notification-icon :count="5" />
+                </div>
+                
                     <!-- User Account Dropdown -->
                     <div class="relative">
                         <x-dropdown align="right" width="48">
@@ -141,6 +147,7 @@
                     <x-application-mark class="block h-8 w-auto" />
                 </div>
 
+                
                 <!-- Right: Profile Dropdown -->
                 <div class="flex items-center">
                     <!-- User Account Dropdown -->
