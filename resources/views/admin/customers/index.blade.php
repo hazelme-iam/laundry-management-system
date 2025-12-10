@@ -1,4 +1,3 @@
-{{-- resources/views/admin/customers/index.blade.php --}}
 <x-sidebar-app>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -16,6 +15,19 @@
                     <span class="mr-2">+</span> Add New Customer
                 </a>
             </div>
+
+            <!-- Success and Error Messages -->
+            @if (session('success'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
+                </div>
+            @endif
+            
+            @if (session('error'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ session('error') }}</span>
+                </div>
+            @endif
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 px-4 sm:px-0">
@@ -150,15 +162,13 @@
                                         <div class="flex space-x-2">
                                             <a href="{{ route('admin.customers.show', $customer) }}"
                                                class="text-blue-600 hover:text-blue-900">View</a>
-                                            <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                        class="text-red-600 hover:text-red-900"
-                                                        onclick="return confirm('Are you sure you want to delete this customer?')">
-                                                    Delete
-                                                </button>
-                                            </form>
+                                            <a href="{{ route('admin.customers.edit', $customer) }}"
+                                               class="text-yellow-600 hover:text-yellow-900">Edit</a>
+                                            <button type="button"
+                                                    onclick="openDeleteModal('{{ $customer->id }}', '{{ addslashes($customer->name) }}')"
+                                                    class="text-red-600 hover:text-red-900">
+                                                Delete
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -180,4 +190,76 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <x-confirmationmodal 
+        modalId="deleteCustomerModal"
+        title="Delete Customer"
+        message=""
+        confirmText="Delete Customer"
+        cancelText="Cancel"
+        confirmColor="red"
+        :formId="'deleteCustomerForm'"
+    />
 </x-sidebar-app>
+
+<!-- Hidden Delete Form -->
+<form id="deleteCustomerForm" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+
+<script>
+// Function to open delete confirmation modal
+function openDeleteModal(customerId, customerName) {
+    // Update modal message with customer name
+    const modal = document.getElementById('deleteCustomerModal');
+    const messageElement = modal.querySelector('.confirmation-message');
+    if (messageElement) {
+        messageElement.textContent = `Are you sure you want to delete "${customerName}"? This action cannot be undone.`;
+    }
+    
+    // Debug: Check the URL
+    console.log('Deleting customer ID:', customerId);
+    
+    // Update form action with the correct route
+    const form = document.getElementById('deleteCustomerForm');
+    
+    // Use the correct URL format based on your routes
+    // If you're using Laravel resource controllers, the URL should be:
+    // /admin/customers/{customer}
+    form.action = `/admin/customers/${customerId}`;
+    
+    console.log('Form action set to:', form.action);
+    
+    // Show the modal
+    openModal('deleteCustomerModal');
+}
+
+// Handle form submission when confirm button is clicked
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('deleteCustomerModal');
+    if (modal) {
+        const confirmButton = modal.querySelector('.confirm-button');
+        if (confirmButton) {
+            // Remove any existing event listeners to prevent duplicates
+            const newConfirmButton = confirmButton.cloneNode(true);
+            confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+            
+            // Add click event listener
+            newConfirmButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Submitting delete form...');
+                document.getElementById('deleteCustomerForm').submit();
+            });
+        }
+    }
+    
+    // Debug helper: Check all customer delete URLs
+    const deleteButtons = document.querySelectorAll('button[onclick*="openDeleteModal"]');
+    deleteButtons.forEach(button => {
+        const onclickAttr = button.getAttribute('onclick');
+        console.log('Delete button onclick:', onclickAttr);
+    });
+});
+</script>

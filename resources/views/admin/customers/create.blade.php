@@ -1,4 +1,3 @@
-{{-- resources/views/admin/customers/create.blade.php --}}
 <x-sidebar-app>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -12,13 +11,13 @@
                 <div class="p-6">
                     <h1 class="text-2xl font-bold text-gray-900 mb-6">Create New Customer</h1>
 
-                    <form action="{{ route('admin.customers.store') }}" method="POST">
+                    <form id="createCustomerForm" action="{{ route('admin.customers.store') }}" method="POST">
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Name -->
                             <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700">Name </label>
+                                <label for="name" class="block text-sm font-medium text-gray-700">Name <span class="text-red-500">*</span></label>
                                 <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                        id="name" name="name" value="{{ old('name') }}" required>
                                 @error('name')
@@ -38,7 +37,7 @@
 
                             <!-- Phone (11 digits only) -->
                             <div>
-                                <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>
                                 <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                        id="phone" name="phone" value="{{ old('phone') }}" 
                                        pattern="[0-9]{11}" 
@@ -69,7 +68,6 @@
                                     <option value="Santa Ana" {{ old('barangay') == 'Santa Ana' ? 'selected' : '' }}>Santa Ana</option>
                                     <option value="Santo Niño" {{ old('barangay') == 'Santo Niño' ? 'selected' : '' }}>Santo Niño</option>
                                     <option value="Sugbongcogon" {{ old('barangay') == 'Sugbongcogon' ? 'selected' : '' }}>Sugbongcogon</option>
-                                    <!-- Add more barangays in Tagoloan as needed -->
                                 </select>
                                 @error('barangay')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -90,7 +88,6 @@
                                     <option value="Purok 6" {{ old('purok') == 'Purok 6' ? 'selected' : '' }}>Purok 6</option>
                                     <option value="Purok 7" {{ old('purok') == 'Purok 7' ? 'selected' : '' }}>Purok 7</option>
                                     <option value="Purok 8" {{ old('purok') == 'Purok 8' ? 'selected' : '' }}>Purok 8</option>
-                                    <!-- Add more puroks as needed -->
                                 </select>
                                 @error('purok')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -110,7 +107,6 @@
                                     <option value="Burgos Street" {{ old('street') == 'Burgos Street' ? 'selected' : '' }}>Burgos Street</option>
                                     <option value="Del Pilar Street" {{ old('street') == 'Del Pilar Street' ? 'selected' : '' }}>Del Pilar Street</option>
                                     <option value="Aguinaldo Street" {{ old('street') == 'Aguinaldo Street' ? 'selected' : '' }}>Aguinaldo Street</option>
-                                    <!-- Add more streets in Tagoloan as needed -->
                                 </select>
                                 @error('street')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -142,7 +138,9 @@
 
                         <!-- Buttons -->
                         <div class="mt-6 flex space-x-3">
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <button type="button" 
+                                    onclick="openModal('createCustomerModal')"
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                                 Create Customer
                             </button>
                             <a href="{{ route('admin.customers.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
@@ -154,4 +152,44 @@
             </div>
         </div>
     </div>
+
+    <!-- Confirmation Modal -->
+    <x-confirmationmodal 
+        modalId="createCustomerModal"
+        title="Create New Customer"
+        message="Are you sure you want to create this new customer? This action will add the customer to the system."
+        confirmText="Create Customer"
+        cancelText="Cancel"
+        confirmColor="blue"
+        formId="createCustomerForm"
+    />
 </x-sidebar-app>
+
+<!-- Optional: Add form validation before showing modal -->
+<script>
+function validateForm() {
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const phonePattern = /^[0-9]{11}$/;
+    
+    if (!name) {
+        alert('Please enter customer name');
+        return false;
+    }
+    
+    if (!phone || !phonePattern.test(phone)) {
+        alert('Please enter a valid 11-digit phone number');
+        return false;
+    }
+    
+    return true;
+}
+
+// Update the button to validate first
+document.addEventListener('DOMContentLoaded', function() {
+    const createButton = document.querySelector('button[onclick*="createCustomerModal"]');
+    if (createButton) {
+        createButton.setAttribute('onclick', 'if(validateForm()) openModal("createCustomerModal")');
+    }
+});
+</script>
