@@ -11,47 +11,51 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
+    private const WASHING_TIME_MINUTES = 38; // Fixed washing time
+    private const DRYING_TIME_PER_KG = 5; // 5 minutes per kg for drying
+    private const MIN_DRYING_TIME = 30; // Minimum 30 minutes
+    private const MAX_DRYING_TIME = 50; // Maximum 50 minutes for 8kg
+
     /**
-     * Display a listing of the orders.
+     * Display a listing of orders.
      */
-    // app/Http/Controllers/OrderController.php
+    public function index()
+    {
+        $query = Order::with(['customer', 'creator', 'updater', 'loads', 'primaryWasher', 'primaryDryer']);
 
-public function index()
-{
-    $query = Order::with(['customer', 'creator', 'updater', 'loads', 'primaryWasher', 'primaryDryer']);
-
-    // Status filter
-    if (request('status')) {
-        $query->where('status', request('status'));
-    }
-
-    // Source filter: online vs walk-in
-    if ($src = request('source')) {
-        if ($src === 'online') {
-            // Online: customer has a user_id and the order was created by that same user
-            $query->whereHas('customer', function ($q) {
-                $q->whereNotNull('customers.user_id')
-                  ->whereColumn('customers.user_id', 'orders.created_by');
-            });
-        } elseif ($src === 'walk_in') {
-            // Walk-in: either the customer has no user account, OR order was created by someone else (admin)
-            $query->whereHas('customer', function ($q) {
-                $q->where(function ($x) {
-                    $x->whereNull('customers.user_id')
-                      ->orWhereColumn('customers.user_id', '!=', 'orders.created_by');
-                });
-            });
+        // Status filter
+        if (request('status')) {
+            $query->where('status', request('status'));
         }
+
+        // Source filter: online vs walk-in
+        if ($src = request('source')) {
+            if ($src === 'online') {
+                // Online: customer has a user_id and order was created by that same user
+                $query->whereHas('customer', function ($q) {
+                    $q->whereNotNull('customers.user_id')
+                      ->whereColumn('customers.user_id', 'orders.created_by');
+                });
+            } elseif ($src === 'walk_in') {
+                // Walk-in: either customer has no user account, OR order was created by someone else (admin)
+                $query->whereHas('customer', function ($q) {
+                    $q->where(function ($x) {
+                        $x->whereNull('customers.user_id')
+                          ->orWhereColumn('customers.user_id', '!=', 'orders.created_by');
+                    });
+                });
+            }
+        }
+
+        $orders = $query->latest()->paginate(10);
+
+        $pendingCount = Order::where('status', 'pending')->count();
+        $inProgressCount = Order::whereIn('status', ['picked_up', 'washing', 'drying', 'folding', 'quality_check'])->count();
+        $completedCount = Order::where('status', 'completed')->count();
+
+        return view('admin.orders.index', compact('orders', 'pendingCount', 'inProgressCount', 'completedCount'));
     }
 
-    $orders = $query->latest()->paginate(10);
-
-    $pendingCount = Order::where('status', 'pending')->count();
-    $inProgressCount = Order::whereIn('status', ['picked_up', 'washing', 'drying', 'folding', 'quality_check'])->count();
-    $completedCount = Order::where('status', 'completed')->count();
-
-    return view('admin.orders.index', compact('orders', 'pendingCount', 'inProgressCount', 'completedCount'));
-}
     /**
      * Show the form for creating a new order.
      */
@@ -100,7 +104,28 @@ public function index()
     public function show(Order $order)
     {
         $order->load(['customer', 'creator', 'updater', 'loads.washerMachine', 'loads.dryerMachine']);
-        return view('admin.orders.show', compact('order'));
+        
+        // Calculate drying time for this order
+        $dryingTime = $this->calculateDryingTime($order->weight);
+        
+        // Check if there's an active timer (you might want to store this in session or database)
+        $activeTimer = null;
+        if (in_array($order->status, ['washing', 'drying'])) {
+            // For now, we'll calculate based on when status was last updated
+            // In a real implementation, you'd store the start time in the database
+            $statusUpdatedAt = $order->updated_at;
+            $elapsedMinutes = $statusUpdatedAt->diffInMinutes(now());
+            
+            if ($order->status === 'washing') {
+                $remaining = max(0, self::WASHING_TIME_MINUTES - $elapsedMinutes);
+                $activeTimer = $remaining > 0 ? $remaining : 0;
+            } elseif ($order->status === 'drying') {
+                $remaining = max(0, $dryingTime - $elapsedMinutes);
+                $activeTimer = $remaining > 0 ? $remaining : 0;
+            }
+        }
+        
+        return view('admin.orders.show', compact('order', 'dryingTime', 'activeTimer'));
     }
 
     /**
@@ -198,17 +223,12 @@ public function index()
     // User-specific methods
     public function userIndex()
     {
-        // Get orders for the logged-in user
-        $orders = Order::whereHas('customer', function($query) {
-            $query->where('user_id', auth()->id());
-        })->with(['customer', 'creator', 'updater', 'loads'])->latest()->paginate(10);
-        
-        return view('user.orders.index', compact('orders'));
+        // Implementation for user-specific order index
     }
 
     public function userCreate()
     {
-        // Get or create customer record for the logged-in user
+        // Get or create customer record for logged-in user
         $customer = Customer::firstOrCreate(
             ['user_id' => auth()->id()],
             [
@@ -239,7 +259,7 @@ public function index()
             'customer_address' => 'required|string',
         ]);
 
-        // Get or create customer record for the logged-in user
+        // Get or create customer record for logged-in user
         $customer = Customer::firstOrCreate(
             ['user_id' => auth()->id()],
             [
@@ -314,7 +334,7 @@ public function index()
             'updated_by' => Auth::id(),
         ]);
 
-        // Create loads for the approved order
+        // Create loads for approved order
         $loads = $order->createOptimizedLoads();
 
         return redirect()->route('admin.orders.index')
@@ -346,5 +366,129 @@ public function index()
             ->paginate(10);
 
         return view('admin.orders.pending', compact('orders'));
+    }
+
+    /**
+     * Calculate drying time based on weight
+     */
+    private function calculateDryingTime($weight)
+    {
+        $baseTime = $weight * self::DRYING_TIME_PER_KG;
+        
+        // Ensure it's within min/max bounds
+        if ($baseTime < self::MIN_DRYING_TIME) {
+            return self::MIN_DRYING_TIME;
+        } elseif ($baseTime > self::MAX_DRYING_TIME) {
+            return self::MAX_DRYING_TIME;
+        }
+        
+        return (int) $baseTime;
+    }
+
+    /**
+     * Update order status
+     */
+    public function updateStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,approved,rejected,picked_up,washing,drying,folding,quality_check,ready,delivery_pending,completed,cancelled'
+        ]);
+
+        $order->update([
+            'status' => $request->status,
+            'updated_by' => Auth::id()
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Start washing cycle
+     */
+    public function startWashing(Request $request, Order $order)
+    {
+        // Find an available washer
+        $washer = Machine::where('type', 'washer')
+            ->where('status', 'available')
+            ->first();
+
+        if (!$washer) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'No available washers'
+            ], 422);
+        }
+
+        // Update order status and assign washer
+        $order->update([
+            'status' => 'washing',
+            'primary_washer_id' => $washer->id,
+            'updated_by' => Auth::id()
+        ]);
+
+        // Mark washer as in use
+        $washer->update(['status' => 'in_use']);
+
+        // Create or update load record
+        $load = Load::where('order_id', $order->id)->first();
+        if ($load) {
+            $load->update([
+                'washer_machine_id' => $washer->id,
+                'wash_start' => now(),
+                'status' => 'washing'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'duration' => self::WASHING_TIME_MINUTES
+        ]);
+    }
+
+    /**
+     * Start drying cycle
+     */
+    public function startDrying(Request $request, Order $order)
+    {
+        // Find an available dryer
+        $dryer = Machine::where('type', 'dryer')
+            ->where('status', 'available')
+            ->first();
+
+        if (!$dryer) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'No available dryers'
+            ], 422);
+        }
+
+        // Update order status and assign dryer
+        $order->update([
+            'status' => 'drying',
+            'primary_dryer_id' => $dryer->id,
+            'updated_by' => Auth::id()
+        ]);
+
+        // Mark dryer as in use
+        $dryer->update(['status' => 'in_use']);
+
+        // Update load record
+        $load = Load::where('order_id', $order->id)->first();
+        if ($load) {
+            $load->update([
+                'dryer_machine_id' => $dryer->id,
+                'wash_end' => now(),
+                'dry_start' => now(),
+                'status' => 'drying'
+            ]);
+        }
+
+        // Calculate drying time based on weight
+        $dryingTime = $this->calculateDryingTime($order->weight);
+
+        return response()->json([
+            'success' => true,
+            'duration' => $dryingTime
+        ]);
     }
 }

@@ -1,5 +1,5 @@
 <div class="p-4 sm:p-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <!-- Order Completion Chart -->
         <div class="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100">
             <div class="flex items-center justify-between mb-4">
@@ -49,6 +49,68 @@
                             </span>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Capacity Overview Card -->
+        <div class="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base sm:text-lg font-semibold text-gray-800">Capacity Overview</h2>
+                @if($capacityData['has_backlog'])
+                    <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Backlog</span>
+                @else
+                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Normal</span>
+                @endif
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Washers -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs sm:text-sm text-gray-600">Washers ({{ $capacityData['washers']['count'] }})</span>
+                        <span class="text-xs font-semibold {{ $capacityData['washers']['utilization_percent'] > 100 ? 'text-red-600' : 'text-gray-800' }}">
+                            {{ $capacityData['washers']['utilization_percent'] }}%
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: {{ min(100, $capacityData['washers']['utilization_percent']) }}%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>{{ $capacityData['washers']['current_load_kg'] }}kg</span>
+                        <span>{{ $capacityData['washers']['daily_capacity_kg'] }}kg</span>
+                    </div>
+                </div>
+                
+                <!-- Dryers -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs sm:text-sm text-gray-600">Dryers ({{ $capacityData['dryers']['count'] }})</span>
+                        <span class="text-xs font-semibold {{ $capacityData['dryers']['utilization_percent'] > 100 ? 'text-red-600' : 'text-gray-800' }}">
+                            {{ $capacityData['dryers']['utilization_percent'] }}%
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: {{ min(100, $capacityData['dryers']['utilization_percent']) }}%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>{{ $capacityData['dryers']['current_load_kg'] }}kg</span>
+                        <span>{{ $capacityData['dryers']['daily_capacity_kg'] }}kg</span>
+                    </div>
+                </div>
+                
+                <!-- Summary -->
+                <div class="pt-3 border-t border-gray-200">
+                    <div class="flex justify-between text-xs text-gray-600">
+                        <span>Today's Load:</span>
+                        <span class="font-semibold">{{ $capacityData['today_weight'] }}kg</span>
+                    </div>
+                    @if($capacityData['backlog_weight'] > 0)
+                    <div class="flex justify-between text-xs text-red-600 mt-1">
+                        <span>Backlog:</span>
+                        <span class="font-semibold">{{ $capacityData['backlog_weight'] }}kg</span>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -178,8 +240,8 @@
         const laundryCompletionCtx = document.getElementById('laundryCompletionChart');
         
         if (laundryCompletionCtx) {
-            const completed = {{ $chartData['completed'] ?? 0 }};
-            const unfinished = {{ $chartData['unfinished'] ?? 0 }};
+            const completed = @json($chartData['completed'] ?? 0);
+            const unfinished = @json($chartData['unfinished'] ?? 0);
             
             const laundryCompletionChart = new Chart(laundryCompletionCtx.getContext('2d'), {
                 type: 'doughnut',

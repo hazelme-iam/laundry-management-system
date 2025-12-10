@@ -54,7 +54,8 @@
                     'chartData' => $chartData,
                     'backlogOrders' => $backlogOrders,
                     'todayOrders' => $todayOrders,
-                    'todayOrdersSummary' => $todayOrdersSummary
+                    'todayOrdersSummary' => $todayOrdersSummary,
+                    'capacityData' => $capacityData
                 ])
             </div>
 
