@@ -20,35 +20,56 @@
                 <x-breadcrumbs :items="$breadcrumbs ?? []" />
             </div>
 
-            <!-- Stats Section -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 px-4 sm:px-0">
-                <!-- Total Orders -->
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                    <div class="text-sm text-gray-500">Total Orders</div>
-                    <div class="text-2xl font-bold text-blue-600">{{ $totalOrders ?? 0 }}</div>
+            {{-- Top Section: 2x2 Stats + Order Completion --}}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 px-4 sm:px-0">
+                {{-- LEFT: 2x2 Stats Grid --}}
+                <div class="lg:col-span-2 space-y-4">
+                    {{-- First Row --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Total Orders -->
+                        <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                            <div class="text-sm text-gray-500">Horat orocci</div>
+                            <div class="text-2xl font-bold text-blue-600">{{ $totalOrders ?? 0 }}</div>
+                            <div class="text-xs text-gray-400 mt-1">Total Orders</div>
+                        </div>
+
+                        <!-- Pending Orders -->
+                        <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                            <div class="text-sm text-gray-500">reming orbits</div>
+                            <div class="text-2xl font-bold text-red-600">{{ $pendingOrders ?? 0 }}</div>
+                            <div class="text-xs text-gray-400 mt-1">Pending Orders</div>
+                        </div>
+                    </div>
+
+                    {{-- Second Row --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- In Progress Orders -->
+                        <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                            <div class="text-sm text-gray-500">Of OCL's +0Day</div>
+                            <div class="text-2xl font-bold text-yellow-600">{{ $inProgressOrders ?? 0 }}</div>
+                            <div class="text-xs text-gray-400 mt-1">In Progress</div>
+                        </div>
+
+                        <!-- Completed Orders -->
+                        <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                            <div class="text-sm text-gray-500">in procrtis</div>
+                            <div class="text-2xl font-bold text-green-600">{{ $completedOrders ?? 0 }}</div>
+                            <div class="text-xs text-gray-400 mt-1">Completed</div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Pending Orders -->
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                    <div class="text-sm text-gray-500">Pending Orders</div>
-                    <div class="text-2xl font-bold text-red-600">{{ $pendingOrders ?? 0 }}</div>
-                </div>
-
-                <!-- On Progress Orders -->
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                    <div class="text-sm text-gray-500">In Progress Orders</div>
-                    <div class="text-2xl font-bold text-yellow-600">{{ $inProgressOrders ?? 0 }}</div>
-                </div>
-
-                <!-- Finished Orders -->
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                    <div class="text-sm text-gray-500">Completed Orders</div>
-                    <div class="text-2xl font-bold text-green-600">{{ $completedOrders ?? 0 }}</div>
+                {{-- RIGHT: Order Completion Card --}}
+                <div class="lg:col-span-1">
+                        @include('components.order-completion-card', [
+                            'completionPercentage' => $chartData['completionPercentage'] ?? 0,
+                            'completed' => $chartData['completed'] ?? 0,
+                            'unfinished' => $chartData['unfinished'] ?? 0
+                        ])
                 </div>
             </div>
-
             <!-- Laundry Completion Chart Component -->
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mb-6 mx-4 sm:mx-0">
+            <div>
                 {{-- Pass all required data to the component --}}
                 @include('components.laundry-completion-chart', [
                     'chartData' => $chartData,

@@ -72,7 +72,7 @@
                     
                     <!-- Workflow Stages -->
                     <div class="space-y-4">
-                        <!-- Stage 1: Picked Up -->
+                        <!-- Stage 1: Laundry Received -->
                         <div class="flex items-center justify-between p-4 border rounded-lg
                             @if($order->status === 'picked_up') bg-blue-50 border-blue-200
                             @elseif(in_array($order->status, ['washing', 'drying', 'folding', 'quality_check', 'ready', 'completed'])) bg-green-50 border-green-200
@@ -89,14 +89,14 @@
                                     @endif
                                 </div>
                                 <div>
-                                    <h4 class="font-medium text-gray-900">Order Picked Up</h4>
+                                    <h4 class="font-medium text-gray-900">Laundry Received</h4>
                                     <p class="text-sm text-gray-600">Laundry received at shop</p>
                                 </div>
                             </div>
-                            @if($order->status === 'pending')
+                            @if($order->status === 'approved')
                             <button onclick="startPickedUp({{ $order->id }})" 
                                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                Mark as Picked Up
+                                Mark as Laundry Received
                             </button>
                             @endif
                         </div>

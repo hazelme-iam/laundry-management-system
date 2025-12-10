@@ -192,10 +192,10 @@
             </form>
 
         @elseif($order->status === 'approved')
-            <!-- Mark as Picked Up -->
+            <!-- Laundry Received -->
             <button onclick="markAsPickedUp({{ $order->id }})"
                     class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100"
-                    title="Mark as Picked Up">
+                    title="Laundry Received">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
                     <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
@@ -253,7 +253,7 @@
 
     <script>
         function markAsPickedUp(orderId) {
-            if (confirm('Mark this order as picked up?')) {
+            if (confirm('Mark this order as laundry received?')) {
                 fetch(`/admin/orders/${orderId}/update-status`, {
                     method: 'POST',
                     headers: {
