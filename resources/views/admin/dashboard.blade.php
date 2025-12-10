@@ -5,7 +5,6 @@
         </h2>
     </x-slot>
 
-    
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Header -->
@@ -49,8 +48,14 @@
             </div>
 
             <!-- Laundry Completion Chart Component -->
-            <div>
-                @include('components.laundry-completion-chart')
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mb-6 mx-4 sm:mx-0">
+                {{-- Pass all required data to the component --}}
+                @include('components.laundry-completion-chart', [
+                    'chartData' => $chartData,
+                    'backlogOrders' => $backlogOrders,
+                    'todayOrders' => $todayOrders,
+                    'todayOrdersSummary' => $todayOrdersSummary
+                ])
             </div>
 
             <!-- Orders Section Component -->
