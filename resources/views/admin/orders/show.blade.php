@@ -189,7 +189,7 @@
                             </div>
                             @if($order->loads()->where('status', 'drying')->whereNull('dryer_machine_id')->count() > 0)
                                 <div class="flex items-center space-x-2">
-                                    <form method="POST" action="{{ route('machines.assign-dryer', $order->id) }}" class="flex items-center space-x-2">
+                                    <form method="POST" action="{{ route('machines.assign-dryer', $order->id) }}" class="flex items-center space-x-2" id="dryer-form">
                                         @csrf
                                         <select name="dryer_id" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
                                             <option value="">Select Dryer</option>
@@ -497,13 +497,33 @@
                     timerElement.textContent = 'Completed';
                     progressElement.style.width = '100%';
                     
-                    // Show notification
-                    showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} cycle completed!`);
-                    
-                    // Auto-refresh after a delay to show updated status
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
+                    // Check for completed machines
+                    fetch('{{ route("machines.check-completed") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Machine completion checked:', data);
+                        // Show notification
+                        showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} cycle completed!`);
+                        
+                        // Auto-refresh after a delay to show updated status
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    })
+                    .catch(error => {
+                        console.error('Error checking completed machines:', error);
+                        // Still show notification and refresh
+                        showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} cycle completed!`);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    });
                 }
             }, 1000);
         }
@@ -524,15 +544,21 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Check for completed machines every 5 seconds
             setInterval(() => {
-                fetch('{{ route("machines.check-completed") }}')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.completed_washers > 0 || data.completed_dryers > 0) {
-                            // Auto-refresh page to show updated status
-                            location.reload();
-                        }
-                    })
-                    .catch(error => console.log('Error checking completed machines:', error));
+                fetch('{{ route("machines.check-completed") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.completed_washing_loads > 0 || data.completed_drying_loads > 0) {
+                        // Auto-refresh page to show updated status
+                        location.reload();
+                    }
+                })
+                .catch(error => console.log('Error checking completed machines:', error));
             }, 5000);
 
         // Handle washer form submission with AJAX
@@ -566,7 +592,7 @@
         });
 
         // Handle dryer form submission with AJAX
-        document.querySelector('form[action*="assign-dryer"]')?.addEventListener('submit', function(e) {
+        document.getElementById('dryer-form')?.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
             
@@ -593,6 +619,7 @@
                 console.error('Error:', error);
                 alert('Error assigning dryer');
             });
+        });
         });
     </script>
 </x-sidebar-app>
