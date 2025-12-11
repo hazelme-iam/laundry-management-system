@@ -137,7 +137,7 @@
                             </div>
                             @if($order->status === 'picked_up' || $order->loads()->where('status', 'pending')->count() > 0)
                                 <div class="flex items-center space-x-2">
-                                    <form method="POST" action="{{ route('machines.assign-washer', $order->id) }}" class="flex items-center space-x-2">
+                                    <form method="POST" action="{{ route('machines.assign-washer', $order->id) }}" class="flex items-center space-x-2" id="washer-form">
                                         @csrf
                                         <select name="washer_id" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                             <option value="">Select Washer</option>
@@ -534,6 +534,65 @@
                     })
                     .catch(error => console.log('Error checking completed machines:', error));
             }, 5000);
+
+        // Handle washer form submission with AJAX
+        document.getElementById('washer-form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Start timer
+                    startTimer('washing', data.duration * 60, {{ $order->id }});
+                    // Show success message
+                    alert(data.message);
+                    // Reload page to update UI
+                    setTimeout(() => location.reload(), 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error assigning washer');
+            });
+        });
+
+        // Handle dryer form submission with AJAX
+        document.querySelector('form[action*="assign-dryer"]')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Start timer
+                    startTimer('drying', data.duration * 60, {{ $order->id }});
+                    // Show success message
+                    alert(data.message);
+                    // Reload page to update UI
+                    setTimeout(() => location.reload(), 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error assigning dryer');
+            });
         });
     </script>
 </x-sidebar-app>

@@ -65,6 +65,15 @@ class MachineController extends Controller
             $order->update(['status' => 'washing']);
         }
 
+        // Return JSON response for AJAX requests
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'duration' => 38, // 38 minutes washing time
+                'message' => "Washer assigned to load ({$pendingLoad->weight}kg). Washing will complete at " . now()->addMinutes(38)->format('H:i')
+            ]);
+        }
+
         return back()->with('success', "Washer assigned to load ({$pendingLoad->weight}kg). Washing will complete at " . now()->addMinutes(38)->format('H:i'));
     }
 
@@ -122,6 +131,15 @@ class MachineController extends Controller
 
         // Update order status
         $order->update(['status' => 'drying']);
+
+        // Return JSON response for AJAX requests
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'duration' => 30, // 30 minutes drying time
+                'message' => "Dryer assigned to load ({$load->weight}kg). Drying will complete at " . now()->addMinutes(30)->format('H:i')
+            ]);
+        }
 
         return back()->with('success', "Dryer assigned to load ({$load->weight}kg). Drying will complete at " . now()->addMinutes(30)->format('H:i'));
     }
