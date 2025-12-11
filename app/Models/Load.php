@@ -11,33 +11,22 @@ class Load extends Model
 
     protected $fillable = [
         'order_id',
+        'weight',
+        'status',
         'washer_machine_id',
         'dryer_machine_id',
-        'weight',
-        'capacity_utilization', // Percentage of machine capacity used
-        'is_consolidated', // Whether this load combines multiple orders
-        'status',
-        'wash_start',
-        'wash_end',
-        'dry_start',
-        'dry_end',
-        'folding_start',
-        'folding_end',
-        'notes',
-        'created_by',
-        'updated_by',
+        'washing_start',
+        'washing_end',
+        'drying_start',
+        'drying_end',
     ];
 
     protected $casts = [
         'weight' => 'decimal:2',
-        'capacity_utilization' => 'decimal:2',
-        'is_consolidated' => 'boolean',
-        'wash_start' => 'datetime',
-        'wash_end' => 'datetime',
-        'dry_start' => 'datetime',
-        'dry_end' => 'datetime',
-        'folding_start' => 'datetime',
-        'folding_end' => 'datetime',
+        'washing_start' => 'datetime',
+        'washing_end' => 'datetime',
+        'drying_start' => 'datetime',
+        'drying_end' => 'datetime',
     ];
 
     // Relationships

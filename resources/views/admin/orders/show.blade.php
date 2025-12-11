@@ -135,7 +135,7 @@
                                     @endif
                                 </div>
                             </div>
-                            @if($order->status === 'picked_up' || ($order->status === 'washing' && !$order->assigned_washer_id))
+                            @if($order->status === 'picked_up' || $order->loads()->where('status', 'pending')->count() > 0)
                                 <div class="flex items-center space-x-2">
                                     <form method="POST" action="{{ route('machines.assign-washer', $order->id) }}" class="flex items-center space-x-2">
                                         @csrf
@@ -187,7 +187,7 @@
                                     @endif
                                 </div>
                             </div>
-                            @if($order->status === 'folding')
+                            @if($order->loads()->where('status', 'drying')->whereNull('dryer_machine_id')->count() > 0)
                                 <div class="flex items-center space-x-2">
                                     <form method="POST" action="{{ route('machines.assign-dryer', $order->id) }}" class="flex items-center space-x-2">
                                         @csrf

@@ -10,6 +10,72 @@
         </button>
     </div>
 
+    <!-- Quick Availability Summary -->
+    <div class="bg-white shadow-lg rounded-lg mx-4 sm:mx-0 mb-6">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Machine Availability</h3>
+            <p class="text-sm text-gray-600 mt-1">Current status of all machines</p>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Washers -->
+                <div>
+                    <h4 class="font-medium text-gray-900 mb-3">Washers</h4>
+                    <div class="space-y-2">
+                        @foreach($washers as $washer)
+                            <div class="flex items-center justify-between p-2 rounded
+                                @if($washer->status === 'idle') bg-green-50 border border-green-200
+                                @else bg-blue-50 border border-blue-200
+                                @endif">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-medium text-gray-900">{{ $washer->name }}</span>
+                                    @if($washer->status === 'idle')
+                                        <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Available</span>
+                                    @else
+                                        <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">In Use</span>
+                                    @endif
+                                </div>
+                                @if($washer->status === 'in_use' && $washer->currentOrder)
+                                    <div class="text-sm text-gray-600">
+                                        Order #{{ str_pad($washer->currentOrder->id, 5, '0', STR_PAD_LEFT) }}
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                
+                <!-- Dryers -->
+                <div>
+                    <h4 class="font-medium text-gray-900 mb-3">Dryers</h4>
+                    <div class="space-y-2">
+                        @foreach($dryers as $dryer)
+                            <div class="flex items-center justify-between p-2 rounded
+                                @if($dryer->status === 'idle') bg-green-50 border border-green-200
+                                @else bg-green-50 border border-green-200
+                                @endif">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-medium text-gray-900">{{ $dryer->name }}</span>
+                                    @if($dryer->status === 'idle')
+                                        <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Available</span>
+                                    @else
+                                        <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">In Use</span>
+                                    @endif
+                                </div>
+                                @if($dryer->status === 'in_use' && $dryer->currentOrder)
+                                    <div class="text-sm text-gray-600">
+                                        Order #{{ str_pad($dryer->currentOrder->id, 5, '0', STR_PAD_LEFT) }}
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Washers Section -->
     <div class="bg-white shadow-lg rounded-lg mx-4 sm:mx-0 mb-6">
         <div class="p-6 border-b border-gray-200">

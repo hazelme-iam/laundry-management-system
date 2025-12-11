@@ -24,6 +24,9 @@
                     <x-nav-link href="{{ url('/orders') }}" :active="request()->is('orders*')">
                         {{ __('Orders Management') }}
                     </x-nav-link>
+                    <x-nav-link href="{{ url('/admin/machines/dashboard') }}" :active="request()->is('admin/machines*')">
+                        {{ __('Machines') }}
+                    </x-nav-link>
                     <x-nav-link href="{{ url('/reports') }}" :active="request()->is('reports*')">
                         {{ __('Reports') }}
                     </x-nav-link>
@@ -194,7 +197,9 @@
             <x-responsive-nav-link href="{{ url('/orders') }}" :active="request()->is('orders*')">
                 {{ __('Orders Management') }}
             </x-responsive-nav-link>
-            
+            <x-responsive-nav-link href="{{ url('/admin/machines/dashboard') }}" :active="request()->is('admin/machines*')">
+                {{ __('Machines') }}
+            </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ url('/reports') }}" :active="request()->is('reports*')">
                 {{ __('Reports') }}
             </x-responsive-nav-link>

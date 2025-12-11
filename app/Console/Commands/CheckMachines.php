@@ -30,8 +30,8 @@ class CheckMachines extends Command
         $result = $controller->checkCompletedMachines();
         $data = json_decode($result->getContent(), true);
         
-        $this->info("Completed washers: " . $data['completed_washers']);
-        $this->info("Completed dryers: " . $data['completed_dryers']);
+        $this->info("Completed washing loads: " . $data['completed_washing_loads']);
+        $this->info("Completed drying loads: " . $data['completed_drying_loads']);
         
         return Command::SUCCESS;
     }

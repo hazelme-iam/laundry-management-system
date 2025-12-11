@@ -16,6 +16,10 @@
            class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('orders*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">
             {{ __('Orders Management') }}
         </a>
+        <a href="{{ route('machines.dashboard') }}"
+           class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('machines*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">
+            {{ __('Machines') }}
+        </a>
 
         <a href="{{ url('/reports') }}"
            class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('reports*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">

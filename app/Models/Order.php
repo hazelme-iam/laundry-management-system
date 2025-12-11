@@ -242,6 +242,11 @@ class Order extends Model
 
     public function createOptimizedLoads()
     {
+        // Check if loads already exist for this order
+        if ($this->loads()->count() > 0) {
+            return $this->loads;
+        }
+        
         $loads = collect();
         $machineCapacity = 8.0;
         $weight = (float) $this->weight;
@@ -282,16 +287,10 @@ class Order extends Model
                 ? $weight - ($weightPerLoad * $i) // Last load gets remainder
                 : $weightPerLoad;
             
-            $capacityUtilization = ($loadWeight / $machineCapacity) * 100;
-            
             $load = new Load([
                 'order_id' => $this->id,
                 'weight' => $loadWeight,
-                'capacity_utilization' => $capacityUtilization,
-                'is_consolidated' => $numberOfLoads > 1,
                 'status' => 'pending',
-                'created_by' => auth()->id(),
-                'updated_by' => auth()->id(),
             ]);
             
             $load->save();
