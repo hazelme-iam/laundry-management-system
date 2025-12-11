@@ -14,10 +14,14 @@
                     <p class="text-gray-600">View and manage customer information</p>
                 </div>
                 <div class="flex space-x-2 mt-4 sm:mt-0">
-                    <a href="{{ route('admin.customers.edit', $customer) }}"
-                       class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition">
-                        Edit Customer
-                    </a>
+                    @if(isset($customer->is_virtual) && $customer->is_virtual)
+                        <span class="text-gray-400">Edit Customer</span>
+                    @else
+                        <a href="{{ route('admin.customers.edit', $customer) }}"
+                           class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition">
+                            Edit Customer
+                        </a>
+                    @endif
                     <a href="{{ route('admin.customers.index') }}"
                        class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
                         Back to List

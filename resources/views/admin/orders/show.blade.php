@@ -158,9 +158,15 @@
                             @if($order->status === 'drying') bg-blue-50 border-blue-200
                             @elseif(in_array($order->status, ['ready', 'completed'])) bg-green-50 border-green-200
                             @else bg-white border-gray-200 @endif">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                    <span class="text-green-600 font-semibold text-sm">3</span>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center
+                                    @if($order->status === 'drying') bg-blue-500 text-white
+                                    @elseif(in_array($order->status, ['ready', 'completed'])) bg-green-500 text-white
+                                    @else bg-gray-300 text-gray-600
+                                    @endif">
+                                    @if(in_array($order->status, ['ready', 'completed'])) ✓
+                                    @else 3
+                                    @endif
                                 </div>
                                 <div>
                                     <h4 class="font-medium text-gray-900">Drying</h4>
@@ -204,7 +210,7 @@
                                     class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                                 Mark as Completed
                             </button>
-                            @elseif($order->loads()->where('status', 'completed')->count() > 0)
+                            @elseif($order->status !== 'completed' && $order->loads()->where('status', 'completed')->count() > 0)
                             <button type="button" onclick="markAsReady({{ $order->id }}); return false;" 
                                     class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                                 Mark as Ready

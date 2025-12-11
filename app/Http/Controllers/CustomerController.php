@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -10,6 +11,31 @@ class CustomerController extends Controller
     // List customers
     public function index()
     {
+        // Get users who don't have customer records and create a collection (exclude admin)
+        $usersWithoutCustomers = \App\Models\User::whereDoesntHave('customer')
+            ->where('role', '!=', 'admin')  // Exclude admin users
+            ->get()
+            ->map(function ($user) {
+                // Create a virtual customer object for users without customer records
+                return (object) [
+                    'id' => 'user_' . $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone ?? null,
+                    'address' => null,
+                    'customer_type' => 'online',
+                    'orders_count' => $user->orders()->count(),
+                    'orders_sum_total_amount' => $user->orders()->sum('total_amount'),
+                    'online_orders_count' => $user->orders()->count(),
+                    'walkin_orders_count' => 0,
+                    'last_order_at' => $user->orders()->max('orders.created_at'),
+                    'created_at' => $user->created_at,
+                    'is_virtual' => true,
+                    'user_id' => $user->id
+                ];
+            });
+
+        // Get existing customers with their data
         $query = Customer::query()
             ->withCount('orders')
             ->withSum('orders', 'total_amount')
@@ -24,7 +50,7 @@ class CustomerController extends Controller
                 },
             ]);
 
-        // Existing "filter" (new/returning/active)
+        // Apply filters to existing customers
         if (request('filter')) {
             switch (request('filter')) {
                 case 'new':
@@ -43,7 +69,7 @@ class CustomerController extends Controller
             }
         }
 
-        // New "source" filter: walk-in (admin-created) vs online (customer-placed)
+        // Apply source filter to existing customers
         if (request('source')) {
             if (request('source') === 'online') {
                 $query->whereHas('orders', function ($q) {
@@ -56,7 +82,7 @@ class CustomerController extends Controller
             }
         }
 
-        // Optional text search
+        // Apply search to existing customers
         if ($term = request('q')) {
             $query->where(function ($q) use ($term) {
                 $q->where('name', 'like', "%{$term}%")
@@ -65,7 +91,35 @@ class CustomerController extends Controller
             });
         }
 
-        $customers = $query->latest()->paginate(10);
+        // Also search users without customers
+        if ($term = request('q')) {
+            $usersWithoutCustomers = $usersWithoutCustomers->filter(function ($user) use ($term) {
+                return stripos($user->name, $term) !== false || 
+                       stripos($user->email, $term) !== false || 
+                       ($user->phone && stripos($user->phone, $term) !== false);
+            });
+        }
+
+        $existingCustomers = $query->latest()->get();
+
+        // Combine both collections
+        $allCustomers = $usersWithoutCustomers->concat($existingCustomers);
+
+        // Sort by creation date (newest first)
+        $allCustomers = $allCustomers->sortByDesc('created_at');
+
+        // Paginate manually
+        $page = request('page', 1);
+        $perPage = 10;
+        $total = $allCustomers->count();
+        $customers = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allCustomers->forPage($page, $perPage),
+            $total,
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
         return view('admin.customers.index', compact('customers'));
     }
 
@@ -195,5 +249,30 @@ class CustomerController extends Controller
 
         return redirect()->route('admin.customers.index')
                          ->with('success', 'Customer deleted successfully.');
+    }
+
+    // Show user customer details
+    public function showUser(User $user)
+    {
+        // Create a virtual customer object for the user
+        $virtualCustomer = (object) [
+            'id' => 'user_' . $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone ?? null,
+            'address' => null,
+            'customer_type' => 'online',
+            'orders_count' => $user->orders()->count(),
+            'orders_sum_total_amount' => $user->orders()->sum('total_amount'),
+            'online_orders_count' => $user->orders()->count(),
+            'walkin_orders_count' => 0,
+            'last_order_at' => $user->orders()->max('orders.created_at') ?: null,
+            'created_at' => $user->created_at,
+            'is_virtual' => true,
+            'user_id' => $user->id
+        ];
+
+        // Use the same show view as regular customers
+        return view('admin.customers.show', ['customer' => $virtualCustomer]);
     }
 }

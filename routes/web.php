@@ -46,6 +46,9 @@ Route::middleware([
     Route::put('/customers/{customer}', [CustomerController::class, 'update'])->name('admin.customers.update');
     Route::delete('/admin/customers/{customer}', [CustomerController::class, 'destroy'])->name('admin.customers.destroy');
     
+    // Route for viewing user customers
+    Route::get('/customers/user/{user}', [CustomerController::class, 'showUser'])->name('admin.customers.show-user');
+    
     Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
     Route::get('/orders/create', [OrderController::class, 'create'])->name('admin.orders.create');
     Route::post('/orders', [OrderController::class, 'store'])->name('admin.orders.store');

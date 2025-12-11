@@ -71,14 +71,6 @@
                                 <option value="active" {{ request('filter') == 'active' ? 'selected' : '' }}>Active Today</option>
                             </select>
 
-                            <!-- New: Source filter -->
-                            <select name="source" onchange="this.form.submit()"
-                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">All Sources</option>
-                                <option value="walk_in" {{ request('source') == 'walk_in' ? 'selected' : '' }}>Walk-in (Admin created)</option>
-                                <option value="online" {{ request('source') == 'online' ? 'selected' : '' }}>Placed Online</option>
-                            </select>
-
                             @if(request('q'))
                                 <input type="hidden" name="q" value="{{ request('q') }}">
                             @endif
@@ -138,9 +130,9 @@
                                         @elseif($isWalkInExplicit || ($walkin && !$online))
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Walk-in</span>
                                         @elseif($online)
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Online</span>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Online Customer</span>
                                         @else
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Regular</span>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Online Customer</span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -160,15 +152,22 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">
-                                            <a href="{{ route('admin.customers.show', $customer) }}"
-                                               class="text-blue-600 hover:text-blue-900">View</a>
-                                            <a href="{{ route('admin.customers.edit', $customer) }}"
-                                               class="text-yellow-600 hover:text-yellow-900">Edit</a>
-                                            <button type="button"
-                                                    onclick="openDeleteModal('{{ $customer->id }}', '{{ addslashes($customer->name) }}')"
-                                                    class="text-red-600 hover:text-red-900">
-                                                Delete
-                                            </button>
+                                            @if(isset($customer->is_virtual) && $customer->is_virtual)
+                                                <a href="{{ route('admin.customers.show-user', $customer->user_id) }}"
+                                                   class="text-blue-600 hover:text-blue-900">View</a>
+                                                <span class="text-gray-400">Edit</span>
+                                                <span class="text-gray-400">Delete</span>
+                                            @else
+                                                <a href="{{ route('admin.customers.show', $customer) }}"
+                                                   class="text-blue-600 hover:text-blue-900">View</a>
+                                                <a href="{{ route('admin.customers.edit', $customer) }}"
+                                                   class="text-yellow-600 hover:text-yellow-900">Edit</a>
+                                                <button type="button"
+                                                        onclick="openDeleteModal('{{ $customer->id }}', '{{ addslashes($customer->name) }}')"
+                                                        class="text-red-600 hover:text-red-900">
+                                                    Delete
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
