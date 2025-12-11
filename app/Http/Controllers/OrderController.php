@@ -103,7 +103,8 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $order->load(['customer', 'creator', 'updater', 'loads.washerMachine', 'loads.dryerMachine']);
+        // Always load fresh data for Livewire auto-refresh
+        $order->load(['customer', 'creator', 'updater', 'loads.washerMachine', 'loads.dryerMachine', 'assignedWasher', 'assignedDryer']);
         
         // Calculate drying time for this order
         $dryingTime = $this->calculateDryingTime($order->weight);

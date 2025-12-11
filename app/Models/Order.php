@@ -28,6 +28,12 @@ class Order extends Model
         'finished_at',
         'remarks',
         'created_by',
+        'assigned_washer_id',
+        'assigned_dryer_id',
+        'washing_start',
+        'washing_end',
+        'drying_start',
+        'drying_end',
         'updated_by',
         'primary_washer_id',
         'primary_dryer_id',
@@ -55,6 +61,10 @@ class Order extends Model
         'quality_check_end' => 'datetime',
         'delivery_started_at' => 'datetime',
         'delivery_completed_at' => 'datetime',
+        'washing_start' => 'datetime',
+        'washing_end' => 'datetime',
+        'drying_start' => 'datetime',
+        'drying_end' => 'datetime',
         'subtotal' => 'decimal:2',
         'discount' => 'decimal:2',
         'total_amount' => 'decimal:2',
@@ -89,6 +99,16 @@ class Order extends Model
     public function primaryDryer()
     {
         return $this->belongsTo(Machine::class, 'primary_dryer_id');
+    }
+
+    public function assignedWasher()
+    {
+        return $this->belongsTo(Machine::class, 'assigned_washer_id');
+    }
+
+    public function assignedDryer()
+    {
+        return $this->belongsTo(Machine::class, 'assigned_dryer_id');
     }
 
     public function loads()

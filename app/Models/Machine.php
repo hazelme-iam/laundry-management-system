@@ -12,40 +12,38 @@ class Machine extends Model
     protected $fillable = [
         'name',
         'type',
-        'capacity_kg',
         'status',
+        'capacity_kg',
         'notes',
+        'current_order_id',
+        'washing_start',
+        'washing_end',
+        'drying_start',
+        'drying_end',
     ];
 
     protected $casts = [
-        'capacity_kg' => 'decimal:2',
+        'washing_start' => 'datetime',
+        'washing_end' => 'datetime',
+        'drying_start' => 'datetime',
+        'drying_end' => 'datetime',
     ];
 
     // Relationships
-    public function washerLoads()
+    public function currentOrder()
     {
-        return $this->hasMany(Load::class, 'washer_machine_id');
-    }
-
-    public function dryerLoads()
-    {
-        return $this->hasMany(Load::class, 'dryer_machine_id');
-    }
-
-    public function primaryWashOrders()
-    {
-        return $this->hasMany(Order::class, 'primary_washer_id');
-    }
-
-    public function primaryDryOrders()
-    {
-        return $this->hasMany(Order::class, 'primary_dryer_id');
+        return $this->belongsTo(Order::class, 'current_order_id');
     }
 
     // Scopes
-    public function scopeAvailable($query)
+    public function scopeIdle($query)
     {
-        return $query->where('status', 'available');
+        return $query->where('status', 'idle');
+    }
+
+    public function scopeInUse($query)
+    {
+        return $query->where('status', 'in_use');
     }
 
     public function scopeWashers($query)
@@ -58,8 +56,33 @@ class Machine extends Model
         return $query->where('type', 'dryer');
     }
 
-    public function scopeInUse($query)
+    // Helper methods
+    public function isAvailable()
     {
-        return $query->where('status', 'in_use');
+        return $this->status === 'idle';
+    }
+
+    public function getTimeRemaining()
+    {
+        if ($this->type === 'washer' && $this->washing_end) {
+            return now()->diffInSeconds($this->washing_end, false);
+        }
+        
+        if ($this->type === 'dryer' && $this->drying_end) {
+            return now()->diffInSeconds($this->drying_end, false);
+        }
+        
+        return null;
+    }
+
+    public function getTimeRemainingFormatted()
+    {
+        $seconds = $this->getTimeRemaining();
+        if ($seconds === null || $seconds <= 0) {
+            return null;
+        }
+        
+        $minutes = ceil($seconds / 60);
+        return "{$minutes} mins left";
     }
 }

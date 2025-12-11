@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Machine;
-use App\Models\Load;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Livewire\WithPagination;
 
 class MachineController extends Controller
 {
@@ -14,118 +15,135 @@ class MachineController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function dashboard()
     {
-        $machines = Machine::with(['washerLoads', 'dryerLoads'])
-            ->orderBy('type')
-            ->orderBy('name')
-            ->paginate(15);
-
-        $statistics = [
-            'total' => Machine::count(),
-            'available' => Machine::where('status', 'available')->count(),
-            'in_use' => Machine::where('status', 'in_use')->count(),
-            'maintenance' => Machine::where('status', 'maintenance')->count(),
-            'washers' => Machine::where('type', 'washer')->count(),
-            'dryers' => Machine::where('type', 'dryer')->count(),
-        ];
-
-        return view('admin.machines.index', compact('machines', 'statistics'));
+        $washers = Machine::washers()->with('currentOrder')->get();
+        $dryers = Machine::dryers()->with('currentOrder')->get();
+        
+        return view('admin.machines.dashboard', compact('washers', 'dryers'));
     }
 
-    public function create()
+    public function assignWasher(Request $request, Order $order)
     {
-        return view('admin.machines.create');
-    }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'type' => 'required|in:washer,dryer',
-            'capacity_kg' => 'required|numeric|min:1|max:50',
-            'status' => 'required|in:available,in_use,maintenance,out_of_order',
-            'notes' => 'nullable|string|max:500',
+        $request->validate([
+            'washer_id' => 'required|exists:machines,id'
         ]);
 
-        Machine::create($data);
-
-        return redirect()->route('admin.machines.index')
-            ->with('success', 'Machine created successfully.');
-    }
-
-    public function show(Machine $machine)
-    {
-        $machine->load(['washerLoads.order.customer', 'dryerLoads.order.customer']);
+        $washer = Machine::findOrFail($request->washer_id);
         
-        $utilization = $this->calculateUtilization($machine);
-        
-        return view('admin.machines.show', compact('machine', 'utilization'));
-    }
-
-    public function edit(Machine $machine)
-    {
-        return view('admin.machines.edit', compact('machine'));
-    }
-
-    public function update(Request $request, Machine $machine)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'type' => 'required|in:washer,dryer',
-            'capacity_kg' => 'required|numeric|min:1|max:50',
-            'status' => 'required|in:available,in_use,maintenance,out_of_order',
-            'notes' => 'nullable|string|max:500',
-        ]);
-
-        $machine->update($data);
-
-        return redirect()->route('admin.machines.index')
-            ->with('success', 'Machine updated successfully.');
-    }
-
-    public function destroy(Machine $machine)
-    {
-        // Check if machine has active loads
-        $hasActiveLoads = $machine->washerLoads()->whereIn('status', ['pending', 'washing', 'drying'])->exists() ||
-                         $machine->dryerLoads()->whereIn('status', ['pending', 'washing', 'drying'])->exists();
-
-        if ($hasActiveLoads) {
-            return redirect()->route('admin.machines.index')
-                ->with('error', 'Cannot delete machine with active loads.');
+        if (!$washer->isAvailable()) {
+            return back()->with('error', 'Selected washer is not available.');
         }
 
-        $machine->delete();
+        // Assign washer to order
+        $order->update([
+            'assigned_washer_id' => $washer->id,
+            'washing_start' => now(),
+            'washing_end' => now()->addMinutes(38), // 38 minutes washing time
+            'status' => 'washing'
+        ]);
 
-        return redirect()->route('admin.machines.index')
-            ->with('success', 'Machine deleted successfully.');
+        // Update machine status
+        $washer->update([
+            'status' => 'in_use',
+            'current_order_id' => $order->id,
+            'washing_start' => now(),
+            'washing_end' => now()->addMinutes(38)
+        ]);
+
+        return back()->with('success', "Washer assigned successfully. Washing will complete at {$order->washing_end->format('H:i')}");
     }
 
-    public function toggleStatus(Machine $machine)
+    public function assignDryer(Request $request, Order $order)
     {
-        $newStatus = $machine->status === 'available' ? 'maintenance' : 'available';
-        
-        $machine->update(['status' => $newStatus]);
+        $request->validate([
+            'dryer_id' => 'required|exists:machines,id'
+        ]);
 
-        return redirect()->back()
-            ->with('success', "Machine status changed to {$newStatus}.");
+        $dryer = Machine::findOrFail($request->dryer_id);
+        
+        if (!$dryer->isAvailable()) {
+            return back()->with('error', 'Selected dryer is not available.');
+        }
+
+        // Free up washer first
+        if ($order->assigned_washer_id) {
+            $washer = Machine::find($order->assigned_washer_id);
+            if ($washer) {
+                $washer->update([
+                    'status' => 'idle',
+                    'current_order_id' => null,
+                    'washing_start' => null,
+                    'washing_end' => null
+                ]);
+            }
+        }
+
+        // Assign dryer to order
+        $order->update([
+            'assigned_dryer_id' => $dryer->id,
+            'drying_start' => now(),
+            'drying_end' => now()->addMinutes(30), // 30 minutes drying time
+            'status' => 'drying'
+        ]);
+
+        // Update machine status
+        $dryer->update([
+            'status' => 'in_use',
+            'current_order_id' => $order->id,
+            'drying_start' => now(),
+            'drying_end' => now()->addMinutes(30)
+        ]);
+
+        return back()->with('success', "Dryer assigned successfully. Drying will complete at {$order->drying_end->format('H:i')}");
     }
 
-    private function calculateUtilization(Machine $machine)
+    public function checkCompletedMachines()
     {
-        $loads = $machine->type === 'washer' ? $machine->washerLoads : $machine->dryerLoads;
-        
-        $totalLoads = $loads->count();
-        $activeLoads = $loads->whereIn('status', ['washing', 'drying'])->count();
-        
-        $totalCapacity = $machine->capacity_kg;
-        $usedCapacity = $loads->sum('weight');
-        
-        return [
-            'total_loads' => $totalLoads,
-            'active_loads' => $activeLoads,
-            'capacity_utilization' => $totalCapacity > 0 ? ($usedCapacity / $totalCapacity) * 100 : 0,
-            'average_load_weight' => $totalLoads > 0 ? $usedCapacity / $totalLoads : 0,
-        ];
+        $completedWashers = Machine::washers()
+            ->where('status', 'in_use')
+            ->where('washing_end', '<=', now())
+            ->with('currentOrder')
+            ->get();
+
+        $completedDryers = Machine::dryers()
+            ->where('status', 'in_use')
+            ->where('drying_end', '<=', now())
+            ->with('currentOrder')
+            ->get();
+
+        foreach ($completedWashers as $washer) {
+            $order = $washer->currentOrder;
+            if ($order && $order->status === 'washing') {
+                $order->update(['status' => 'folding']);
+            }
+            
+            $washer->update([
+                'status' => 'idle',
+                'current_order_id' => null,
+                'washing_start' => null,
+                'washing_end' => null
+            ]);
+        }
+
+        foreach ($completedDryers as $dryer) {
+            $order = $dryer->currentOrder;
+            if ($order && $order->status === 'drying') {
+                // Auto-advance through remaining stages
+                $order->update(['status' => 'folding']);
+            }
+            
+            $dryer->update([
+                'status' => 'idle',
+                'current_order_id' => null,
+                'drying_start' => null,
+                'drying_end' => null
+            ]);
+        }
+
+        return response()->json([
+            'completed_washers' => $completedWashers->count(),
+            'completed_dryers' => $completedDryers->count()
+        ]);
     }
 }

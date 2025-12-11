@@ -4,7 +4,7 @@
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">Order #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12" wire:poll.5s>
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <!-- Breadcrumb Navigation -->
             <div class="px-4 sm:px-0 mb-6">
@@ -120,21 +120,36 @@
                                 <div>
                                     <h4 class="font-medium text-gray-900">Washing</h4>
                                     <p class="text-sm text-gray-600">37-38 minutes cycle</p>
-                                    @if($order->status === 'washing' && isset($activeTimer))
-                                    <div class="mt-2">
-                                        <div class="text-sm font-medium text-blue-600">Time remaining: <span id="washing-timer">{{ $activeTimer }}</span></div>
-                                        <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
-                                            <div id="washing-progress" class="bg-blue-500 h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                    @if($order->status === 'washing' && $order->assigned_washer_id)
+                                        <div class="mt-2">
+                                            <div class="text-sm font-medium text-blue-600">
+                                                Machine: {{ $order->assignedWasher->name ?? 'Unknown' }}
+                                            </div>
+                                            <div class="text-sm text-blue-600">
+                                                Time remaining: <span id="washing-timer">{{ $order->washing_end ? now()->diffInSeconds($order->washing_end, false) > 0 ? ceil(now()->diffInSeconds($order->washing_end, false) / 60) . ' mins' : 'Completed' : 'Calculating...' }}</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                                <div id="washing-progress" class="bg-blue-500 h-2 rounded-full transition-all duration-1000" style="width: {{ $order->washing_end ? (($order->washing_end->diffInSeconds(now()) / ($order->washing_end->diffInSeconds($order->washing_start))) * 100) : 0 }}%"></div>
+                                            </div>
                                         </div>
-                                    </div>
                                     @endif
                                 </div>
                             </div>
-                            @if($order->status === 'picked_up')
-                            <button onclick="startWashing({{ $order->id }})" 
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                Start Washing
-                            </button>
+                            @if($order->status === 'picked_up' || ($order->status === 'washing' && !$order->assigned_washer_id))
+                                <div class="flex items-center space-x-2">
+                                    <form method="POST" action="{{ route('machines.assign-washer', $order->id) }}" class="flex items-center space-x-2">
+                                        @csrf
+                                        <select name="washer_id" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">Select Washer</option>
+                                            @foreach(\App\Models\Machine::washers()->idle()->get() as $washer)
+                                                <option value="{{ $washer->id }}">{{ $washer->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                            Assign Washer
+                                        </button>
+                                    </form>
+                                </div>
                             @endif
                         </div>
 
@@ -156,25 +171,37 @@
                                 </div>
                                 <div>
                                     <h4 class="font-medium text-gray-900">Drying</h4>
-                                    <p class="text-sm text-gray-600">
-                                        {{ $dryingTime }} minutes 
-                                        ({{ $order->weight }}kg load)
-                                    </p>
-                                    @if($order->status === 'drying' && isset($activeTimer))
-                                    <div class="mt-2">
-                                        <div class="text-sm font-medium text-green-600">Time remaining: <span id="drying-timer">{{ $activeTimer }}</span></div>
-                                        <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
-                                            <div id="drying-progress" class="bg-green-500 h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                    <p class="text-sm text-gray-600">30 minutes cycle</p>
+                                    @if($order->status === 'drying' && $order->assigned_dryer_id)
+                                        <div class="mt-2">
+                                            <div class="text-sm font-medium text-green-600">
+                                                Machine: {{ $order->assignedDryer->name ?? 'Unknown' }}
+                                            </div>
+                                            <div class="text-sm text-green-600">
+                                                Time remaining: <span id="drying-timer">{{ $order->drying_end ? now()->diffInSeconds($order->drying_end, false) > 0 ? ceil(now()->diffInSeconds($order->drying_end, false) / 60) . ' mins' : 'Completed' : 'Calculating...' }}</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                                <div id="drying-progress" class="bg-green-500 h-2 rounded-full transition-all duration-1000" style="width: {{ $order->drying_end ? (($order->drying_end->diffInSeconds(now()) / ($order->drying_end->diffInSeconds($order->drying_start))) * 100) : 0 }}%"></div>
+                                            </div>
                                         </div>
-                                    </div>
                                     @endif
                                 </div>
                             </div>
-                            @if($order->status === 'washing')
-                            <button onclick="startDrying({{ $order->id }})" 
-                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                                Start Drying
-                            </button>
+                            @if($order->status === 'folding')
+                                <div class="flex items-center space-x-2">
+                                    <form method="POST" action="{{ route('machines.assign-dryer', $order->id) }}" class="flex items-center space-x-2">
+                                        @csrf
+                                        <select name="dryer_id" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                            <option value="">Select Dryer</option>
+                                            @foreach(\App\Models\Machine::dryers()->idle()->get() as $dryer)
+                                                <option value="{{ $dryer->id }}">{{ $dryer->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                                            Assign Dryer
+                                        </button>
+                                    </form>
+                                </div>
                             @endif
                         </div>
 
@@ -313,7 +340,7 @@
         let intervals = {};
 
         function startPickedUp(orderId) {
-            fetch(`/admin/orders/${orderId}/update-status`, {
+            fetch(`/orders/${orderId}/update-status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -326,11 +353,15 @@
                 if (data.success) {
                     location.reload();
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating status');
             });
         }
 
         function startWashing(orderId) {
-            fetch(`/admin/orders/${orderId}/start-washing`, {
+            fetch(`/orders/${orderId}/start-washing`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -343,11 +374,15 @@
                     startTimer('washing', data.duration * 60, orderId);
                     location.reload();
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error starting washing');
             });
         }
 
         function startDrying(orderId) {
-            fetch(`/admin/orders/${orderId}/start-drying`, {
+            fetch(`/orders/${orderId}/start-drying`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -360,11 +395,15 @@
                     startTimer('drying', data.duration * 60, orderId);
                     location.reload();
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error starting drying');
             });
         }
 
         function startFolding(orderId) {
-            fetch(`/admin/orders/${orderId}/update-status`, {
+            fetch(`/orders/${orderId}/update-status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -377,11 +416,15 @@
                 if (data.success) {
                     location.reload();
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error starting folding');
             });
         }
 
         function startQualityCheck(orderId) {
-            fetch(`/admin/orders/${orderId}/update-status`, {
+            fetch(`/orders/${orderId}/update-status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -394,23 +437,31 @@
                 if (data.success) {
                     location.reload();
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error starting quality check');
             });
         }
 
         function markAsReady(orderId) {
-            fetch(`/admin/orders/${orderId}/update-status`, {
+            fetch(`/orders/${orderId}/update-status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: JSON.stringify({ status: 'ready' })
+                body: JSON.stringify({ status: 'ready_for_pickup' })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     location.reload();
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error marking as ready');
             });
         }
 
@@ -471,10 +522,18 @@
 
         // Initialize any active timers on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if there's an active timer from the server
-            @if($order->status === 'washing' || $order->status === 'drying')
-                // Timer would be started from server-side
-            @endif
+            // Check for completed machines every 5 seconds
+            setInterval(() => {
+                fetch('{{ route("machines.check-completed") }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.completed_washers > 0 || data.completed_dryers > 0) {
+                            // Auto-refresh page to show updated status
+                            location.reload();
+                        }
+                    })
+                    .catch(error => console.log('Error checking completed machines:', error));
+            }, 5000);
         });
     </script>
 </x-sidebar-app>

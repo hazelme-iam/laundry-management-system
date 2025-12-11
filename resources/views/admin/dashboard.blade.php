@@ -28,14 +28,14 @@
                     <div class="grid grid-cols-2 gap-4">
                         <!-- Total Orders -->
                         <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                            <div class="text-sm text-gray-500">Horat orocci</div>
+                            <div class="text-sm text-gray-500">Total Orders</div>
                             <div class="text-2xl font-bold text-blue-600">{{ $totalOrders ?? 0 }}</div>
                             <div class="text-xs text-gray-400 mt-1">Total Orders</div>
                         </div>
 
                         <!-- Pending Orders -->
                         <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                            <div class="text-sm text-gray-500">reming orbits</div>
+                            <div class="text-sm text-gray-500">Pending Orders</div>
                             <div class="text-2xl font-bold text-red-600">{{ $pendingOrders ?? 0 }}</div>
                             <div class="text-xs text-gray-400 mt-1">Pending Orders</div>
                         </div>
@@ -45,14 +45,14 @@
                     <div class="grid grid-cols-2 gap-4">
                         <!-- In Progress Orders -->
                         <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                            <div class="text-sm text-gray-500">Of OCL's +0Day</div>
+                            <div class="text-sm text-gray-500">In progress Orders</div>
                             <div class="text-2xl font-bold text-yellow-600">{{ $inProgressOrders ?? 0 }}</div>
                             <div class="text-xs text-gray-400 mt-1">In Progress</div>
                         </div>
 
                         <!-- Completed Orders -->
                         <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                            <div class="text-sm text-gray-500">in procrtis</div>
+                            <div class="text-sm text-gray-500">Completed Orders</div>
                             <div class="text-2xl font-bold text-green-600">{{ $completedOrders ?? 0 }}</div>
                             <div class="text-xs text-gray-400 mt-1">Completed</div>
                         </div>

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\MachineController;
 
 
 Route::get('/', function () {
@@ -14,6 +15,7 @@ Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
+    'prevent-back-history',
 ])->group(function () {
     Route::get('/dashboard', function () {
         return view('user.dashboard');
@@ -31,6 +33,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
     'admin',
+    'prevent-back-history',
 ])->group(function () {
     Route::get('/admin', [DashboardController::class, 'index'])->name('admin.dashboard');
 
@@ -70,6 +73,12 @@ Route::middleware([
     
     // Pending orders page
     Route::get('/orders/pending', [OrderController::class, 'pending'])->name('admin.orders.pending');
+    
+    // Machine Management
+    Route::get('/machines/dashboard', [MachineController::class, 'dashboard'])->name('machines.dashboard');
+    Route::post('/orders/{order}/assign-washer', [MachineController::class, 'assignWasher'])->name('machines.assign-washer');
+    Route::post('/orders/{order}/assign-dryer', [MachineController::class, 'assignDryer'])->name('machines.assign-dryer');
+    Route::post('/machines/check-completed', [MachineController::class, 'checkCompletedMachines'])->name('machines.check-completed');
     
 });
 
