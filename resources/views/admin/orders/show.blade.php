@@ -94,7 +94,7 @@
                                 </div>
                             </div>
                             @if($order->status === 'approved')
-                            <button onclick="startPickedUp({{ $order->id }})" 
+                            <button type="button" onclick="startPickedUp({{ $order->id }}); return false;" 
                                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                                 Mark as Laundry Received
                             </button>
@@ -156,35 +156,15 @@
                         <!-- Stage 3: Drying -->
                         <div class="flex items-center justify-between p-4 border rounded-lg
                             @if($order->status === 'drying') bg-blue-50 border-blue-200
-                            @elseif(in_array($order->status, ['folding', 'quality_check', 'ready', 'completed'])) bg-green-50 border-green-200
-                            @else bg-gray-50 border-gray-200
-                            @endif">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center
-                                    @if($order->status === 'drying') bg-blue-500 text-white
-                                    @elseif(in_array($order->status, ['folding', 'quality_check', 'ready', 'completed'])) bg-green-500 text-white
-                                    @else bg-gray-300 text-gray-600
-                                    @endif">
-                                    @if(in_array($order->status, ['drying', 'folding', 'quality_check', 'ready', 'completed'])) ✓
-                                    @else 3
-                                    @endif
+                            @elseif(in_array($order->status, ['ready', 'completed'])) bg-green-50 border-green-200
+                            @else bg-white border-gray-200 @endif">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <span class="text-green-600 font-semibold text-sm">3</span>
                                 </div>
                                 <div>
                                     <h4 class="font-medium text-gray-900">Drying</h4>
-                                    <p class="text-sm text-gray-600">30 minutes cycle</p>
-                                    @if($order->status === 'drying' && $order->assigned_dryer_id)
-                                        <div class="mt-2">
-                                            <div class="text-sm font-medium text-green-600">
-                                                Machine: {{ $order->assignedDryer->name ?? 'Unknown' }}
-                                            </div>
-                                            <div class="text-sm text-green-600">
-                                                Time remaining: <span id="drying-timer">{{ $order->drying_end ? now()->diffInSeconds($order->drying_end, false) > 0 ? ceil(now()->diffInSeconds($order->drying_end, false) / 60) . ' mins' : 'Completed' : 'Calculating...' }}</span>
-                                            </div>
-                                            <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
-                                                <div id="drying-progress" class="bg-green-500 h-2 rounded-full transition-all duration-1000" style="width: {{ $order->drying_end ? (($order->drying_end->diffInSeconds(now()) / ($order->drying_end->diffInSeconds($order->drying_start))) * 100) : 0 }}%"></div>
-                                            </div>
-                                        </div>
-                                    @endif
+                                    <p class="text-sm text-gray-600">15-20 minutes</p>
                                 </div>
                             </div>
                             @if($order->loads()->where('status', 'drying')->whereNull('dryer_machine_id')->count() > 0)
@@ -205,87 +185,27 @@
                             @endif
                         </div>
 
-                        <!-- Stage 4: Folding -->
-                        <div class="flex items-center justify-between p-4 border rounded-lg
-                            @if($order->status === 'folding') bg-blue-50 border-blue-200
-                            @elseif(in_array($order->status, ['quality_check', 'ready', 'completed'])) bg-green-50 border-green-200
-                            @else bg-gray-50 border-gray-200
-                            @endif">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center
-                                    @if($order->status === 'folding') bg-blue-500 text-white
-                                    @elseif(in_array($order->status, ['quality_check', 'ready', 'completed'])) bg-green-500 text-white
-                                    @else bg-gray-300 text-gray-600
-                                    @endif">
-                                    @if(in_array($order->status, ['folding', 'quality_check', 'ready', 'completed'])) ✓
-                                    @else 4
-                                    @endif
-                                </div>
-                                <div>
-                                    <h4 class="font-medium text-gray-900">Folding</h4>
-                                    <p class="text-sm text-gray-600">15-20 minutes</p>
-                                </div>
-                            </div>
-                            @if($order->status === 'drying')
-                            <button onclick="startFolding({{ $order->id }})" 
-                                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
-                                Start Folding
-                            </button>
-                            @endif
-                        </div>
-
-                        <!-- Stage 5: Quality Check -->
-                        <div class="flex items-center justify-between p-4 border rounded-lg
-                            @if($order->status === 'quality_check') bg-blue-50 border-blue-200
-                            @elseif(in_array($order->status, ['ready', 'completed'])) bg-green-50 border-green-200
-                            @else bg-gray-50 border-gray-200
-                            @endif">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center
-                                    @if($order->status === 'quality_check') bg-blue-500 text-white
-                                    @elseif(in_array($order->status, ['ready', 'completed'])) bg-green-500 text-white
-                                    @else bg-gray-300 text-gray-600
-                                    @endif">
-                                    @if(in_array($order->status, ['quality_check', 'ready', 'completed'])) ✓
-                                    @else 5
-                                    @endif
-                                </div>
-                                <div>
-                                    <h4 class="font-medium text-gray-900">Quality Check</h4>
-                                    <p class="text-sm text-gray-600">5-10 minutes inspection</p>
-                                </div>
-                            </div>
-                            @if($order->status === 'folding')
-                            <button onclick="startQualityCheck({{ $order->id }})" 
-                                    class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition">
-                                Start Quality Check
-                            </button>
-                            @endif
-                        </div>
-
-                        <!-- Stage 6: Ready -->
+                        <!-- Stage 4: Ready -->
                         <div class="flex items-center justify-between p-4 border rounded-lg
                             @if($order->status === 'ready') bg-blue-50 border-blue-200
                             @elseif($order->status === 'completed') bg-green-50 border-green-200
-                            @else bg-gray-50 border-gray-200
-                            @endif">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center
-                                    @if($order->status === 'ready') bg-blue-500 text-white
-                                    @elseif($order->status === 'completed') bg-green-500 text-white
-                                    @else bg-gray-300 text-gray-600
-                                    @endif">
-                                    @if(in_array($order->status, ['ready', 'completed'])) ✓
-                                    @else 6
-                                    @endif
+                            @else bg-white border-gray-200 @endif">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <span class="text-indigo-600 font-semibold text-sm">4</span>
                                 </div>
                                 <div>
                                     <h4 class="font-medium text-gray-900">Ready for Pickup/Delivery</h4>
                                     <p class="text-sm text-gray-600">Order completed and ready</p>
                                 </div>
                             </div>
-                            @if($order->status === 'quality_check')
-                            <button onclick="markAsReady({{ $order->id }})" 
+                            @if($order->status === 'ready')
+                            <button type="button" onclick="markAsCompleted({{ $order->id }}); return false;" 
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                                Mark as Completed
+                            </button>
+                            @elseif($order->loads()->where('status', 'completed')->count() > 0)
+                            <button type="button" onclick="markAsReady({{ $order->id }}); return false;" 
                                     class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                                 Mark as Ready
                             </button>
@@ -344,7 +264,9 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ status: 'picked_up' })
             })
@@ -402,56 +324,16 @@
             });
         }
 
-        function startFolding(orderId) {
-            fetch(`/orders/${orderId}/update-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ status: 'folding' })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error starting folding');
-            });
-        }
-
-        function startQualityCheck(orderId) {
-            fetch(`/orders/${orderId}/update-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ status: 'quality_check' })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error starting quality check');
-            });
-        }
-
         function markAsReady(orderId) {
             fetch(`/orders/${orderId}/update-status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify({ status: 'ready_for_pickup' })
+                body: JSON.stringify({ status: 'ready' })
             })
             .then(response => response.json())
             .then(data => {
@@ -462,6 +344,29 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error marking as ready');
+            });
+        }
+
+        function markAsCompleted(orderId) {
+            fetch(`/orders/${orderId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ status: 'completed' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error marking as completed');
             });
         }
 

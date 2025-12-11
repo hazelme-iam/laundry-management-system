@@ -196,12 +196,6 @@ class MachineController extends Controller
                     'drying_end' => null
                 ]);
             }
-            
-            // Update order status if all loads are completed
-            $order = $load->order;
-            if ($order && $order->loads()->where('status', '!=', 'completed')->count() === 0) {
-                $order->update(['status' => 'folding']);
-            }
         }
 
         return response()->json([
