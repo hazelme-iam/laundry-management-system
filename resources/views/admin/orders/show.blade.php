@@ -9,7 +9,7 @@
             <!-- Breadcrumb Navigation -->
             <div class="px-4 sm:px-0 mb-6">
                 <x-breadcrumbs :items="[
-                    'Orders Management' => route('admin.orders.index'),
+                    'Laundry Management' => route('admin.orders.index'),
                     'Order Details' => null
                 ]" />
             </div>

@@ -6,8 +6,15 @@ use App\Models\Order;
 use App\Models\Customer;
 use App\Models\Machine;
 use App\Models\Load;
+use App\Models\User;
+use App\Services\CacheService;
+use App\Services\NotificationService;
+use App\Rules\ValidWeight;
+use App\Rules\ValidMonetary;
+use App\Rules\ValidFutureDate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
@@ -21,7 +28,8 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $query = Order::with(['customer', 'creator', 'updater', 'loads', 'primaryWasher', 'primaryDryer']);
+        // Use selective eager loading - only load what's needed for the list view
+        $query = Order::with(['customer', 'creator']);
 
         // Status filter
         if (request('status')) {
@@ -49,9 +57,11 @@ class OrderController extends Controller
 
         $orders = $query->latest()->paginate(10);
 
-        $pendingCount = Order::where('status', 'pending')->count();
-        $inProgressCount = Order::whereIn('status', ['picked_up', 'washing', 'drying', 'folding', 'quality_check'])->count();
-        $completedCount = Order::where('status', 'completed')->count();
+        // Use cached order statistics instead of multiple queries
+        $stats = CacheService::getOrderStats();
+        $pendingCount = $stats['pending'];
+        $inProgressCount = $stats['in_progress'];
+        $completedCount = $stats['completed'];
 
         return view('admin.orders.index', compact('orders', 'pendingCount', 'inProgressCount', 'completedCount'));
     }
@@ -61,7 +71,7 @@ class OrderController extends Controller
      */
     public function create()
     {
-        $customers = Customer::all();
+        $customers = CacheService::getCustomerList();
         return view('admin.orders.create', compact('customers'));
     }
 
@@ -71,19 +81,55 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'weight' => 'required|numeric|min:0.1',
+            'customer_id' => 'required', // Will validate manually
+            'weight' => ['required', new ValidWeight],
             'add_ons' => 'nullable|array',
-            'subtotal' => 'required|numeric',
-            'discount' => 'required|numeric',
-            'total_amount' => 'required|numeric',
-            'amount_paid' => 'required|numeric',
-            'pickup_date' => 'nullable|date',
-            'estimated_finish' => 'required|date',
-            'remarks' => 'nullable|string',
-            'priority' => 'nullable|in:low,normal,high,urgent',
-            'service_type' => 'nullable|in:standard,express,premium',
+            'add_ons.*' => 'string|in:detergent,fabric_conditioner',
+            'subtotal' => ['required', new ValidMonetary],
+            'discount' => ['required', new ValidMonetary],
+            'total_amount' => ['required', new ValidMonetary],
+            'amount_paid' => ['required', new ValidMonetary],
+            'pickup_date' => ['nullable', 'date', new ValidFutureDate(true, 1)],
+            'estimated_finish' => ['required', 'date', new ValidFutureDate(false, 1)],
+            'remarks' => 'nullable|string|max:1000',
         ]);
+
+        // Handle virtual customer IDs (user_2 format)
+        $customerId = $request->customer_id;
+        if (strpos($customerId, 'user_') === 0) {
+            // This is a virtual customer - extract user ID
+            $userId = str_replace('user_', '', $customerId);
+            $user = User::findOrFail($userId);
+            
+            // Create or get customer record for this user
+            $customer = Customer::firstOrCreate([
+                'user_id' => $userId,
+            ], [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone ?? 'N/A',
+                'address' => 'N/A',
+                'customer_type' => 'online',
+            ]);
+            
+            $data['customer_id'] = $customer->id;
+        } else {
+            // Regular customer ID - validate it exists
+            $customer = Customer::findOrFail($customerId);
+            $data['customer_id'] = $customerId;
+        }
+
+        // Sanitize text inputs to prevent XSS
+        $data['remarks'] = Str::limit(strip_tags($data['remarks'] ?? ''), 1000);
+
+        // Validate business logic
+        if ($data['discount'] > $data['subtotal']) {
+            return back()->withErrors(['discount' => 'Discount cannot be greater than subtotal.'])->withInput();
+        }
+
+        if ($data['amount_paid'] > $data['total_amount']) {
+            return back()->withErrors(['amount_paid' => 'Amount paid cannot be greater than total amount.'])->withInput();
+        }
 
         // Set default status to 'pending' for new orders
         $data['status'] = 'pending';
@@ -94,6 +140,13 @@ class OrderController extends Controller
         
         // Automatically create optimized loads
         $loads = $order->createOptimizedLoads();
+
+        // Clear relevant caches
+        CacheService::clearOrderRelatedCaches();
+        CacheService::clearCustomerCache();
+
+        // Send notifications
+        NotificationService::newOrderCreated($order);
 
         return redirect()->route('admin.orders.index')->with('success', 'Order created successfully.');
     }
@@ -134,7 +187,7 @@ class OrderController extends Controller
      */
     public function edit(Order $order)
     {
-        $customers = Customer::all();
+        $customers = CacheService::getCustomerList();
         return view('admin.orders.edit', compact('order', 'customers'));
     }
 
@@ -146,35 +199,67 @@ class OrderController extends Controller
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'status' => 'required|in:pending,approved,rejected,picked_up,washing,drying,folding,quality_check,ready,delivery_pending,completed,cancelled',
-            'weight' => 'required|numeric|min:0.1',
+            'weight' => ['required', new ValidWeight],
             'add_ons' => 'nullable|array',
-            'subtotal' => 'required|numeric',
-            'discount' => 'required|numeric',
-            'total_amount' => 'required|numeric',
-            'amount_paid' => 'required|numeric',
-            'pickup_date' => 'nullable|date',
-            'estimated_finish' => 'required|date',
+            'add_ons.*' => 'string|in:detergent,fabric_conditioner',
+            'subtotal' => ['required', new ValidMonetary],
+            'discount' => ['required', new ValidMonetary],
+            'total_amount' => ['required', new ValidMonetary],
+            'amount_paid' => ['required', new ValidMonetary],
+            'pickup_date' => ['nullable', 'date', new ValidFutureDate(true, 1)],
+            'estimated_finish' => ['required', 'date', new ValidFutureDate(false, 1)],
             'finished_at' => 'nullable|date',
-            'remarks' => 'nullable|string',
+            'remarks' => 'nullable|string|max:1000',
             'primary_washer_id' => 'nullable|exists:machines,id',
             'primary_dryer_id' => 'nullable|exists:machines,id',
-            'priority' => 'nullable|in:low,normal,high,urgent',
-            'service_type' => 'nullable|in:standard,express,premium',
         ]);
+
+        // Sanitize text inputs to prevent XSS
+        $data['remarks'] = Str::limit(strip_tags($data['remarks'] ?? ''), 1000);
+
+        // Validate business logic
+        if ($data['discount'] > $data['subtotal']) {
+            return back()->withErrors(['discount' => 'Discount cannot be greater than subtotal.'])->withInput();
+        }
+
+        if ($data['amount_paid'] > $data['total_amount']) {
+            return back()->withErrors(['amount_paid' => 'Amount paid cannot be greater than total amount.'])->withInput();
+        }
+
+        // Validate status transitions
+        if (!$this->isValidStatusTransition($order->status, $data['status'])) {
+            return back()->withErrors(['status' => 'Invalid status transition from ' . $order->status . ' to ' . $data['status']])->withInput();
+        }
 
         $data['updated_by'] = Auth::id();
 
+        // Store original status for notification
+        $originalStatus = $order->status;
+
         $order->update($data);
 
-        return redirect()->route('admin.orders.index')->with('success', 'Order updated successfully.');
+        // Clear relevant caches
+        CacheService::clearOrderRelatedCaches();
+        CacheService::clearCustomerCache();
+
+        // Send notifications if status changed
+        if (isset($data['status']) && $data['status'] !== $originalStatus) {
+            NotificationService::orderStatusChanged($order);
+        }
+
+        return redirect()->route('admin.orders.show', $order)->with('success', 'Order updated successfully.');
     }
 
     /**
-     * Remove the specified order from storage.
+     * Remove the specified resource from storage.
      */
     public function destroy(Order $order)
     {
         $order->delete();
+        
+        // Clear relevant caches
+        CacheService::clearOrderRelatedCaches();
+        
         return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
     }
 
@@ -184,8 +269,9 @@ class OrderController extends Controller
     public function calculate(Request $request)
     {
         $request->validate([
-            'weight' => 'required|numeric|min:1',
+            'weight' => ['required', new ValidWeight],
             'add_ons' => 'nullable|array',
+            'add_ons.*' => 'string|in:detergent,fabric_conditioner',
         ]);
 
         $weight = $request->weight;
@@ -193,32 +279,47 @@ class OrderController extends Controller
         
         // Base price: 150 per kilo (minimum)
         $basePrice = 150;
-        $subtotal = $weight * $basePrice;
+        $subtotal = $basePrice * max(1, $weight);
         
-        // Add-ons pricing
+        // Add-on prices
         $addOnPrices = [
-            'folding' => 20,
-            'hanger' => 15,
-            'ironing' => 30,
             'detergent' => 16,
             'fabric_conditioner' => 14,
         ];
         
-        $addOnsTotal = 0;
         foreach ($addOns as $addOn) {
             if (isset($addOnPrices[$addOn])) {
-                $addOnsTotal += $addOnPrices[$addOn];
+                $subtotal += $addOnPrices[$addOn];
             }
         }
         
-        $subtotal += $addOnsTotal;
-        
         return response()->json([
-            'subtotal' => $subtotal,
-            'total_amount' => $subtotal, // Initially same as subtotal before discount
-            'add_ons_total' => $addOnsTotal,
-            'base_amount' => $weight * $basePrice,
+            'subtotal' => number_format($subtotal, 2),
+            'total_amount' => number_format($subtotal, 2),
         ]);
+    }
+
+    /**
+     * Validate if status transition is allowed
+     */
+    private function isValidStatusTransition($fromStatus, $toStatus)
+    {
+        $validTransitions = [
+            'pending' => ['approved', 'rejected', 'cancelled'],
+            'approved' => ['picked_up', 'cancelled'],
+            'rejected' => ['pending', 'cancelled'],
+            'picked_up' => ['washing', 'cancelled'],
+            'washing' => ['drying', 'cancelled'],
+            'drying' => ['folding', 'cancelled'],
+            'folding' => ['quality_check', 'cancelled'],
+            'quality_check' => ['ready', 'cancelled'],
+            'ready' => ['delivery_pending', 'completed'],
+            'delivery_pending' => ['completed', 'cancelled'],
+            'completed' => [], // Terminal state
+            'cancelled' => [], // Terminal state
+        ];
+
+        return in_array($toStatus, $validTransitions[$fromStatus] ?? []);
     }
 
     // User-specific methods
@@ -298,6 +399,9 @@ class OrderController extends Controller
         ];
 
         $order = Order::create($orderData);
+
+        // Notify admins that an online customer placed an order
+        NotificationService::newOrderCreated($order);
 
         return redirect()->route('user.orders.index')->with('success', 'Order submitted successfully! Awaiting admin approval.');
     }

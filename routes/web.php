@@ -83,6 +83,11 @@ Route::middleware([
     Route::post('/orders/{order}/assign-dryer', [MachineController::class, 'assignDryer'])->name('machines.assign-dryer');
     Route::post('/machines/check-completed', [MachineController::class, 'checkCompletedMachines'])->name('machines.check-completed');
     
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    
 });
 
 

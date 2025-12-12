@@ -158,14 +158,32 @@
                                                 <span class="text-gray-400">Edit</span>
                                                 <span class="text-gray-400">Delete</span>
                                             @else
+                                                <!-- View -->
                                                 <a href="{{ route('admin.customers.show', $customer) }}"
-                                                   class="text-blue-600 hover:text-blue-900">View</a>
+                                                   class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                                   title="View customer">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <path d="M10 3c-4.5 0-8 4-8 7s3.5 7 8 7 8-4 8-7-3.5-7-8-7zm0 12a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z" />
+                                                    </svg>
+                                                </a>
+
+                                                <!-- Edit -->
                                                 <a href="{{ route('admin.customers.edit', $customer) }}"
-                                                   class="text-yellow-600 hover:text-yellow-900">Edit</a>
+                                                   class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                                   title="Edit customer">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-8.5 8.5A2 2 0 016.5 16H4a1 1 0 01-1-1v-2.5a2 2 0 01.586-1.414l8.5-8.5z" />
+                                                    </svg>
+                                                </a>
+
+                                                <!-- Delete -->
                                                 <button type="button"
                                                         onclick="openDeleteModal('{{ $customer->id }}', '{{ addslashes($customer->name) }}')"
-                                                        class="text-red-600 hover:text-red-900">
-                                                    Delete
+                                                        class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                                        title="Delete customer">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 100 2h12a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM5 8a1 1 0 011-1h8a1 1 0 011 1v7a3 3 0 01-3 3H8a3 3 0 01-3-3V8z" clip-rule="evenodd" />
+                                                    </svg>
                                                 </button>
                                             @endif
                                         </div>

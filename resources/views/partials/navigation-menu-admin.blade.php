@@ -22,7 +22,7 @@
                         {{ __('Customers') }}
                     </x-nav-link>
                     <x-nav-link href="{{ url('/orders') }}" :active="request()->is('orders*')">
-                        {{ __('Orders Management') }}
+                        {{ __('Laundry Management') }}
                     </x-nav-link>
                     <x-nav-link href="{{ url('/admin/machines/dashboard') }}" :active="request()->is('admin/machines*')">
                         {{ __('Machines') }}
@@ -195,7 +195,7 @@
                 {{ __('Customers') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ url('/orders') }}" :active="request()->is('orders*')">
-                {{ __('Orders Management') }}
+                {{ __('Laundry Management') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link href="{{ url('/admin/machines/dashboard') }}" :active="request()->is('admin/machines*')">
                 {{ __('Machines') }}

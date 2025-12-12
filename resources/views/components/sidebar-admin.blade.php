@@ -59,7 +59,7 @@
                     <svg class="mr-3 h-5 w-5 {{ request()->is('orders*') ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                     </svg>
-                    {{ __('Orders Management') }}
+                    {{ __('Laundry Management') }}
                 </a>
 
                 <a href="{{ route('machines.dashboard') }}"
@@ -146,9 +146,9 @@
                     @endif
 
                       <!-- Notification Icon -->
-                <div class="relative">
-                    <x-notification-icon :count="5" />
-                </div>
+                 <div class="relative mr-3">
+                        <x-notification-bell />
+                    </div>
                 
                     <!-- User Account Dropdown -->
                     <div class="ms-3 relative">
@@ -225,6 +225,11 @@
 
                 <!-- Right: Profile Dropdown -->
                 <div class="flex items-center">
+                    <!-- Notification Bell Container -->
+                    <div class="relative mr-3">
+                        <x-notification-bell />
+                    </div>
+                    
                     <!-- User Account Dropdown -->
                     <div class="relative">
                         <x-dropdown align="right" width="48">

@@ -3,24 +3,24 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <!-- Breadcrumb Navigation -->
-            <x-breadcrumbs :items="['Orders Management' => null]" />
+            <x-breadcrumbs :items="['Laundry Management' => null]" />
             
             <!-- Header -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0 px-4 sm:px-0">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Orders Management</h1>
-                    <p class="text-gray-600">Manage customer orders and track progress</p>
+                    <h1 class="text-2xl font-bold text-gray-900">Laundry Management</h1>
+                    <p class="text-gray-600">Manage customer laundry and track progress</p>
                 </div>
                 <a href="{{ route('admin.orders.create') }}" 
                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
-                    <span class="mr-2">+</span> New Order
+                    <span class="mr-2">+</span> New Laundry
                 </a>
             </div>
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 px-4 sm:px-0">
                 <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                    <div class="text-sm text-gray-500">Total Orders</div>
+                    <div class="text-sm text-gray-500">Total Laundry</div>
                     <div class="text-2xl font-bold text-gray-800">{{ $orders->total() }}</div>
                 </div>
                 <div class="bg-white rounded-lg p-4 sm:p-6 shadow border cursor-pointer hover:shadow-md transition-shadow" 

@@ -14,7 +14,7 @@
         </a>
         <a href="{{ url('/orders') }}"
            class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('orders*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">
-            {{ __('Orders Management') }}
+            {{ __('Laundry Management') }}
         </a>
         <a href="{{ route('machines.dashboard') }}"
            class="block px-3 py-2 rounded hover:bg-gray-100 {{ request()->is('machines*') ? 'text-gray-900 font-medium' : 'text-gray-700' }}">

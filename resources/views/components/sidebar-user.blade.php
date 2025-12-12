@@ -70,9 +70,9 @@
                 <div class="flex items-center">
 
                 <!-- Notification Icon -->
-                <div class="relative">
-                    <x-notification-icon :count="5" />
-                </div>
+                 <div class="relative mr-3">
+                        <x-notification-bell />
+                    </div>
                 
                     <!-- User Account Dropdown -->
                     <div class="relative">
@@ -150,6 +150,11 @@
                 
                 <!-- Right: Profile Dropdown -->
                 <div class="flex items-center">
+                    <!-- Notification Bell Container -->
+                    <div class="relative mr-3">
+                        <x-notification-bell />
+                    </div>
+                    
                     <!-- User Account Dropdown -->
                     <div class="relative">
                         <x-dropdown align="right" width="48">

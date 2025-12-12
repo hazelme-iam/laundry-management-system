@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Machine;
 use App\Models\Order;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -18,8 +19,9 @@ class MachineController extends Controller
 
     public function dashboard()
     {
-        $washers = Machine::washers()->with('currentOrder')->get();
-        $dryers = Machine::dryers()->with('currentOrder')->get();
+        $machineData = CacheService::getMachineStatuses();
+        $washers = $machineData['washers'];
+        $dryers = $machineData['dryers'];
         
         return view('admin.machines.dashboard', compact('washers', 'dryers'));
     }
