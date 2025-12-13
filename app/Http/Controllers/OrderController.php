@@ -671,6 +671,42 @@ class OrderController extends Controller
     }
 
     /**
+     * Confirm weight for an order
+     */
+    public function confirmWeight(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'confirmed_weight' => 'required|numeric|min:0.1|max:100',
+        ]);
+
+        // Prevent confirmation if order is already in processing
+        if (in_array($order->status, ['washing', 'drying', 'folding', 'quality_check', 'ready', 'completed'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot confirm weight for orders already in processing.'
+            ], 422);
+        }
+
+        $order->update([
+            'confirmed_weight' => $data['confirmed_weight'],
+            'weight_confirmed_at' => now(),
+            'weight_confirmed_by' => Auth::id(),
+            'updated_by' => Auth::id()
+        ]);
+
+        // If loads don't exist yet, create them now with confirmed weight
+        if ($order->loads()->count() === 0) {
+            $order->createOptimizedLoads();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Weight confirmed: {$data['confirmed_weight']} kg",
+            'confirmed_weight' => $data['confirmed_weight']
+        ]);
+    }
+
+    /**
      * Update order status
      */
     public function updateStatus(Request $request, Order $order)

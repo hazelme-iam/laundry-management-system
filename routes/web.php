@@ -79,6 +79,7 @@ Route::middleware([
     Route::post('/orders/{order}/decline', [OrderController::class, 'decline'])->name('admin.orders.decline');
     
     // Laundry workflow routes
+    Route::post('/orders/{order}/confirm-weight', [OrderController::class, 'confirmWeight'])->name('admin.orders.confirm-weight');
     Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
     Route::post('/orders/{order}/start-washing', [OrderController::class, 'startWashing'])->name('admin.orders.start-washing');
     Route::post('/orders/{order}/start-drying', [OrderController::class, 'startDrying'])->name('admin.orders.start-drying');

@@ -65,6 +65,42 @@
                 </div>
             </div>
 
+            <!-- Weight Confirmation Card -->
+            @if(!$order->isWeightConfirmed() && in_array($order->status, ['approved', 'picked_up']))
+            <div class="bg-amber-50 border border-amber-200 rounded-lg mx-4 sm:mx-0 p-6">
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 4v2M6.343 3.665c.886-.887 2.318-.887 3.203 0l9.759 9.759c.887.886.887 2.318 0 3.203l-9.759 9.759c-.886.887-2.317.887-3.203 0L3.14 16.168c-.887-.886-.887-2.317 0-3.203L6.343 3.665z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-amber-900 mb-3">Confirm Weight</h3>
+                        <p class="text-sm text-amber-800 mb-4">
+                            @if($order->weight)
+                                Customer declared weight: <strong>{{ $order->weight }} kg</strong>. Please measure and confirm the actual weight.
+                            @else
+                                Customer selected "measure at shop". Please measure and confirm the weight.
+                            @endif
+                        </p>
+                        <form id="confirmWeightForm" class="flex items-end gap-3">
+                            @csrf
+                            <div class="flex-1">
+                                <label for="confirmed_weight" class="block text-sm font-medium text-gray-700 mb-1">Confirmed Weight (kg)</label>
+                                <input type="number" step="0.01" min="0.1" max="100" id="confirmed_weight" name="confirmed_weight" 
+                                       class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                       placeholder="Enter weight" required>
+                            </div>
+                            <button type="button" onclick="confirmWeight({{ $order->id }})" 
+                                    class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition font-medium">
+                                Confirm Weight
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Laundry Workflow Control -->
             <div class="bg-white shadow-lg rounded-lg mx-4 sm:mx-0">
                 <div class="p-6">
@@ -264,6 +300,39 @@
     <script>
         let timers = {};
         let intervals = {};
+
+        function confirmWeight(orderId) {
+            const weight = document.getElementById('confirmed_weight').value;
+            
+            if (!weight || parseFloat(weight) < 0.1) {
+                alert('Please enter a valid weight (minimum 0.1 kg)');
+                return;
+            }
+
+            fetch(`/orders/${orderId}/confirm-weight`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ confirmed_weight: weight })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to confirm weight'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error confirming weight');
+            });
+        }
 
         function startPickedUp(orderId) {
             fetch(`/orders/${orderId}/update-status`, {
