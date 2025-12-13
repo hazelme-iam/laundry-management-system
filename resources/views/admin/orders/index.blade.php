@@ -1,81 +1,92 @@
 {{-- resources/views/admin/orders/index.blade.php --}}
 <x-sidebar-app>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <!-- Breadcrumb Navigation -->
-            <x-breadcrumbs :items="['Laundry Management' => null]" />
-            
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0 px-4 sm:px-0">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Laundry Management</h1>
-                    <p class="text-gray-600">Manage customer laundry and track progress</p>
+    <!-- Add the gray background wrapper -->
+    <div class="min-h-screen bg-gray-100">
+        <div class="py-6 md:py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <!-- Breadcrumb Navigation -->
+                <div class="mb-6">
+                    <x-breadcrumbs :items="[
+                        'Laundry Management' => null
+                    ]" />
                 </div>
-                <a href="{{ route('admin.orders.create') }}" 
-                   class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
-                    <span class="mr-2">+</span> New Laundry
-                </a>
-            </div>
+                
+                <!-- Header Card -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                    <div class="p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Laundry Management</h1>
+                                <p class="text-gray-600 mt-1">Manage customer laundry and track progress</p>
+                            </div>
+                            <a href="{{ route('admin.orders.create') }}" 
+                               class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+                                <span class="mr-2">+</span> New Laundry
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 px-4 sm:px-0">
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                    <div class="text-sm text-gray-500">Total Laundry</div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $orders->total() }}</div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                        <div class="text-sm text-gray-500">Total Laundry</div>
+                        <div class="text-2xl font-bold text-gray-800">{{ $orders->total() }}</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 sm:p-6 shadow border cursor-pointer hover:shadow-md transition-shadow" 
+                         onclick="window.location.href='{{ route('admin.orders.pending') }}'">
+                        <div class="text-sm text-gray-500">Pending Orders</div>
+                        <div class="text-2xl font-bold text-yellow-600">{{ $pendingCount }}</div>
+                        <div class="text-xs text-blue-600 mt-1">Click to view →</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                        <div class="text-sm text-gray-500">In Progress</div>
+                        <div class="text-2xl font-bold text-blue-600">{{ $inProgressCount }}</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
+                        <div class="text-sm text-gray-500">Completed</div>
+                        <div class="text-2xl font-bold text-green-600">{{ $completedCount }}</div>
+                    </div>
                 </div>
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border cursor-pointer hover:shadow-md transition-shadow" 
-                     onclick="window.location.href='{{ route('admin.orders.pending') }}'">
-                    <div class="text-sm text-gray-500">Pending Orders</div>
-                    <div class="text-2xl font-bold text-yellow-600">{{ $pendingCount }}</div>
-                    <div class="text-xs text-blue-600 mt-1">Click to view →</div>
-                </div>
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                    <div class="text-sm text-gray-500">In Progress</div>
-                    <div class="text-2xl font-bold text-blue-600">{{ $inProgressCount }}</div>
-                </div>
-                <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                    <div class="text-sm text-gray-500">Completed</div>
-                    <div class="text-2xl font-bold text-green-600">{{ $completedCount }}</div>
-                </div>
-            </div>
 
             <!-- Error/Success Messages -->
-            @if(session('error'))
-                <div class="mx-4 sm:mx-0 mb-4">
-                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium">{{ session('error') }}</p>
+                @if(session('error'))
+                    <div class="mb-4">
+                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p>{{ session('error') }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            @endif
+                @endif
 
-            @if(session('success'))
-                <div class="mx-4 sm:mx-0 mb-4">
-                    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium">{{ session('success') }}</p>
+                @if(session('success'))
+                    <div class="mb-4">
+                        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p>{{ session('success') }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            @endif
+                @endif
 
             <!-- Orders Table -->
-            <div class="bg-white rounded-lg shadow overflow-hidden mx-4 sm:mx-0">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <!-- Search / Filters -->
                 <!-- resources/views/admin/orders/index.blade.php -->
 <!-- Replace the existing filters block with this form -->
@@ -232,13 +243,14 @@
             </button>
         @else
             <!-- Edit -->
-            <a href="{{ route('admin.orders.edit', $order) }}"
-               class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-               title="Edit">
+            <button type="button"
+                    onclick="openEditModal('{{ route('admin.orders.edit', $order) }}')"
+                    class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                    title="Edit">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-8.5 8.5A2 2 0 016.5 16H4a1 1 0 01-1-1v-2.5a2 2 0 01.586-1.414l8.5-8.5z" />
                 </svg>
-            </a>
+            </button>
         @endif
 
         @if($order->status !== 'approved')
@@ -313,6 +325,19 @@
                             :showIcon="true"
                         />
                     @endif
+
+                    @if($order->status !== 'pending' && $order->status !== 'approved')
+                        <!-- Edit Modal -->
+                        <x-confirmationmodal 
+                            :modalId="'editOrderModal' . $order->id"
+                            title="Edit Order"
+                            message="You are about to edit this order. Continue?"
+                            confirmText="Edit"
+                            cancelText="Cancel"
+                            confirmColor="blue"
+                            :formId="'editOrderForm' . $order->id"
+                        />
+                    @endif
                 @endforeach
 
                 <!-- Pagination -->
@@ -325,7 +350,55 @@
         </div>
     </div>
 
+    <!-- Hidden Edit Forms -->
+    @foreach($orders as $order)
+        @if($order->status !== 'pending' && $order->status !== 'approved')
+            <form id="editOrderForm{{ $order->id }}" method="GET" style="display: none;">
+            </form>
+        @endif
+    @endforeach
+
     <script>
+        // Function to open edit confirmation modal
+        function openEditModal(editUrl) {
+            // Extract order ID from URL (last segment)
+            const orderId = editUrl.split('/').slice(-2)[0];
+            
+            // Store the edit URL in the form action
+            const form = document.getElementById('editOrderForm' + orderId);
+            if (form) {
+                form.action = editUrl;
+            }
+            
+            // Show the modal
+            openModal('editOrderModal' + orderId);
+        }
+
+        // Handle edit modal confirmation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all edit modals and attach event listeners
+            const editModals = document.querySelectorAll('[id^="editOrderModal"]');
+            editModals.forEach(modal => {
+                const confirmButton = modal.querySelector('.confirm-button');
+                if (confirmButton) {
+                    // Remove any existing event listeners to prevent duplicates
+                    const newConfirmButton = confirmButton.cloneNode(true);
+                    confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+                    
+                    // Add click event listener
+                    newConfirmButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const modalId = modal.id;
+                        const orderId = modalId.replace('editOrderModal', '');
+                        const form = document.getElementById('editOrderForm' + orderId);
+                        if (form && form.action) {
+                            form.submit();
+                        }
+                    });
+                }
+            });
+        });
+
         function markAsPickedUp(orderId) {
             if (confirm('Mark this order as laundry received?')) {
                 fetch(`/admin/orders/${orderId}/update-status`, {
@@ -349,4 +422,7 @@
             }
         }
     </script>
+            </div>
+        </div>
+    </div>
 </x-sidebar-app>
