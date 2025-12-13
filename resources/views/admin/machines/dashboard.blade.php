@@ -5,6 +5,11 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Breadcrumb Navigation -->
+            <div class="mb-6">
+                <x-breadcrumbs :items="['Machine Dashboard' => null]" />
+            </div>
+            
             <livewire:machine-dashboard wire:poll.5s />
         </div>
     </div>
