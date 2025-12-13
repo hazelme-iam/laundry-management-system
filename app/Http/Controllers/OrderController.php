@@ -294,19 +294,11 @@ class OrderController extends Controller
 
         $data['updated_by'] = Auth::id();
 
-        // Store original status for notification
-        $originalStatus = $order->status;
-
         $order->update($data);
 
         // Clear relevant caches
         CacheService::clearOrderRelatedCaches();
         CacheService::clearCustomerCache();
-
-        // Send notifications if status changed
-        if (isset($data['status']) && $data['status'] !== $originalStatus) {
-            NotificationService::orderStatusChanged($order);
-        }
 
         return redirect()->route('admin.orders.show', $order)->with('success', 'Order updated successfully.');
     }

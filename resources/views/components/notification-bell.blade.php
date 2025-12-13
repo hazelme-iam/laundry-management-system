@@ -122,13 +122,11 @@
         </div>
 
         <!-- Footer -->
-        @if($notifications->count() > 0)
-            <div class="px-4 py-3 border-t border-gray-200">
-                <a href="{{ route('notifications.index') }}" class="text-sm text-blue-600 hover:text-blue-800">
-                    View all notifications
-                </a>
-            </div>
-        @endif
+        <div class="px-4 py-3 border-t border-gray-200">
+            <a href="{{ route('notifications.index') }}" class="text-sm text-blue-600 hover:text-blue-800">
+                View all notifications
+            </a>
+        </div>
     </div>
 </div>
 

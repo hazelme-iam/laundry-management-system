@@ -4,10 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\NotificationService;
 
 class Order extends Model
 {
     use HasFactory;
+
+    protected static function booted()
+    {
+        static::updated(function (Order $order) {
+            if ($order->wasChanged('status')) {
+                NotificationService::orderStatusChanged($order);
+            }
+        });
+    }
 
     protected $table = 'orders';
 
