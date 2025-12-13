@@ -105,6 +105,35 @@
                                     const BASE_WEIGHT_LIMIT = 5;
                                     const EXCESS_PRICE_PER_KG = 30;
 
+                                    // Quantity control functions
+                                    function increaseQuantity(addOnType) {
+                                        const input = document.getElementById(`${addOnType}_qty`);
+                                        if (input) {
+                                            input.value = parseInt(input.value) + 1;
+                                            updateAddOnSubtotal(addOnType);
+                                            calculateTotalPrice();
+                                        }
+                                    }
+
+                                    function decreaseQuantity(addOnType) {
+                                        const input = document.getElementById(`${addOnType}_qty`);
+                                        if (input && parseInt(input.value) > 0) {
+                                            input.value = parseInt(input.value) - 1;
+                                            updateAddOnSubtotal(addOnType);
+                                            calculateTotalPrice();
+                                        }
+                                    }
+
+                                    function updateAddOnSubtotal(addOnType) {
+                                        const qty = parseInt(document.getElementById(`${addOnType}_qty`)?.value) || 0;
+                                        const price = addOnPrices[addOnType] || 0;
+                                        const subtotal = qty * price;
+                                        const subtotalElement = document.getElementById(`${addOnType}_subtotal`);
+                                        if (subtotalElement) {
+                                            subtotalElement.textContent = `₱${subtotal.toFixed(2)}`;
+                                        }
+                                    }
+
                                     // Calculate total price
                                     function calculateTotalPrice() {
                                         const weight = parseFloat(document.getElementById('weight').value) || 0;
@@ -125,12 +154,13 @@
                                             baseAmount = BASE_PRICE + (excessWeight * EXCESS_PRICE_PER_KG);
                                         }
                                         
-                                        // Calculate add-ons total
+                                        // Calculate add-ons total based on quantities
                                         let addOnsTotal = 0;
-                                        const selectedAddOns = document.querySelectorAll('.add-on-checkbox:checked');
-                                        selectedAddOns.forEach(checkbox => {
-                                            addOnsTotal += addOnPrices[checkbox.value] || 0;
-                                        });
+                                        const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
+                                        const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
+                                        
+                                        addOnsTotal += detergentQty * (addOnPrices['detergent'] || 0);
+                                        addOnsTotal += fabricConditionerQty * (addOnPrices['fabric_conditioner'] || 0);
 
                                         // Calculate subtotal
                                         const subtotal = baseAmount + addOnsTotal;
@@ -298,14 +328,26 @@
                                     // Show confirmation modal with order details
                                     function showOrderConfirmationModal(weightOption, weight, subtotal) {
                                         const weightDisplay = weightOption === 'manual_weight' ? `${weight} kg` : 'To be measured at shop';
-                                        const addOnsDisplay = document.querySelectorAll('.add-on-checkbox:checked').length > 0 
-                                            ? Array.from(document.querySelectorAll('.add-on-checkbox:checked')).map(cb => cb.nextElementSibling.textContent.trim()).join(', ')
-                                            : 'None';
+                                        
+                                        // Build add-ons display
+                                        const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
+                                        const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
+                                        
+                                        let addOnsDisplay = '';
+                                        if (detergentQty > 0) {
+                                            addOnsDisplay += `Detergent x${detergentQty} (₱${(detergentQty * 16).toFixed(2)})<br>`;
+                                        }
+                                        if (fabricConditionerQty > 0) {
+                                            addOnsDisplay += `Fabric Conditioner x${fabricConditionerQty} (₱${(fabricConditionerQty * 14).toFixed(2)})<br>`;
+                                        }
+                                        if (!addOnsDisplay) {
+                                            addOnsDisplay = 'None';
+                                        }
                                         
                                         const modalContent = `
                                             <div class="space-y-3 text-left">
                                                 <p class="text-gray-700"><strong>Weight:</strong> ${weightDisplay}</p>
-                                                <p class="text-gray-700"><strong>Add-ons:</strong> ${addOnsDisplay}</p>
+                                                <p class="text-gray-700"><strong>Add-ons:</strong><br>${addOnsDisplay}</p>
                                                 <p class="text-gray-700"><strong>Subtotal:</strong> ₱${parseFloat(subtotal).toFixed(2)}</p>
                                                 <hr class="my-3">
                                                 <p class="text-sm text-gray-600">Your order will be submitted for admin approval. Discount and final payment will be handled by the admin.</p>
@@ -404,27 +446,38 @@
                                 </div>
                             </div>
 
-                            <!-- Add-ons Section -->
+                            <!-- Add-ons Section with Quantity -->
                             <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Add-ons</label>
-                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                                    @php
-                                        $addOns = [
-                                            'detergent' => 'Detergent (+₱16)',
-                                            'fabric_conditioner' => 'Fabric Conditioner (+₱14)'
-                                        ];
-                                    @endphp
-                                    @foreach($addOns as $key => $label)
-                                        <label class="inline-flex items-center">
-                                            <input type="checkbox" name="add_ons[]" value="{{ $key }}" 
-                                                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500 add-on-checkbox">
-                                            <span class="ml-2 text-sm text-gray-700">{{ $label }}</span>
-                                        </label>
-                                    @endforeach
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Add-ons</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <!-- Detergent -->
+                                    <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                                        <div class="flex-1">
+                                            <label class="text-sm font-medium text-gray-700">Detergent</label>
+                                            <p class="text-xs text-gray-500">₱16 each</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="decreaseQuantity('detergent')" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm">−</button>
+                                            <input type="number" id="detergent_qty" name="detergent_qty" value="0" min="0" class="w-12 text-center border border-gray-300 rounded" readonly>
+                                            <button type="button" onclick="increaseQuantity('detergent')" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm">+</button>
+                                            <span id="detergent_subtotal" class="w-16 text-right font-medium text-gray-900">₱0.00</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Fabric Conditioner -->
+                                    <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                                        <div class="flex-1">
+                                            <label class="text-sm font-medium text-gray-700">Fabric Conditioner</label>
+                                            <p class="text-xs text-gray-500">₱14 each</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="decreaseQuantity('fabric_conditioner')" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm">−</button>
+                                            <input type="number" id="fabric_conditioner_qty" name="fabric_conditioner_qty" value="0" min="0" class="w-12 text-center border border-gray-300 rounded" readonly>
+                                            <button type="button" onclick="increaseQuantity('fabric_conditioner')" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm">+</button>
+                                            <span id="fabric_conditioner_subtotal" class="w-16 text-right font-medium text-gray-900">₱0.00</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                @error('add_ons')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
                             </div>
 
                             <!-- Price Breakdown Card -->
@@ -490,35 +543,6 @@
                                 </div>
                             </div>
 
-                            <!-- Priority and Service Type -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                <div>
-                                    <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
-                                    <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                            id="priority" name="priority">
-                                        <option value="low">Low Priority</option>
-                                        <option value="normal" selected>Normal</option>
-                                        <option value="high">High Priority</option>
-                                        <option value="urgent">Urgent</option>
-                                    </select>
-                                    @error('priority')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                <div>
-                                    <label for="service_type" class="block text-sm font-medium text-gray-700">Service Type</label>
-                                    <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                            id="service_type" name="service_type">
-                                        <option value="standard" selected>Standard Service</option>
-                                        <option value="express">Express Service</option>
-                                        <option value="premium">Premium Service</option>
-                                    </select>
-                                    @error('service_type')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                            </div>
 
                             <!-- Remarks -->
                             <div class="mb-6">
