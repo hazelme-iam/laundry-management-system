@@ -47,22 +47,27 @@
 
                             <!-- Contact & Address Section -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                <!-- Contact Information -->
+                                <!-- Phone Number -->
                                 <div>
-                                    <label for="customer_phone" class="block text-sm font-medium text-gray-700">
-                                        Phone Number (11 digits) *
-                                    </label>
-                                    <input type="tel" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                           id="customer_phone" name="customer_phone" required
-                                           value="{{ old('customer_phone', $customer->phone) }}"
-                                           placeholder="09XXXXXXXXX"
-                                           maxlength="11">
-                                    <div id="phone_error" class="mt-1 text-sm text-red-600 hidden">
+                                    <label for="customer_phone" class="block text-sm font-medium text-gray-700">Phone Number *</label>
+                                    <div class="relative">
+                                        <input type="tel" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10" 
+                                               id="customer_phone" name="customer_phone" value="{{ old('customer_phone', $customer->phone) }}" 
+                                               placeholder="09XXXXXXXXX" required
+                                               onblur="validatePhoneField()">
+                                        <span id="phone_status" class="absolute right-3 top-3 hidden">
+                                            <svg id="phone_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <svg id="phone_x" class="w-5 h-5 text-red-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div id="phone_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
                                         Phone number must be exactly 11 digits
                                     </div>
-                                    @error('customer_phone')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
                                     <p class="mt-1 text-xs text-gray-500">Format: 09XXXXXXXXX (11 digits total)</p>
                                 </div>
 
@@ -88,8 +93,24 @@
                                 <!-- Weight Input (conditional) -->
                                 <div id="weight_input_container" class="hidden">
                                     <label for="weight" class="block text-sm font-medium text-gray-700">Weight (KG) *</label>
-                                    <input type="number" step="0.01" min="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                           id="weight" name="weight" value="{{ old('weight') }}">
+                                    <div class="relative">
+                                        <input type="number" step="0.01" min="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10" 
+                                               id="weight" name="weight" value="{{ old('weight') }}"
+                                               placeholder="e.g., 5.5"
+                                               onblur="validateWeightField()">
+                                        <span id="weight_status" class="absolute right-3 top-3 hidden">
+                                            <svg id="weight_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <svg id="weight_x" class="w-5 h-5 text-red-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div id="weight_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        Weight must be at least 0.1 kg
+                                    </div>
                                     @error('weight')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -257,7 +278,6 @@
                                         const phone = document.getElementById('customer_phone')?.value.trim();
                                         const address = document.getElementById('customer_address')?.value.trim();
                                         const weight = document.getElementById('weight')?.value.trim();
-                                        const estimatedFinish = document.getElementById('estimated_finish')?.value.trim();
                                         const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
                                         const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
                                         
@@ -297,28 +317,13 @@
                                             }
                                         }
                                         
-                                        // Estimated finish validation
-                                        if (!estimatedFinish) {
-                                            alert('Please select estimated finish date and time');
-                                            document.getElementById('estimated_finish')?.focus();
-                                            return false;
-                                        }
-                                        
-                                        // Check if estimated finish is in the future
-                                        const estimatedFinishDate = new Date(estimatedFinish);
-                                        const now = new Date();
-                                        if (estimatedFinishDate <= now) {
-                                            alert('Estimated finish must be in the future');
-                                            document.getElementById('estimated_finish')?.focus();
-                                            return false;
-                                        }
-                                        
-                                        // Subtotal validation - allow if add-ons are selected OR weight is provided
+                                        // Subtotal validation - allow if add-ons are selected OR weight is provided OR measure at shop is selected
                                         const subtotal = parseFloat(document.getElementById('subtotal')?.value) || 0;
                                         const hasAddOns = detergentQty > 0 || fabricConditionerQty > 0;
                                         const hasWeight = weightOption === 'manual_weight' && parseFloat(weight) >= 1;
+                                        const isMeasureAtShop = weightOption === 'measure_at_shop';
                                         
-                                        if (subtotal <= 0 && !hasAddOns && !hasWeight) {
+                                        if (subtotal <= 0 && !hasAddOns && !hasWeight && !isMeasureAtShop) {
                                             alert('Please enter weight or select add-ons to calculate subtotal');
                                             return false;
                                         }
@@ -343,6 +348,81 @@
                                         if (modal) {
                                             modal.classList.add('hidden');
                                             document.body.classList.remove('overflow-hidden');
+                                        }
+                                    }
+
+                                    // Submit order form
+                                    function submitOrderForm() {
+                                        const form = document.getElementById('orderForm');
+                                        if (form) {
+                                            form.submit();
+                                        } else {
+                                            console.error('Order form not found');
+                                        }
+                                    }
+
+                                    // Real-time validation functions
+                                    function validatePhoneField() {
+                                        const phone = document.getElementById('customer_phone')?.value.trim() || '';
+                                        const phoneCheck = document.getElementById('phone_check');
+                                        const phoneX = document.getElementById('phone_x');
+                                        const phoneError = document.getElementById('phone_error');
+                                        const phoneStatus = document.getElementById('phone_status');
+                                        
+                                        if (phone.length === 11 && /^[0-9]{11}$/.test(phone)) {
+                                            phoneCheck?.classList.remove('hidden');
+                                            phoneX?.classList.add('hidden');
+                                            phoneError?.classList.add('hidden');
+                                            phoneStatus?.classList.remove('hidden');
+                                        } else if (phone.length > 0) {
+                                            phoneCheck?.classList.add('hidden');
+                                            phoneX?.classList.remove('hidden');
+                                            phoneError?.classList.remove('hidden');
+                                            phoneStatus?.classList.remove('hidden');
+                                        } else {
+                                            phoneStatus?.classList.add('hidden');
+                                            phoneError?.classList.add('hidden');
+                                        }
+                                    }
+
+                                    function validateWeightField() {
+                                        const weight = parseFloat(document.getElementById('weight')?.value) || 0;
+                                        const weightCheck = document.getElementById('weight_check');
+                                        const weightX = document.getElementById('weight_x');
+                                        const weightError = document.getElementById('weight_error');
+                                        const weightStatus = document.getElementById('weight_status');
+                                        
+                                        if (weight >= 0.1) {
+                                            weightCheck?.classList.remove('hidden');
+                                            weightX?.classList.add('hidden');
+                                            weightError?.classList.add('hidden');
+                                            weightStatus?.classList.remove('hidden');
+                                        } else if (document.getElementById('weight')?.value) {
+                                            weightCheck?.classList.add('hidden');
+                                            weightX?.classList.remove('hidden');
+                                            weightError?.classList.remove('hidden');
+                                            weightStatus?.classList.remove('hidden');
+                                        } else {
+                                            weightStatus?.classList.add('hidden');
+                                            weightError?.classList.add('hidden');
+                                        }
+                                    }
+
+                                    function validateAddressField() {
+                                        const address = document.getElementById('customer_address')?.value.trim() || '';
+                                        const addressCheck = document.getElementById('address_check');
+                                        const addressX = document.getElementById('address_x');
+                                        const addressError = document.getElementById('address_error');
+                                        const addressStatus = document.getElementById('address_status');
+                                        
+                                        if (address.length > 0) {
+                                            addressCheck?.classList.remove('hidden');
+                                            addressX?.classList.add('hidden');
+                                            addressError?.classList.add('hidden');
+                                            addressStatus?.classList.remove('hidden');
+                                        } else {
+                                            addressStatus?.classList.add('hidden');
+                                            addressError?.classList.add('hidden');
                                         }
                                     }
 
@@ -458,9 +538,24 @@
                                 <!-- Full Address -->
                                 <div>
                                     <label for="customer_address" class="block text-sm font-medium text-gray-700">Complete Address Details *</label>
-                                    <textarea class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                              id="customer_address" name="customer_address" rows="3" 
-                                              placeholder="e.g., House #, Landmarks, Additional directions" required>{{ old('customer_address', $customer->address) }}</textarea>
+                                    <div class="relative">
+                                        <textarea class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                  id="customer_address" name="customer_address" rows="3" 
+                                                  placeholder="e.g., House #, Landmarks, Additional directions" required
+                                                  onblur="validateAddressField()">{{ old('customer_address', $customer->address) }}</textarea>
+                                        <span id="address_status" class="absolute right-3 top-3 hidden">
+                                            <svg id="address_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <svg id="address_x" class="w-5 h-5 text-red-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div id="address_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        Please enter your complete address
+                                    </div>
                                     @error('customer_address')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -527,42 +622,36 @@
                                 </div>
                             </div>
 
-                            <!-- Subtotal (Admin will handle discount, total amount, and payment) -->
-                            <div class="mb-6">
-                                <label for="subtotal" class="block text-sm font-medium text-gray-700">Subtotal (₱) *</label>
-                                <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50" 
-                                       id="subtotal" name="subtotal" value="{{ old('subtotal') }}" required readonly>
-                                @error('subtotal')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                                <p class="mt-1 text-xs text-gray-500">Discount and final payment will be handled by admin upon approval</p>
-                            </div>
+                           <!-- Subtotal and Pickup Date Side by Side -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Subtotal (Admin will handle discount, total amount, and payment) -->
+    <div>
+        <label for="subtotal" class="block text-sm font-medium text-gray-700">Subtotal (₱) *</label>
+        <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50" 
+               id="subtotal" name="subtotal" value="{{ old('subtotal') }}" required readonly>
+        @error('subtotal')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+        <p class="mt-1 text-xs text-gray-500">Discount and final payment will be handled by admin upon approval</p>
+    </div>
 
-                            <!-- Hidden fields for form submission (set by admin) -->
-                            <input type="hidden" id="discount" name="discount" value="0">
-                            <input type="hidden" id="total_amount" name="total_amount" value="0">
-                            <input type="hidden" id="amount_paid" name="amount_paid" value="0">
+    <!-- Pickup Date -->
+    <div>
+        <label for="pickup_date" class="block text-sm font-medium text-gray-700">Pickup Date (Optional)</label>
+        <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+               id="pickup_date" name="pickup_date" value="{{ old('pickup_date') }}">
+        @error('pickup_date')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+        <p class="mt-1 text-xs text-gray-500">When would you like to pick up your laundry? (Admin will set estimated finish date)</p>
+    </div>
+</div>
 
-                            <!-- Dates Section -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                <div>
-                                    <label for="pickup_date" class="block text-sm font-medium text-gray-700">Pickup Date</label>
-                                    <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                           id="pickup_date" name="pickup_date" value="{{ old('pickup_date') }}">
-                                    @error('pickup_date')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
+<!-- Hidden fields for form submission (set by admin) -->
+<input type="hidden" id="discount" name="discount" value="0">
+<input type="hidden" id="total_amount" name="total_amount" value="0">
+<input type="hidden" id="amount_paid" name="amount_paid" value="0">
 
-                                <div>
-                                    <label for="estimated_finish" class="block text-sm font-medium text-gray-700">Estimated Finish *</label>
-                                    <input type="datetime-local" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                           id="estimated_finish" name="estimated_finish" value="{{ old('estimated_finish') }}" required>
-                                    @error('estimated_finish')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                            </div>
 
 
                             <!-- Remarks -->
@@ -630,7 +719,7 @@
 
                 <!-- Footer Buttons -->
                 <div class="px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 sm:flex sm:flex-row-reverse sm:gap-3">
-                    <button type="button" onclick="document.getElementById('orderForm').submit();" class="w-full sm:w-auto px-6 py-3 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                    <button type="button" onclick="submitOrderForm();" class="w-full sm:w-auto px-6 py-3 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
                         Create Order
                     </button>
                     <button type="button" onclick="closeModal('createOrderModal')" class="mt-3 w-full sm:w-auto px-6 py-3 rounded-lg font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0">
