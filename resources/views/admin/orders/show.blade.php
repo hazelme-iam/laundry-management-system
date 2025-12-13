@@ -145,7 +145,7 @@
                                                 <option value="{{ $washer->id }}">{{ $washer->name }}</option>
                                             @endforeach
                                         </select>
-                                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                        <button type="button" onclick="openAssignWasherModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                                             Assign Washer
                                         </button>
                                     </form>
@@ -183,7 +183,7 @@
                                                 <option value="{{ $dryer->id }}">{{ $dryer->name }}</option>
                                             @endforeach
                                         </select>
-                                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                                        <button type="button" onclick="openAssignDryerModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                                             Assign Dryer
                                         </button>
                                     </form>
@@ -532,5 +532,129 @@
             });
         });
         });
+
+        // Function to open assign washer confirmation modal
+        function openAssignWasherModal() {
+            // Validate that a washer is selected
+            const washerSelect = document.querySelector('select[name="washer_id"]');
+            if (!washerSelect.value) {
+                alert('Please select a washer first.');
+                return;
+            }
+            
+            openModal('assignWasherModal');
+        }
+
+        // Function to open assign dryer confirmation modal
+        function openAssignDryerModal() {
+            // Validate that a dryer is selected
+            const dryerSelect = document.querySelector('select[name="dryer_id"]');
+            if (!dryerSelect.value) {
+                alert('Please select a dryer first.');
+                return;
+            }
+            
+            openModal('assignDryerModal');
+        }
+
+        // Handle washer modal confirmation
+        document.addEventListener('DOMContentLoaded', function() {
+            const washerModal = document.getElementById('assignWasherModal');
+            if (washerModal) {
+                const confirmButton = washerModal.querySelector('.confirm-button');
+                if (confirmButton) {
+                    confirmButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const form = document.getElementById('washer-form');
+                        if (form) {
+                            // Submit the form using AJAX
+                            const formData = new FormData(form);
+                            
+                            fetch(form.action, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json'
+                                },
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Show success message
+                                    alert(data.message);
+                                    // Reload page to update UI
+                                    setTimeout(() => location.reload(), 1000);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Error assigning washer');
+                            });
+                        }
+                    });
+                }
+            }
+
+            // Handle dryer modal confirmation
+            const dryerModal = document.getElementById('assignDryerModal');
+            if (dryerModal) {
+                const confirmButton = dryerModal.querySelector('.confirm-button');
+                if (confirmButton) {
+                    confirmButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const form = document.getElementById('dryer-form');
+                        if (form) {
+                            // Submit the form using AJAX
+                            const formData = new FormData(form);
+                            
+                            fetch(form.action, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json'
+                                },
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Show success message
+                                    alert(data.message);
+                                    // Reload page to update UI
+                                    setTimeout(() => location.reload(), 1000);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Error assigning dryer');
+                            });
+                        }
+                    });
+                }
+            }
+        });
     </script>
+
+    <!-- Assign Washer Confirmation Modal -->
+    <x-confirmationmodal 
+        modalId="assignWasherModal"
+        title="Assign Washer"
+        message="Are you sure you want to assign this washer to the order? This will start the washing process."
+        confirmText="Assign Washer"
+        cancelText="Cancel"
+        confirmColor="blue"
+        formId="washer-form"
+    />
+
+    <!-- Assign Dryer Confirmation Modal -->
+    <x-confirmationmodal 
+        modalId="assignDryerModal"
+        title="Assign Dryer"
+        message="Are you sure you want to assign this dryer to the order? This will start the drying process."
+        confirmText="Assign Dryer"
+        cancelText="Cancel"
+        confirmColor="green"
+        formId="dryer-form"
+    />
 </x-sidebar-app>

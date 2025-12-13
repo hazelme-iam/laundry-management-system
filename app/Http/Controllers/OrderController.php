@@ -316,12 +316,34 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        $order->delete();
-        
-        // Clear relevant caches
-        CacheService::clearOrderRelatedCaches();
-        
-        return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
+        // Check if order has related records that prevent deletion
+        if ($order->loads()->count() > 0) {
+            return redirect()->route('admin.orders.index')
+                ->with('error', 'Cannot delete order with associated laundry loads. Please cancel the order instead.');
+        }
+
+        // Additional checks for other potential constraints
+        if ($order->status === 'washing' || $order->status === 'drying' || $order->status === 'folding') {
+            return redirect()->route('admin.orders.index')
+                ->with('error', 'Cannot delete order that is currently being processed. Please cancel the order instead.');
+        }
+
+        try {
+            $order->delete();
+            
+            // Clear relevant caches
+            CacheService::clearOrderRelatedCaches();
+            
+            return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle foreign key constraint violations
+            if ($e->getCode() === '23000') {
+                return redirect()->route('admin.orders.index')
+                    ->with('error', 'Cannot delete order due to related records. Please cancel the order instead.');
+            }
+            
+            throw $e;
+        }
     }
 
     /**
