@@ -84,11 +84,11 @@
                             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Weight</dt>
-                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->weight }} kg</dd>
+                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->weight ?? 'To be measured at shop' }} {{ $order->weight ? 'kg' : '' }}</dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Estimated Finish</dt>
-                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->estimated_finish->format('M d, Y') }}</dd>
+                                    <dd class="text-sm text-gray-900 mt-1">{{ $order->estimated_finish?->format('M d, Y') ?? 'Pending admin approval' }}</dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Pickup Date</dt>
