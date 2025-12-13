@@ -35,8 +35,32 @@
 
             <!-- Orders Table -->
             <div class="bg-white rounded-lg shadow overflow-hidden">
-                <div class="p-4 sm:p-6 border-b">
+                <div class="p-4 sm:p-6 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-lg font-semibold text-gray-900">My Orders</h2>
+                    <div class="w-full sm:w-auto">
+                        <label for="sort" class="block text-sm font-medium text-gray-700 mb-2 sm:mb-0 sm:mr-2 inline-block">Sort by:</label>
+                        <select id="sort" onchange="window.location.href = this.value" 
+                                class="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="{{ route('user.orders.index', ['sort' => 'latest']) }}" {{ request('sort') === 'latest' || !request('sort') ? 'selected' : '' }}>
+                                Latest First
+                            </option>
+                            <option value="{{ route('user.orders.index', ['sort' => 'oldest']) }}" {{ request('sort') === 'oldest' ? 'selected' : '' }}>
+                                Oldest First
+                            </option>
+                            <option value="{{ route('user.orders.index', ['sort' => 'status_pending']) }}" {{ request('sort') === 'status_pending' ? 'selected' : '' }}>
+                                Pending Orders
+                            </option>
+                            <option value="{{ route('user.orders.index', ['sort' => 'status_completed']) }}" {{ request('sort') === 'status_completed' ? 'selected' : '' }}>
+                                Completed Orders
+                            </option>
+                            <option value="{{ route('user.orders.index', ['sort' => 'highest_amount']) }}" {{ request('sort') === 'highest_amount' ? 'selected' : '' }}>
+                                Highest Amount
+                            </option>
+                            <option value="{{ route('user.orders.index', ['sort' => 'lowest_amount']) }}" {{ request('sort') === 'lowest_amount' ? 'selected' : '' }}>
+                                Lowest Amount
+                            </option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -94,8 +118,13 @@
                                             {{ $order->created_at->format('M d, Y') }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="{{ route('user.orders.show', $order) }}" 
-                                               class="text-blue-600 hover:text-blue-900">View</a>
+                                            <a href="{{ route('user.orders.show', $order) }}"
+                                               class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                               title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path d="M10 3c-4.5 0-8 4-8 7s3.5 7 8 7 8-4 8-7-3.5-7-8-7zm0 12a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z" />
+                                                </svg>
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach

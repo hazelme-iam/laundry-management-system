@@ -384,7 +384,7 @@ class OrderController extends Controller
     }
 
     // User-specific methods
-    public function userIndex()
+    public function userIndex(Request $request)
     {
         // Get or create customer record for logged-in user
         $customer = Customer::firstOrCreate(
@@ -398,11 +398,36 @@ class OrderController extends Controller
             ]
         );
 
-        // Get orders for this customer
-        $orders = Order::where('customer_id', $customer->id)
-            ->with(['customer', 'creator'])
-            ->latest()
-            ->paginate(10);
+        // Get orders for this customer with sorting
+        $query = Order::where('customer_id', $customer->id)
+            ->with(['customer', 'creator']);
+
+        // Apply sorting based on request parameter
+        $sort = $request->get('sort', 'latest');
+        
+        switch ($sort) {
+            case 'oldest':
+                $query->oldest();
+                break;
+            case 'status_pending':
+                $query->where('status', 'pending')->latest();
+                break;
+            case 'status_completed':
+                $query->where('status', 'completed')->latest();
+                break;
+            case 'highest_amount':
+                $query->orderBy('total_amount', 'desc');
+                break;
+            case 'lowest_amount':
+                $query->orderBy('total_amount', 'asc');
+                break;
+            case 'latest':
+            default:
+                $query->latest();
+                break;
+        }
+
+        $orders = $query->paginate(10);
 
         return view('user.orders.index', compact('orders'));
     }
@@ -508,6 +533,32 @@ class OrderController extends Controller
 
         $order->load(['customer', 'creator', 'updater', 'loads.washerMachine', 'loads.dryerMachine']);
         return view('user.orders.show', compact('order'));
+    }
+
+    public function userCancel(Order $order)
+    {
+        // Ensure user can only cancel their own orders
+        if ($order->customer->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Only allow cancellation of pending orders
+        if ($order->status !== 'pending') {
+            return redirect()->route('user.orders.show', $order)
+                ->with('error', 'Only pending orders can be cancelled.');
+        }
+
+        // Update order status to cancelled
+        $order->update([
+            'status' => 'cancelled',
+            'updated_by' => auth()->id(),
+        ]);
+
+        // Clear relevant caches
+        CacheService::clearOrderRelatedCaches();
+
+        return redirect()->route('user.orders.index')
+            ->with('success', 'Order cancelled successfully.');
     }
 
     /**

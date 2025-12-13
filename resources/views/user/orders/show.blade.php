@@ -7,14 +7,25 @@
                     <h1 class="text-2xl font-bold text-gray-900">Order Details</h1>
                     <p class="text-gray-600">Order #{{ $order->id }}</p>
                 </div>
-                <div class="flex space-x-4">
+                <div class="flex flex-col sm:flex-row gap-3">
                     <a href="{{ route('user.orders.index') }}" 
-                       class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                       class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-center">
                         Back to Orders
                     </a>
+                    @if($order->status === 'pending')
+                        <form action="{{ route('user.orders.cancel', $order) }}" method="POST" style="display: inline;">
+                            @csrf
+                            @method('PUT')
+                            <button type="submit" 
+                                    onclick="return confirm('Are you sure you want to cancel this order? This action cannot be undone.')"
+                                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                                Cancel Order
+                            </button>
+                        </form>
+                    @endif
                     @if($order->status === 'pending' || $order->status === 'approved')
                         <a href="{{ route('user.orders.create') }}" 
-                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-center">
                             New Order
                         </a>
                     @endif

@@ -26,6 +26,7 @@ Route::middleware([
     Route::get('/my-orders/create', [OrderController::class, 'userCreate'])->name('user.orders.create');
     Route::post('/my-orders', [OrderController::class, 'userStore'])->name('user.orders.store');
     Route::get('/my-orders/{order}', [OrderController::class, 'userShow'])->name('user.orders.show');
+    Route::put('/my-orders/{order}/cancel', [OrderController::class, 'userCancel'])->name('user.orders.cancel');
 });
 
 Route::middleware([
