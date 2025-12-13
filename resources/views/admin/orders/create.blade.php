@@ -175,7 +175,7 @@
 
                         <!-- Buttons -->
                         <div class="mt-6 flex space-x-3">
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <button type="button" onclick="openModal('createOrderModal')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                                 Create Order
                             </button>
                             <a href="{{ route('admin.orders.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
@@ -188,7 +188,35 @@
         </div>
     </div>
 
+    <!-- Confirmation Modal -->
+    <x-confirmationmodal 
+        :modalId="'createOrderModal'"
+        title="Confirm Order Creation"
+        message="Are you sure you want to create this order? Please review all details before confirming."
+        confirmText="Create Order"
+        cancelText="Cancel"
+        confirmColor="blue"
+        formId="orderForm"
+        method="POST"
+        :showFooter="true"
+        :showIcon="true"
+    />
+
     <script>
+        // Handle form submission from modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderForm = document.getElementById('orderForm');
+            if (orderForm) {
+                orderForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Submit the form normally (not via fetch)
+                    // This allows Laravel to handle validation and redirects properly
+                    this.submit();
+                });
+            }
+        });
+
         // Add-ons pricing configuration
         const addOnPrices = {
             'detergent': 16,
