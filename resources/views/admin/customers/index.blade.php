@@ -168,13 +168,14 @@
                                                 </a>
 
                                                 <!-- Edit -->
-                                                <a href="{{ route('admin.customers.edit', $customer) }}"
-                                                   class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                                                   title="Edit customer">
+                                                <button type="button"
+                                                        onclick="openEditModal('{{ route('admin.customers.edit', $customer) }}')"
+                                                        class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                                        title="Edit customer">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-8.5 8.5A2 2 0 016.5 16H4a1 1 0 01-1-1v-2.5a2 2 0 01.586-1.414l8.5-8.5z" />
                                                     </svg>
-                                                </a>
+                                                </button>
 
                                                 <!-- Delete -->
                                                 <button type="button"
@@ -208,6 +209,17 @@
         </div>
     </div>
 
+    <!-- Edit Confirmation Modal -->
+    <x-confirmationmodal 
+        modalId="editCustomerModal"
+        title="Edit Customer"
+        message="You are about to edit this customer's information. Continue?"
+        confirmText="Edit"
+        cancelText="Cancel"
+        confirmColor="blue"
+        :formId="'editCustomerForm'"
+    />
+
     <!-- Delete Confirmation Modal -->
     <x-confirmationmodal 
         modalId="deleteCustomerModal"
@@ -220,6 +232,10 @@
     />
 </x-sidebar-app>
 
+<!-- Hidden Edit Form -->
+<form id="editCustomerForm" method="GET" style="display: none;">
+</form>
+
 <!-- Hidden Delete Form -->
 <form id="deleteCustomerForm" method="POST" style="display: none;">
     @csrf
@@ -227,6 +243,40 @@
 </form>
 
 <script>
+// Function to open edit confirmation modal
+function openEditModal(editUrl) {
+    // Store the edit URL in the form action
+    const form = document.getElementById('editCustomerForm');
+    if (form) {
+        form.action = editUrl;
+    }
+    
+    // Show the modal
+    openModal('editCustomerModal');
+}
+
+// Handle edit modal confirmation
+document.addEventListener('DOMContentLoaded', function() {
+    const editModal = document.getElementById('editCustomerModal');
+    if (editModal) {
+        const confirmButton = editModal.querySelector('.confirm-button');
+        if (confirmButton) {
+            // Remove any existing event listeners to prevent duplicates
+            const newConfirmButton = confirmButton.cloneNode(true);
+            confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+            
+            // Add click event listener
+            newConfirmButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = document.getElementById('editCustomerForm');
+                if (form && form.action) {
+                    form.submit();
+                }
+            });
+        }
+    }
+});
+
 // Function to open delete confirmation modal
 function openDeleteModal(customerId, customerName) {
     // Update modal message with customer name

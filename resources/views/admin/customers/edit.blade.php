@@ -1,0 +1,196 @@
+<x-sidebar-app>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <!-- Breadcrumb Navigation -->
+            <x-breadcrumbs :items="[
+                'Customers' => route('admin.customers.index'),
+                'Edit Customer' => null
+            ]" />
+            
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="p-6">
+                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Edit Customer</h1>
+
+                    <form id="editCustomerForm" action="{{ route('admin.customers.update', $customer) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Name -->
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700">Name <span class="text-red-500">*</span></label>
+                                <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="name" name="name" value="{{ old('name', $customer->name) }}" required>
+                                @error('name')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Email -->
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                <input type="email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="email" name="email" value="{{ old('email', $customer->email) }}">
+                                @error('email')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Phone (11 digits only) -->
+                            <div>
+                                <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>
+                                <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                       id="phone" name="phone" value="{{ old('phone', $customer->phone) }}" 
+                                       pattern="[0-9]{11}" 
+                                       maxlength="11"
+                                       placeholder="09XXXXXXXXX"
+                                       required>
+                                @error('phone')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                        </div>
+
+                        <!-- Address Details -->
+                        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Barangay Dropdown -->
+                            <div>
+                                <label for="barangay" class="block text-sm font-medium text-gray-700">Barangay</label>
+                                <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                        id="barangay" name="barangay">
+                                    <option value="">Select Barangay</option>
+                                    <option value="Poblacion" {{ old('barangay', $customer->barangay) == 'Poblacion' ? 'selected' : '' }}>Poblacion</option>
+                                    <option value="Baluarte" {{ old('barangay', $customer->barangay) == 'Baluarte' ? 'selected' : '' }}>Baluarte</option>
+                                    <option value="Binuangan" {{ old('barangay', $customer->barangay) == 'Binuangan' ? 'selected' : '' }}>Binuangan</option>
+                                    <option value="Gracia" {{ old('barangay', $customer->barangay) == 'Gracia' ? 'selected' : '' }}>Gracia</option>
+                                    <option value="Mohon" {{ old('barangay', $customer->barangay) == 'Mohon' ? 'selected' : '' }}>Mohon</option>
+                                    <option value="Rosario" {{ old('barangay', $customer->barangay) == 'Rosario' ? 'selected' : '' }}>Rosario</option>
+                                    <option value="Santa Ana" {{ old('barangay', $customer->barangay) == 'Santa Ana' ? 'selected' : '' }}>Santa Ana</option>
+                                    <option value="Santo Niño" {{ old('barangay', $customer->barangay) == 'Santo Niño' ? 'selected' : '' }}>Santo Niño</option>
+                                    <option value="Sugbongcogon" {{ old('barangay', $customer->barangay) == 'Sugbongcogon' ? 'selected' : '' }}>Sugbongcogon</option>
+                                </select>
+                                @error('barangay')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Purok Dropdown -->
+                            <div>
+                                <label for="purok" class="block text-sm font-medium text-gray-700">Purok/Zone</label>
+                                <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                        id="purok" name="purok">
+                                    <option value="">Select Purok</option>
+                                    <option value="Purok 1" {{ old('purok', $customer->purok) == 'Purok 1' ? 'selected' : '' }}>Purok 1</option>
+                                    <option value="Purok 2" {{ old('purok', $customer->purok) == 'Purok 2' ? 'selected' : '' }}>Purok 2</option>
+                                    <option value="Purok 3" {{ old('purok', $customer->purok) == 'Purok 3' ? 'selected' : '' }}>Purok 3</option>
+                                    <option value="Purok 4" {{ old('purok', $customer->purok) == 'Purok 4' ? 'selected' : '' }}>Purok 4</option>
+                                    <option value="Purok 5" {{ old('purok', $customer->purok) == 'Purok 5' ? 'selected' : '' }}>Purok 5</option>
+                                    <option value="Purok 6" {{ old('purok', $customer->purok) == 'Purok 6' ? 'selected' : '' }}>Purok 6</option>
+                                    <option value="Purok 7" {{ old('purok', $customer->purok) == 'Purok 7' ? 'selected' : '' }}>Purok 7</option>
+                                    <option value="Purok 8" {{ old('purok', $customer->purok) == 'Purok 8' ? 'selected' : '' }}>Purok 8</option>
+                                </select>
+                                @error('purok')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Street Dropdown -->
+                            <div>
+                                <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
+                                <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                        id="street" name="street">
+                                    <option value="">Select Street</option>
+                                    <option value="Rizal Street" {{ old('street', $customer->street) == 'Rizal Street' ? 'selected' : '' }}>Rizal Street</option>
+                                    <option value="Mabini Street" {{ old('street', $customer->street) == 'Mabini Street' ? 'selected' : '' }}>Mabini Street</option>
+                                    <option value="Bonifacio Street" {{ old('street', $customer->street) == 'Bonifacio Street' ? 'selected' : '' }}>Bonifacio Street</option>
+                                    <option value="Luna Street" {{ old('street', $customer->street) == 'Luna Street' ? 'selected' : '' }}>Luna Street</option>
+                                    <option value="Burgos Street" {{ old('street', $customer->street) == 'Burgos Street' ? 'selected' : '' }}>Burgos Street</option>
+                                    <option value="Del Pilar Street" {{ old('street', $customer->street) == 'Del Pilar Street' ? 'selected' : '' }}>Del Pilar Street</option>
+                                    <option value="Aguinaldo Street" {{ old('street', $customer->street) == 'Aguinaldo Street' ? 'selected' : '' }}>Aguinaldo Street</option>
+                                </select>
+                                @error('street')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Full Address (for additional details) -->
+                        <div class="mt-6">
+                            <label for="address" class="block text-sm font-medium text-gray-700">Complete Address Details</label>
+                            <textarea class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                      id="address" name="address" rows="3" 
+                                      placeholder="e.g., House #, Landmarks, Additional directions">{{ old('address', $customer->address) }}</textarea>
+                            @error('address')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mt-6">
+                            <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
+                            <textarea class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                      id="notes" name="notes" rows="3" 
+                                      placeholder="Additional customer information">{{ old('notes', $customer->notes) }}</textarea>
+                            @error('notes')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="mt-6 flex space-x-3">
+                            <button type="button" 
+                                    onclick="openModal('editCustomerModalConfirm')"
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                Update Customer
+                            </button>
+                            <a href="{{ route('admin.customers.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <x-confirmationmodal 
+        modalId="editCustomerModalConfirm"
+        title="Update Customer"
+        message="Are you sure you want to update this customer's information?"
+        confirmText="Update"
+        cancelText="Cancel"
+        confirmColor="blue"
+        formId="editCustomerForm"
+    />
+</x-sidebar-app>
+
+<!-- Optional: Add form validation before showing modal -->
+<script>
+function validateForm() {
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const phonePattern = /^[0-9]{11}$/;
+    
+    if (!name) {
+        alert('Please enter customer name');
+        return false;
+    }
+    
+    if (!phone || !phonePattern.test(phone)) {
+        alert('Please enter a valid 11-digit phone number');
+        return false;
+    }
+    
+    return true;
+}
+
+// Update the button to validate first
+document.addEventListener('DOMContentLoaded', function() {
+    const updateButton = document.querySelector('button[onclick*="editCustomerModalConfirm"]');
+    if (updateButton) {
+        updateButton.setAttribute('onclick', 'if(validateForm()) openModal("editCustomerModalConfirm")');
+    }
+});
+</script>
