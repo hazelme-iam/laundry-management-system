@@ -12,6 +12,14 @@
                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-center">
                         Back to Orders
                     </a>
+                    <a href="{{ route('user.orders.receipt', $order) }}" 
+                       class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-center flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414l4 4v10.172A2 2 0 0114.172 18H6a2 2 0 01-2-2V4z" />
+                            <path d="M9 9a1 1 0 100-2 1 1 0 000 2zm0 3a1 1 0 100-2 1 1 0 000 2zm0 3a1 1 0 100-2 1 1 0 000 2z" />
+                        </svg>
+                        Download Receipt
+                    </a>
                     @if($order->status === 'pending')
                         <button type="button" 
                                 onclick="openCancelModal()"
@@ -202,6 +210,24 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Finished Date</dt>
                                     <dd class="text-sm text-gray-900 mt-1">{{ $order->finished_at?->format('M d, Y') ?? 'Not finished yet' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Payment Status</dt>
+                                    <dd class="text-sm text-gray-900 mt-1">
+                                        @if($order->amount_paid >= $order->total_amount)
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Cash Paid
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                Pending Cash Payment
+                                            </span>
+                                        @endif
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Amount Due</dt>
+                                    <dd class="text-sm text-gray-900 mt-1">₱{{ number_format($order->total_amount, 2) }}</dd>
                                 </div>
                             </dl>
 

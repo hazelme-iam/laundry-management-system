@@ -27,6 +27,7 @@ Route::middleware([
     Route::post('/my-orders', [OrderController::class, 'userStore'])->name('user.orders.store');
     Route::get('/my-orders/{order}', [OrderController::class, 'userShow'])->name('user.orders.show');
     Route::put('/my-orders/{order}/cancel', [OrderController::class, 'userCancel'])->name('user.orders.cancel');
+    Route::get('/my-orders/{order}/receipt', [OrderController::class, 'userReceipt'])->name('user.orders.receipt');
 });
 
 Route::middleware([
@@ -88,6 +89,7 @@ Route::middleware([
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    Route::get('/notifications/check-new', [NotificationController::class, 'checkNew'])->name('notifications.check-new');
     
 });
 
