@@ -16,9 +16,27 @@
 
         <!-- Styles -->
         @livewireStyles
+        @stack('styles')
     </head>
     <body class="font-sans antialiased">
         <x-banner />
+
+        <!-- Full page loader -->
+        <div id="page-loader" class="fixed inset-0 bg-white bg-opacity-90 z-50 flex items-center justify-center">
+            <div class="text-center">
+                <!-- Spinner -->
+                <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"></div>
+                
+                <!-- Text -->
+                <p class="mt-4 text-lg font-semibold text-gray-700">Loading...</p>
+                <p class="mt-2 text-sm text-gray-500">Please wait a moment</p>
+                
+                <!-- Optional progress bar -->
+                <div class="mt-6 w-64 h-2 bg-gray-200 rounded-full overflow-hidden mx-auto">
+                    <div class="h-full bg-blue-500 animate-pulse" style="width: 60%"></div>
+                </div>
+            </div>
+        </div>
 
         <div class="min-h-screen bg-gray-100">
             @if (auth()->check() && auth()->user()->role === 'admin')
@@ -43,6 +61,8 @@
         </div>
 
         @stack('modals')
+
+        @stack('scripts')
 
         @livewireScripts
     </body>

@@ -402,6 +402,12 @@ class OrderController extends Controller
         $query = Order::where('customer_id', $customer->id)
             ->with(['customer', 'creator']);
 
+        // Optional status filter
+        $status = $request->get('status');
+        if (!empty($status)) {
+            $query->where('status', $status);
+        }
+
         // Apply sorting based on request parameter
         $sort = $request->get('sort', 'latest');
         
@@ -427,7 +433,7 @@ class OrderController extends Controller
                 break;
         }
 
-        $orders = $query->paginate(10);
+        $orders = $query->paginate(10)->appends($request->query());
 
         return view('user.orders.index', compact('orders'));
     }

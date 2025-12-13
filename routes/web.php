@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\MachineController;
+use App\Http\Controllers\NotificationController;
 
 
 Route::get('/', function () {
@@ -28,6 +29,12 @@ Route::middleware([
     Route::get('/my-orders/{order}', [OrderController::class, 'userShow'])->name('user.orders.show');
     Route::put('/my-orders/{order}/cancel', [OrderController::class, 'userCancel'])->name('user.orders.cancel');
     Route::get('/my-orders/{order}/receipt', [OrderController::class, 'userReceipt'])->name('user.orders.receipt');
+
+    // Notification Routes (User)
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    Route::get('/notifications/check-new', [NotificationController::class, 'checkNew'])->name('notifications.check-new');
 });
 
 Route::middleware([
@@ -84,13 +91,6 @@ Route::middleware([
     Route::post('/orders/{order}/assign-washer', [MachineController::class, 'assignWasher'])->name('machines.assign-washer');
     Route::post('/orders/{order}/assign-dryer', [MachineController::class, 'assignDryer'])->name('machines.assign-dryer');
     Route::post('/machines/check-completed', [MachineController::class, 'checkCompletedMachines'])->name('machines.check-completed');
-    
-    // Notifications
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
-    Route::get('/notifications/check-new', [NotificationController::class, 'checkNew'])->name('notifications.check-new');
-    
 });
 
 

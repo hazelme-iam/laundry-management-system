@@ -37,30 +37,40 @@
             <div class="bg-white rounded-lg shadow overflow-hidden">
                 <div class="p-4 sm:p-6 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-lg font-semibold text-gray-900">My Orders</h2>
-                    <div class="w-full sm:w-auto">
-                        <label for="sort" class="block text-sm font-medium text-gray-700 mb-2 sm:mb-0 sm:mr-2 inline-block">Sort by:</label>
-                        <select id="sort" onchange="window.location.href = this.value" 
-                                class="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="{{ route('user.orders.index', ['sort' => 'latest']) }}" {{ request('sort') === 'latest' || !request('sort') ? 'selected' : '' }}>
-                                Latest First
-                            </option>
-                            <option value="{{ route('user.orders.index', ['sort' => 'oldest']) }}" {{ request('sort') === 'oldest' ? 'selected' : '' }}>
-                                Oldest First
-                            </option>
-                            <option value="{{ route('user.orders.index', ['sort' => 'status_pending']) }}" {{ request('sort') === 'status_pending' ? 'selected' : '' }}>
-                                Pending Orders
-                            </option>
-                            <option value="{{ route('user.orders.index', ['sort' => 'status_completed']) }}" {{ request('sort') === 'status_completed' ? 'selected' : '' }}>
-                                Completed Orders
-                            </option>
-                            <option value="{{ route('user.orders.index', ['sort' => 'highest_amount']) }}" {{ request('sort') === 'highest_amount' ? 'selected' : '' }}>
-                                Highest Amount
-                            </option>
-                            <option value="{{ route('user.orders.index', ['sort' => 'lowest_amount']) }}" {{ request('sort') === 'lowest_amount' ? 'selected' : '' }}>
-                                Lowest Amount
-                            </option>
-                        </select>
-                    </div>
+                    <form method="GET" action="{{ route('user.orders.index') }}" class="w-full sm:w-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort by:</label>
+                            <select id="sort" name="sort" onchange="this.form.submit()"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="latest" {{ request('sort') === 'latest' || !request('sort') ? 'selected' : '' }}>Latest First</option>
+                                <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Oldest First</option>
+                                <option value="status_pending" {{ request('sort') === 'status_pending' ? 'selected' : '' }}>Pending Orders</option>
+                                <option value="status_completed" {{ request('sort') === 'status_completed' ? 'selected' : '' }}>Completed Orders</option>
+                                <option value="highest_amount" {{ request('sort') === 'highest_amount' ? 'selected' : '' }}>Highest Amount</option>
+                                <option value="lowest_amount" {{ request('sort') === 'lowest_amount' ? 'selected' : '' }}>Lowest Amount</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status:</label>
+                            <select id="status" name="status" onchange="this.form.submit()"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">All Statuses</option>
+                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                <option value="picked_up" {{ request('status') == 'picked_up' ? 'selected' : '' }}>Picked Up</option>
+                                <option value="washing" {{ request('status') == 'washing' ? 'selected' : '' }}>Washing</option>
+                                <option value="drying" {{ request('status') == 'drying' ? 'selected' : '' }}>Drying</option>
+                                <option value="folding" {{ request('status') == 'folding' ? 'selected' : '' }}>Folding</option>
+                                <option value="quality_check" {{ request('status') == 'quality_check' ? 'selected' : '' }}>Quality Check</option>
+                                <option value="ready" {{ request('status') == 'ready' ? 'selected' : '' }}>Ready</option>
+                                <option value="delivery_pending" {{ request('status') == 'delivery_pending' ? 'selected' : '' }}>Delivery Pending</option>
+                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            </select>
+                        </div>
+                    </form>
                 </div>
                 
                 <div class="overflow-x-auto">
