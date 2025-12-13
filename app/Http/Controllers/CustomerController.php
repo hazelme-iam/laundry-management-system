@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\User;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -173,6 +174,9 @@ class CustomerController extends Controller
             'customer_type' => 'walk-in', // Default type for admin-created customers
         ]);
 
+        // Clear customer cache so new customer appears in dropdowns
+        CacheService::clearCustomerCache();
+
         return redirect()->route('admin.customers.index')
                          ->with('success', 'Customer created successfully.');
     }
@@ -232,6 +236,9 @@ class CustomerController extends Controller
             // Keep existing customer_type unless changed
         ]);
 
+        // Clear customer cache so updated customer info appears in dropdowns
+        CacheService::clearCustomerCache();
+
         return redirect()->route('admin.customers.index')
                          ->with('success', 'Customer updated.');
     }
@@ -246,6 +253,9 @@ class CustomerController extends Controller
         }
 
         $customer->delete();
+
+        // Clear customer cache so deleted customer is removed from dropdowns
+        CacheService::clearCustomerCache();
 
         return redirect()->route('admin.customers.index')
                          ->with('success', 'Customer deleted successfully.');
