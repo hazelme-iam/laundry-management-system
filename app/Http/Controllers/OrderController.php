@@ -71,7 +71,68 @@ class OrderController extends Controller
      */
     public function create()
     {
-        $customers = CacheService::getCustomerList();
+        // Fetch fresh customer list without cache to ensure newly created customers appear
+        $customers = [];
+        
+        // Get all regular users (non-admin) and create customer options for them
+        $regularUsers = User::where('role', '!=', 'admin')->get();
+        
+        foreach ($regularUsers as $user) {
+            // Check if user has a customer record
+            $customerRecord = Customer::where('user_id', $user->id)->first();
+            
+            if ($customerRecord) {
+                // Use existing customer record
+                $customers[] = (object) [
+                    'id' => $customerRecord->id,
+                    'name' => $customerRecord->name,
+                    'email' => $customerRecord->email,
+                    'phone' => $customerRecord->phone,
+                    'address' => $customerRecord->address,
+                    'customer_type' => $customerRecord->customer_type,
+                    'user_id' => $user->id,
+                    'is_virtual' => false
+                ];
+            } else {
+                // Create virtual customer object for user without customer record
+                $customers[] = (object) [
+                    'id' => 'user_' . $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone ?? null,
+                    'address' => null,
+                    'customer_type' => 'online',
+                    'user_id' => $user->id,
+                    'is_virtual' => true
+                ];
+            }
+        }
+        
+        // Add walk-in customers (customers without user_id)
+        $walkinCustomers = Customer::whereNull('user_id')
+            ->select('id', 'name', 'email', 'phone', 'customer_type', 'user_id', 'address')
+            ->get();
+        
+        foreach ($walkinCustomers as $customer) {
+            $customers[] = (object) [
+                'id' => $customer->id,
+                'name' => $customer->name,
+                'email' => $customer->email,
+                'phone' => $customer->phone,
+                'address' => $customer->address,
+                'customer_type' => $customer->customer_type,
+                'user_id' => null,
+                'is_virtual' => false
+            ];
+        }
+        
+        // Sort by name
+        usort($customers, function($a, $b) {
+            return strcmp($a->name, $b->name);
+        });
+        
+        $customers = collect($customers);
+        
         return view('admin.orders.create', compact('customers'));
     }
 

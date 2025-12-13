@@ -217,6 +217,7 @@
             }
         });
 
+    
         // Add-ons pricing configuration
         const addOnPrices = {
             'detergent': 16,

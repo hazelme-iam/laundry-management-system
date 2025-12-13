@@ -166,24 +166,30 @@
 
         @if($order->status === 'pending')
             <!-- Approve -->
-            <button type="button"
-                    onclick="openModal('approveOrderModal{{ $order->id }}')"
-                    class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-green-50 text-green-600 hover:bg-green-100"
-                    title="Approve">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.172 7.707 8.879A1 1 0 106.293 10.293l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-            </button>
+            <form action="{{ route('admin.orders.approve', $order) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit"
+                        class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-green-50 text-green-600 hover:bg-green-100"
+                        title="Approve"
+                        onclick="return confirm('Approve this order?')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.172 7.707 8.879A1 1 0 106.293 10.293l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </form>
 
             <!-- Decline -->
-            <button type="button"
-                    onclick="openModal('declineOrderModal{{ $order->id }}')"
-                    class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-50 text-red-600 hover:bg-red-100"
-                    title="Decline">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.293 7.293a1 1 0 011.414 0L10 7.586l.293-.293a1 1 0 111.414 1.414L11.414 9l.293.293a1 1 0 01-1.414 1.414L10 10.414l-.293.293a1 1 0 01-1.414-1.414L8.586 9l-.293-.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
-            </button>
+            <form action="{{ route('admin.orders.decline', $order) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit"
+                        class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-50 text-red-600 hover:bg-red-100"
+                        title="Decline"
+                        onclick="return confirm('Decline this order?')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.293 7.293a1 1 0 011.414 0L10 7.586l.293-.293a1 1 0 111.414 1.414L11.414 9l.293.293a1 1 0 01-1.414 1.414L10 10.414l-.293.293a1 1 0 01-1.414-1.414L8.586 9l-.293-.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </form>
 
         @elseif($order->status === 'approved')
             <!-- Laundry Received -->
@@ -208,14 +214,18 @@
 
         @if($order->status !== 'approved')
             <!-- Delete -->
-            <button type="button"
-                    onclick="openModal('deleteOrderModal{{ $order->id }}')"
-                    class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    title="Delete">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 100 2h12a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM5 8a1 1 0 011-1h8a1 1 0 011 1v7a3 3 0 01-3 3H8a3 3 0 01-3-3V8z" clip-rule="evenodd" />
-                </svg>
-            </button>
+            <form action="{{ route('admin.orders.destroy', $order) }}" method="POST" class="inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                        class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        title="Delete"
+                        onclick="return confirm('Are you sure you want to delete this order?')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 100 2h12a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM5 8a1 1 0 011-1h8a1 1 0 011 1v7a3 3 0 01-3 3H8a3 3 0 01-3-3V8z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </form>
         @endif
     </div>
 </td>
@@ -230,55 +240,6 @@
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Confirmation Modals for each order -->
-                @foreach($orders as $order)
-                    @if($order->status === 'pending')
-                        <!-- Approve Modal -->
-                        <x-confirmationmodal 
-                            :modalId="'approveOrderModal' . $order->id"
-                            title="Confirm Order Approval"
-                            message="Are you sure you want to approve this order? This action will move the order to the next stage."
-                            confirmText="Approve"
-                            cancelText="Cancel"
-                            confirmColor="green"
-                            :confirmAction="route('admin.orders.approve', $order)"
-                            method="POST"
-                            :showFooter="true"
-                            :showIcon="true"
-                        />
-
-                        <!-- Decline Modal -->
-                        <x-confirmationmodal 
-                            :modalId="'declineOrderModal' . $order->id"
-                            title="Confirm Order Decline"
-                            message="Are you sure you want to decline this order? This action cannot be undone."
-                            confirmText="Decline"
-                            cancelText="Cancel"
-                            confirmColor="red"
-                            :confirmAction="route('admin.orders.decline', $order)"
-                            method="POST"
-                            :showFooter="true"
-                            :showIcon="true"
-                        />
-                    @endif
-
-                    @if($order->status !== 'approved')
-                        <!-- Delete Modal -->
-                        <x-confirmationmodal 
-                            :modalId="'deleteOrderModal' . $order->id"
-                            title="Confirm Order Deletion"
-                            message="Are you sure you want to delete this order? This action cannot be undone."
-                            confirmText="Delete"
-                            cancelText="Cancel"
-                            confirmColor="red"
-                            :confirmAction="route('admin.orders.destroy', $order)"
-                            method="DELETE"
-                            :showFooter="true"
-                            :showIcon="true"
-                        />
-                    @endif
-                @endforeach
 
                 <!-- Pagination -->
                 @if($orders->hasPages())
