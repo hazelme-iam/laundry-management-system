@@ -366,17 +366,21 @@ class OrderController extends Controller
     public function userStore(Request $request)
     {
         $data = $request->validate([
-            'weight' => 'required|numeric|min:1',
+            'weight_option' => 'required|in:measure_at_shop,manual_weight',
+            'weight' => 'nullable|numeric|min:1|required_if:weight_option,manual_weight',
             'add_ons' => 'nullable|array',
-            'subtotal' => 'required|numeric',
-            'discount' => 'required|numeric',
-            'total_amount' => 'required|numeric',
-            'amount_paid' => 'required|numeric',
+            'subtotal' => 'required|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0',
+            'total_amount' => 'nullable|numeric|min:0',
+            'amount_paid' => 'nullable|numeric|min:0',
             'pickup_date' => 'nullable|date',
             'estimated_finish' => 'required|date',
             'remarks' => 'nullable|string',
             'customer_phone' => 'required|string',
             'customer_address' => 'required|string',
+            'barangay' => 'nullable|string',
+            'purok' => 'nullable|string',
+            'street' => 'nullable|string',
         ]);
 
         // Get or create customer record for logged-in user
@@ -397,10 +401,21 @@ class OrderController extends Controller
             'address' => $data['customer_address'],
         ]);
 
+        // Handle weight based on measurement option
+        $weight = null;
+        $remarks = $data['remarks'] ?? '';
+        
+        if ($data['weight_option'] === 'manual_weight') {
+            $weight = $data['weight'];
+        } else {
+            // For measure_at_shop, add note to remarks
+            $remarks = ($remarks ? $remarks . ' | ' : '') . 'Weight to be measured at shop upon arrival.';
+        }
+
         // Create order with pending status for admin approval
         $orderData = [
             'customer_id' => $customer->id,
-            'weight' => $data['weight'],
+            'weight' => $weight,
             'add_ons' => $data['add_ons'] ?? null,
             'subtotal' => $data['subtotal'],
             'discount' => $data['discount'],
@@ -408,7 +423,7 @@ class OrderController extends Controller
             'amount_paid' => $data['amount_paid'],
             'pickup_date' => $data['pickup_date'],
             'estimated_finish' => $data['estimated_finish'],
-            'remarks' => $data['remarks'],
+            'remarks' => $remarks,
             'status' => 'pending', // Pending admin approval
             'priority' => 'normal',
             'service_type' => 'standard',
