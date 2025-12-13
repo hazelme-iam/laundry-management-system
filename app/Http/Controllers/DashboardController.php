@@ -33,24 +33,37 @@ class DashboardController extends Controller
             'completionPercentage' => $totalOrders > 0 ? round(($completedOrders / $totalOrders) * 100) : 0
         ];
         
-        // Backlog orders for tomorrow (orders due tomorrow but not completed)
-        $tomorrow = now()->addDay()->format('Y-m-d');
-        $backlogOrders = Order::with(['customer'])
-            ->whereDate('estimated_finish', $tomorrow)
-            ->whereNotIn('status', ['completed', 'cancelled'])
-            ->orderBy('estimated_finish', 'asc')
-            ->take(3)
-            ->get()
-            ->map(function ($order) {
-                return [
-                    'id' => str_pad($order->id, 3, '0', STR_PAD_LEFT),
-                    'customer_name' => $order->customer->name ?? 'Unknown',
-                    'weight' => $order->weight,
-                    'service_type' => ucfirst($order->service_type ?? 'Standard'),
-                    'estimated_time' => $order->estimated_finish->format('g:i A')
-                ];
-            })
-            ->toArray(); // Convert to array
+        // Backlog orders: orders created today that exceed daily capacity
+        $today = now()->format('Y-m-d');
+        $todayWeight = Order::whereDate('created_at', $today)->sum('weight');
+        $dailyWasherCapacity = self::WASHERS_COUNT * self::OPERATING_HOURS_PER_DAY * self::CYCLE_CAPACITY_KG;
+        
+        // Only show backlog if today's orders exceed capacity
+        $backlogOrders = [];
+        if ($todayWeight > $dailyWasherCapacity) {
+            // Get today's orders sorted by created_at (oldest first) to show which ones overflow
+            $allTodayOrders = Order::with(['customer'])
+                ->whereDate('created_at', $today)
+                ->whereNotIn('status', ['completed', 'cancelled'])
+                ->orderBy('created_at', 'asc')
+                ->get();
+            
+            $cumulativeWeight = 0;
+            foreach ($allTodayOrders as $order) {
+                $cumulativeWeight += $order->weight;
+                // Only include orders that exceed the daily capacity
+                if ($cumulativeWeight > $dailyWasherCapacity) {
+                    $backlogOrders[] = [
+                        'id' => str_pad($order->id, 3, '0', STR_PAD_LEFT),
+                        'customer_name' => $order->customer->name ?? 'Unknown',
+                        'weight' => $order->weight,
+                        'service_type' => ucfirst($order->service_type ?? 'Standard'),
+                        'estimated_time' => $order->estimated_finish ? $order->estimated_finish->format('g:i A') : 'N/A'
+                    ];
+                }
+                if (count($backlogOrders) >= 3) break;
+            }
+        }
         
         // Today's orders with status breakdown
         $today = now()->format('Y-m-d');
@@ -122,44 +135,51 @@ class DashboardController extends Controller
         $dailyWasherCapacity = self::WASHERS_COUNT * $cyclesPerMachinePerDay * self::CYCLE_CAPACITY_KG;
         $dailyDryerCapacity = self::DRYERS_COUNT * $cyclesPerMachinePerDay * self::CYCLE_CAPACITY_KG;
         
-        // Today's orders weight
+        // Today's orders weight (all orders created today)
         $today = now()->format('Y-m-d');
         $todayWeight = Order::whereDate('created_at', $today)->sum('weight');
         
-        // Currently in-progress weight
+        // Currently in-progress weight (washing, drying, etc.)
         $inProgressWeight = Order::whereIn('status', ['picked_up', 'washing', 'drying', 'folding', 'quality_check'])
             ->sum('weight');
         
+        // Allocate today's weight to capacity: up to daily limit, overflow is backlog
+        $todayCapacityUsed = min($todayWeight, $dailyWasherCapacity);
+        $todayBacklogWeight = max(0, $todayWeight - $dailyWasherCapacity);
+        
         // Backlog weight (orders due tomorrow but not completed)
         $tomorrow = now()->addDay()->format('Y-m-d');
-        $backlogWeight = Order::whereDate('estimated_finish', $tomorrow)
+        $tomorrowBacklogWeight = Order::whereDate('estimated_finish', $tomorrow)
             ->whereNotIn('status', ['completed', 'cancelled'])
             ->sum('weight');
         
-        // Calculate utilization percentages
-        $washerUtilization = $dailyWasherCapacity > 0 ? round(($inProgressWeight / $dailyWasherCapacity) * 100) : 0;
-        $dryerUtilization = $dailyDryerCapacity > 0 ? round(($inProgressWeight / $dailyDryerCapacity) * 100) : 0;
+        // Total backlog = today's overflow + tomorrow's orders
+        $totalBacklogWeight = $todayBacklogWeight + $tomorrowBacklogWeight;
         
-        // Determine if there's backlog
-        $hasBacklog = $backlogWeight > 0 || $washerUtilization > 100 || $dryerUtilization > 100;
+        // Calculate utilization percentages based on today's allocated capacity
+        $washerUtilization = $dailyWasherCapacity > 0 ? round(($todayCapacityUsed / $dailyWasherCapacity) * 100) : 0;
+        $dryerUtilization = $dailyDryerCapacity > 0 ? round(($todayCapacityUsed / $dailyDryerCapacity) * 100) : 0;
+        
+        // Determine if there's backlog: only when today's capacity is full (100%+) or overflow exists
+        $hasBacklog = $todayBacklogWeight > 0 || $washerUtilization >= 100 || $dryerUtilization >= 100;
         
         return [
             'washers' => [
                 'count' => self::WASHERS_COUNT,
                 'daily_capacity_kg' => $dailyWasherCapacity,
-                'current_load_kg' => $inProgressWeight,
+                'current_load_kg' => $todayCapacityUsed,
                 'utilization_percent' => $washerUtilization,
-                'remaining_capacity_kg' => max(0, $dailyWasherCapacity - $inProgressWeight)
+                'remaining_capacity_kg' => max(0, $dailyWasherCapacity - $todayCapacityUsed)
             ],
             'dryers' => [
                 'count' => self::DRYERS_COUNT,
                 'daily_capacity_kg' => $dailyDryerCapacity,
-                'current_load_kg' => $inProgressWeight,
+                'current_load_kg' => $todayCapacityUsed,
                 'utilization_percent' => $dryerUtilization,
-                'remaining_capacity_kg' => max(0, $dailyDryerCapacity - $inProgressWeight)
+                'remaining_capacity_kg' => max(0, $dailyDryerCapacity - $todayCapacityUsed)
             ],
             'today_weight' => $todayWeight,
-            'backlog_weight' => $backlogWeight,
+            'backlog_weight' => $totalBacklogWeight,
             'has_backlog' => $hasBacklog,
             'operating_hours' => self::OPERATING_HOURS_PER_DAY,
             'cycle_capacity_kg' => self::CYCLE_CAPACITY_KG
