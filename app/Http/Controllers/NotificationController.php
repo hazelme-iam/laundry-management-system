@@ -109,4 +109,35 @@ class NotificationController extends Controller
         return redirect()->route('notifications.index')
             ->with('success', 'Notification deleted successfully.');
     }
+
+    /**
+     * Check for new notifications (for real-time polling)
+     */
+    public function checkNew(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        // Get the latest unread notification
+        $latestNotification = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id)
+            ->unread()
+            ->latest()
+            ->first();
+
+        // Count unread notifications
+        $unreadCount = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id)
+            ->unread()
+            ->count();
+
+        return response()->json([
+            'hasNewNotifications' => $unreadCount > 0,
+            'unreadCount' => $unreadCount,
+            'latestNotification' => $latestNotification ? [
+                'title' => $latestNotification->title,
+                'message' => $latestNotification->message,
+                'type' => $latestNotification->type,
+            ] : null,
+        ]);
+    }
 }

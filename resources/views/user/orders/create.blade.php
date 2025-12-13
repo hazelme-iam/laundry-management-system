@@ -476,9 +476,9 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                     <!-- Barangay Dropdown -->
                                     <div>
-                                        <label for="barangay" class="block text-sm font-medium text-gray-700">Barangay</label>
+                                        <label for="barangay" class="block text-sm font-medium text-gray-700">Barangay *</label>
                                         <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                                id="barangay" name="barangay">
+                                                id="barangay" name="barangay" required>
                                             <option value="">Select Barangay</option>
                                             <option value="Poblacion" {{ old('barangay') == 'Poblacion' ? 'selected' : '' }}>Poblacion</option>
                                             <option value="Baluarte" {{ old('barangay') == 'Baluarte' ? 'selected' : '' }}>Baluarte</option>
@@ -497,9 +497,9 @@
 
                                     <!-- Purok Dropdown -->
                                     <div>
-                                        <label for="purok" class="block text-sm font-medium text-gray-700">Purok/Zone</label>
+                                        <label for="purok" class="block text-sm font-medium text-gray-700">Purok/Zone *</label>
                                         <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                                id="purok" name="purok">
+                                                id="purok" name="purok" required>
                                             <option value="">Select Purok</option>
                                             <option value="Purok 1" {{ old('purok') == 'Purok 1' ? 'selected' : '' }}>Purok 1</option>
                                             <option value="Purok 2" {{ old('purok') == 'Purok 2' ? 'selected' : '' }}>Purok 2</option>
@@ -517,9 +517,9 @@
 
                                     <!-- Street Dropdown -->
                                     <div>
-                                        <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
+                                        <label for="street" class="block text-sm font-medium text-gray-700">Street *</label>
                                         <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                                id="street" name="street">
+                                                id="street" name="street" required>
                                             <option value="">Select Street</option>
                                             <option value="Rizal Street" {{ old('street') == 'Rizal Street' ? 'selected' : '' }}>Rizal Street</option>
                                             <option value="Mabini Street" {{ old('street') == 'Mabini Street' ? 'selected' : '' }}>Mabini Street</option>

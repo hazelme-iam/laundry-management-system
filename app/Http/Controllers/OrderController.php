@@ -561,6 +561,22 @@ class OrderController extends Controller
             ->with('success', 'Order cancelled successfully.');
     }
 
+    public function userReceipt(Order $order)
+    {
+        // Ensure user can only view their own order receipts
+        if ($order->customer->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Generate receipt HTML
+        $html = view('user.orders.receipt', compact('order'))->render();
+
+        // Return as downloadable HTML file
+        return response($html)
+            ->header('Content-Type', 'text/html; charset=utf-8')
+            ->header('Content-Disposition', 'attachment; filename="receipt-order-' . $order->id . '.html"');
+    }
+
     /**
      * Calculate order total for user orders
      */
