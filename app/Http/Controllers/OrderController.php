@@ -325,7 +325,25 @@ class OrderController extends Controller
     // User-specific methods
     public function userIndex()
     {
-        // Implementation for user-specific order index
+        // Get or create customer record for logged-in user
+        $customer = Customer::firstOrCreate(
+            ['user_id' => auth()->id()],
+            [
+                'name' => auth()->user()->name,
+                'email' => auth()->user()->email,
+                'phone' => '',
+                'address' => '',
+                'customer_type' => 'regular',
+            ]
+        );
+
+        // Get orders for this customer
+        $orders = Order::where('customer_id', $customer->id)
+            ->with(['customer', 'creator'])
+            ->latest()
+            ->paginate(10);
+
+        return view('user.orders.index', compact('orders'));
     }
 
     public function userCreate()
