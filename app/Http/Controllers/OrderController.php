@@ -29,7 +29,7 @@ class OrderController extends Controller
     public function index()
     {
         // Use selective eager loading - only load what's needed for the list view
-        $query = Order::with(['customer', 'creator']);
+        $query = Order::with(['customer', 'creator', 'payments']);
 
         // Status filter
         if (request('status')) {
@@ -228,7 +228,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         // Always load fresh data for Livewire auto-refresh
-        $order->load(['customer', 'creator', 'updater', 'loads.washerMachine', 'loads.dryerMachine', 'assignedWasher', 'assignedDryer']);
+        $order->load(['customer', 'creator', 'updater', 'loads.washerMachine', 'loads.dryerMachine', 'assignedWasher', 'assignedDryer', 'payments.recordedBy']);
         
         // Calculate drying time for this order
         $dryingTime = $this->calculateDryingTime($order->weight);
@@ -780,10 +780,29 @@ class OrderController extends Controller
             'status' => 'required|in:pending,approved,rejected,picked_up,washing,drying,folding,quality_check,ready,ready_for_pickup,delivery_pending,completed,cancelled'
         ]);
 
+        $newStatus = $request->status;
         $order->update([
-            'status' => $request->status,
+            'status' => $newStatus,
             'updated_by' => Auth::id()
         ]);
+
+        // Send automatic notifications to online customers
+        if ($order->customer->user_id) {
+            $user = User::find($order->customer->user_id);
+            
+            if ($user) {
+                if ($newStatus === 'ready') {
+                    // Send receipt notification when order is ready
+                    $user->notify(new \App\Notifications\OrderReceiptNotification($order));
+                } elseif ($newStatus === 'completed') {
+                    // Send completion notification
+                    $user->notify(new \App\Notifications\OrderUpdateNotification(
+                        $order,
+                        'Your order has been completed and is ready for pickup!'
+                    ));
+                }
+            }
+        }
 
         return response()->json(['success' => true]);
     }
@@ -935,5 +954,77 @@ class OrderController extends Controller
         $order->load('payments.recordedBy');
         
         return view('user.orders.receipt', compact('order'));
+    }
+
+    public function sendReceiptEmail(Order $order)
+    {
+        // Check if order has an associated online customer with user
+        if (!$order->customer->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This is not an online customer order.'
+            ], 422);
+        }
+
+        $user = User::find($order->customer->user_id);
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found.'
+            ], 422);
+        }
+
+        try {
+            // Send receipt notification to customer
+            $user->notify(new \App\Notifications\OrderReceiptNotification($order));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Receipt notification sent to {$user->name}"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send notification: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function sendOrderUpdate(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'message' => 'required|string|max:500',
+        ]);
+
+        // Check if order has an associated online customer with user
+        if (!$order->customer->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This is not an online customer order.'
+            ], 422);
+        }
+
+        $user = User::find($order->customer->user_id);
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found.'
+            ], 422);
+        }
+
+        try {
+            // Send order update notification to customer
+            $user->notify(new \App\Notifications\OrderUpdateNotification($order, $data['message']));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Update notification sent to {$user->name}"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send notification: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

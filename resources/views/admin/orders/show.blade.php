@@ -12,12 +12,10 @@
                     'Laundry Management' => route('admin.orders.index'),
                     'Order Details' => null
                 ]" />
-                @if($order->status === 'ready')
                 <a href="{{ route('user.orders.receipt', $order->id) }}" target="_blank" 
                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
                     📥 Download Receipt
                 </a>
-                @endif
             </div>
 
             <!-- Order Info Card -->
@@ -212,59 +210,37 @@
                             <div class="space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Amount Due:</span>
-                                    <span class="font-semibold text-gray-900">₱<span id="calc_amount_due">{{ number_format($order->total_amount, 2) }}</span></span>
+                                    <span class="font-semibold text-gray-900">₱<span id="calc_amount_due">{{ number_format($order->total_amount - $order->amount_paid, 2) }}</span></span>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Cash Given:</span>
-                                    <span class="font-semibold text-gray-900">₱<span id="calc_cash_given">0.00</span></span>
-                                </div>
-                                <div class="border-t border-blue-200 pt-3 flex justify-between">
-                                    <span class="text-gray-600 font-medium">Change:</span>
-                                    <span class="font-bold text-lg" id="calc_change_display">₱<span id="calc_change">0.00</span></span>
-                                </div>
+                                @if($order->payments->count() > 0)
+                                    @php
+                                        $totalCashGiven = $order->payments->sum('cash_given');
+                                        $totalChange = $order->payments->sum('change');
+                                    @endphp
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Cash Given:</span>
+                                        <span class="font-semibold text-gray-900">₱{{ number_format($totalCashGiven, 2) }}</span>
+                                    </div>
+                                    <div class="border-t border-blue-200 pt-3 flex justify-between">
+                                        <span class="text-gray-600 font-medium">Change:</span>
+                                        <span class="font-bold text-lg {{ $totalChange > 0 ? 'text-green-600' : 'text-gray-900' }}">₱{{ number_format($totalChange, 2) }}</span>
+                                    </div>
+                                @else
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Cash Given:</span>
+                                        <span class="font-semibold text-gray-900">₱<span id="calc_cash_given">0.00</span></span>
+                                    </div>
+                                    <div class="border-t border-blue-200 pt-3 flex justify-between">
+                                        <span class="text-gray-600 font-medium">Change:</span>
+                                        <span class="font-bold text-lg" id="calc_change_display">₱<span id="calc_change">0.00</span></span>
+                                    </div>
+                                @endif
                                 <div class="mt-3 p-3 bg-white rounded border border-blue-100">
                                     <p class="text-xs text-gray-600 mb-2">💡 <strong>Tip:</strong> Enter the amount customer is paying to see change automatically</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Payment History -->
-                    @if($order->payments->count() > 0)
-                    <div class="mt-6 pt-6 border-t border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment History</h3>
-                        <div class="space-y-3">
-                            @foreach($order->payments->sortByDesc('payment_date') as $payment)
-                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
-                                    <div>
-                                        <p class="text-xs text-gray-500">Amount Paid</p>
-                                        <p class="text-sm font-semibold text-gray-900">₱{{ number_format($payment->amount, 2) }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs text-gray-500">Cash Given</p>
-                                        <p class="text-sm font-semibold text-gray-900">₱{{ number_format($payment->cash_given ?? $payment->amount, 2) }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs text-gray-500">Change</p>
-                                        <p class="text-sm font-semibold {{ $payment->change > 0 ? 'text-green-600' : 'text-gray-900' }}">₱{{ number_format($payment->change ?? 0, 2) }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs text-gray-500">Date & Time</p>
-                                        <p class="text-sm font-semibold text-gray-900">{{ $payment->payment_date->format('M d, Y H:i') }}</p>
-                                    </div>
-                                </div>
-                                <div class="border-t border-gray-200 pt-2">
-                                    <p class="text-xs text-gray-600">Recorded by: {{ $payment->recordedBy->name ?? 'Unknown' }}</p>
-                                    @if($payment->notes)
-                                    <p class="text-xs text-gray-700 mt-1 italic">{{ $payment->notes }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endif
                 </div>
             </div>
 
@@ -809,23 +785,22 @@
         function calculateCashAndChange() {
             const paymentAmount = parseFloat(document.getElementById('payment_amount').value) || 0;
             const totalAmount = parseFloat('{{ $order->total_amount }}');
+            const amountPaid = parseFloat('{{ $order->amount_paid }}');
+            const remainingBalance = totalAmount - amountPaid;
             
-            // Update cash given
+            // Update cash given (this is what customer gives)
             document.getElementById('calc_cash_given').textContent = paymentAmount.toFixed(2);
             
-            // Calculate change
-            const change = paymentAmount - totalAmount;
+            // Calculate change (payment - remaining balance, or payment - total if overpaying)
+            const change = paymentAmount - remainingBalance;
             const changeDisplay = document.getElementById('calc_change_display');
             const changeValue = document.getElementById('calc_change');
             
-            changeValue.textContent = Math.abs(change).toFixed(2);
-            
-            // Color code the change display
             if (change > 0) {
+                changeValue.textContent = change.toFixed(2);
                 changeDisplay.className = 'font-bold text-lg text-green-600';
-            } else if (change < 0) {
-                changeDisplay.className = 'font-bold text-lg text-red-600';
             } else {
+                changeValue.textContent = '0.00';
                 changeDisplay.className = 'font-bold text-lg text-gray-900';
             }
         }
@@ -985,6 +960,7 @@
                 }
             }
         });
+
     </script>
 
     <!-- Assign Washer Confirmation Modal -->

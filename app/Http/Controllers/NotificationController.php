@@ -15,30 +15,28 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $notifications = Notification::where('notifiable_type', get_class($user))
-            ->where('notifiable_id', $user->id)
-            ->latest()
-            ->paginate(20);
+        $notifications = $user->notifications()->latest()->paginate(20);
 
-        return view('notifications.index', compact('notifications'));
+        return view('user.notifications', compact('notifications'));
     }
 
     /**
      * Mark a specific notification as read.
      */
-    public function markAsRead(Request $request, Notification $notification): JsonResponse
+    public function markAsRead(Request $request, $notificationId): JsonResponse
     {
-        // Ensure user can only mark their own notifications
-        if ($notification->notifiable_id !== $request->user()->id || 
-            $notification->notifiable_type !== get_class($request->user())) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        $user = $request->user();
+        $notification = $user->notifications()->find($notificationId);
+
+        if (!$notification) {
+            return response()->json(['success' => false, 'message' => 'Notification not found'], 404);
         }
 
-        $success = NotificationService::markAsRead($notification->id);
+        $notification->markAsRead();
 
         return response()->json([
-            'success' => $success,
-            'message' => $success ? 'Notification marked as read' : 'Failed to mark notification as read'
+            'success' => true,
+            'message' => 'Notification marked as read'
         ]);
     }
 
@@ -48,7 +46,7 @@ class NotificationController extends Controller
     public function markAllAsRead(Request $request): JsonResponse
     {
         $user = $request->user();
-        $count = NotificationService::markAllAsRead($user);
+        $count = $user->unreadNotifications()->update(['read_at' => now()]);
 
         return response()->json([
             'success' => true,
