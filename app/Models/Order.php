@@ -106,6 +106,16 @@ class Order extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    public function weightConfirmedBy()
+    {
+        return $this->belongsTo(User::class, 'weight_confirmed_by');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function primaryWasher()
     {
         return $this->belongsTo(Machine::class, 'primary_washer_id');

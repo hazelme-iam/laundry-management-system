@@ -236,19 +236,42 @@
                 <thead>
                     <tr>
                         <th>Description</th>
+                        <th class="text-right">Qty</th>
+                        <th class="text-right">Unit Price</th>
                         <th class="text-right">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>Laundry Service (Base)</td>
-                        <td class="text-right">₱{{ number_format(150, 2) }}</td>
+                        <td class="text-right">1</td>
+                        <td class="text-right">₱150.00</td>
+                        <td class="text-right">₱150.00</td>
                     </tr>
                     @if($order->add_ons && count($order->add_ons) > 0)
-                        @foreach($order->add_ons as $addOn)
+                        <tr style="background-color: #f9fafb; font-weight: bold;">
+                            <td colspan="4">Add-ons</td>
+                        </tr>
+                        @foreach($order->add_ons as $key => $value)
+                            @php
+                                $addOn = is_int($key) ? $value : $key;
+                                $qty = is_int($key) ? 1 : (int) $value;
+                                $price = $addOn === 'detergent' ? 16 : 14;
+                                $subtotal = $qty * $price;
+                            @endphp
                             <tr>
-                                <td>{{ ucfirst(str_replace('_', ' ', $addOn)) }}</td>
-                                <td class="text-right">₱{{ number_format($addOn === 'detergent' ? 16 : 14, 2) }}</td>
+                                <td>
+                                    @if($addOn === 'detergent')
+                                        🧼 Detergent
+                                    @elseif($addOn === 'fabric_conditioner')
+                                        ✨ Fabric Conditioner
+                                    @else
+                                        {{ ucfirst(str_replace('_', ' ', $addOn)) }}
+                                    @endif
+                                </td>
+                                <td class="text-right">{{ $qty }}</td>
+                                <td class="text-right">₱{{ number_format($price, 2) }}</td>
+                                <td class="text-right">₱{{ number_format($subtotal, 2) }}</td>
                             </tr>
                         @endforeach
                     @endif
@@ -290,7 +313,63 @@
                 <span class="info-label">Balance:</span>
                 <span class="info-value">₱{{ number_format($order->total_amount - $order->amount_paid, 2) }}</span>
             </div>
+            @if($order->amount_paid > 0)
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.3);">
+                <div class="info-row">
+                    <span class="info-label">Cash Given:</span>
+                    <span class="info-value">₱{{ number_format($order->amount_paid, 2) }}</span>
+                </div>
+                @php
+                    $change = $order->amount_paid - $order->total_amount;
+                @endphp
+                @if($change > 0)
+                <div class="info-row" style="font-weight: bold; font-size: 15px; color: #10b981;">
+                    <span class="info-label">Change:</span>
+                    <span class="info-value">₱{{ number_format($change, 2) }}</span>
+                </div>
+                @endif
+            </div>
+            @endif
         </div>
+
+        <!-- Payment History -->
+        @if($order->payments && $order->payments->count() > 0)
+        <div class="section">
+            <div class="section-title">Payment History</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th class="text-right">Amount Paid</th>
+                        <th class="text-right">Cash Given</th>
+                        <th class="text-right">Change</th>
+                        <th>Recorded By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($order->payments->sortByDesc('payment_date') as $payment)
+                    <tr>
+                        <td>{{ $payment->payment_date->format('M d, Y g:i A') }}</td>
+                        <td class="text-right">₱{{ number_format($payment->amount, 2) }}</td>
+                        <td class="text-right">₱{{ number_format($payment->cash_given ?? $payment->amount, 2) }}</td>
+                        <td class="text-right">₱{{ number_format($payment->change ?? 0, 2) }}</td>
+                        <td>{{ $payment->recordedBy->name ?? 'Unknown' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @if($order->payments->first()?->notes)
+            <div style="margin-top: 15px; padding: 10px; background-color: #f3f4f6; border-radius: 6px;">
+                <p style="font-size: 13px; color: #374151;"><strong>Notes:</strong></p>
+                @foreach($order->payments as $payment)
+                    @if($payment->notes)
+                    <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">• {{ $payment->notes }}</p>
+                    @endif
+                @endforeach
+            </div>
+            @endif
+        </div>
+        @endif
 
         <!-- Special Instructions -->
         @if($order->remarks)

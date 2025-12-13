@@ -28,7 +28,7 @@ Route::middleware([
     Route::post('/my-orders', [OrderController::class, 'userStore'])->name('user.orders.store');
     Route::get('/my-orders/{order}', [OrderController::class, 'userShow'])->name('user.orders.show');
     Route::put('/my-orders/{order}/cancel', [OrderController::class, 'userCancel'])->name('user.orders.cancel');
-    Route::get('/my-orders/{order}/receipt', [OrderController::class, 'userReceipt'])->name('user.orders.receipt');
+    Route::get('/my-orders/{order}/receipt', [OrderController::class, 'downloadReceipt'])->name('user.orders.receipt');
 
     // Notification Routes (User)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -83,6 +83,7 @@ Route::middleware([
     Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
     Route::post('/orders/{order}/start-washing', [OrderController::class, 'startWashing'])->name('admin.orders.start-washing');
     Route::post('/orders/{order}/start-drying', [OrderController::class, 'startDrying'])->name('admin.orders.start-drying');
+    Route::post('/orders/{order}/record-payment', [OrderController::class, 'recordPayment'])->name('admin.orders.record-payment');
     
     // Pending orders page
     Route::get('/orders/pending', [OrderController::class, 'pending'])->name('admin.orders.pending');
