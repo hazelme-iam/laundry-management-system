@@ -13,15 +13,11 @@
                         Back to Orders
                     </a>
                     @if($order->status === 'pending')
-                        <form action="{{ route('user.orders.cancel', $order) }}" method="POST" style="display: inline;">
-                            @csrf
-                            @method('PUT')
-                            <button type="submit" 
-                                    onclick="return confirm('Are you sure you want to cancel this order? This action cannot be undone.')"
-                                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                                Cancel Order
-                            </button>
-                        </form>
+                        <button type="button" 
+                                onclick="openCancelModal()"
+                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                            Cancel Order
+                        </button>
                     @endif
                     @if($order->status === 'pending' || $order->status === 'approved')
                         <a href="{{ route('user.orders.create') }}" 
@@ -49,6 +45,104 @@
                         <div class="mt-4 sm:mt-0 text-right">
                             <div class="text-sm text-gray-500">Order Date</div>
                             <div class="text-lg font-medium text-gray-900">{{ $order->created_at->format('M d, Y') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Workflow Timeline -->
+            <div class="bg-white rounded-lg shadow overflow-hidden mx-4 sm:mx-0 mb-6">
+                <div class="p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900">Order Progress</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <!-- Pending -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <div class="w-4 h-4 rounded-full {{ in_array($order->status, ['pending', 'approved', 'picked_up', 'washing', 'drying', 'folding', 'quality_check', 'ready', 'completed']) ? 'bg-blue-600' : 'bg-gray-300' }}"></div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">Pending Approval</p>
+                                <p class="text-xs text-gray-500">{{ $order->created_at->format('M d, Y g:i A') }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Approved -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <div class="w-4 h-4 rounded-full {{ in_array($order->status, ['approved', 'picked_up', 'washing', 'drying', 'folding', 'quality_check', 'ready', 'completed']) ? 'bg-blue-600' : 'bg-gray-300' }}"></div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">Approved</p>
+                                <p class="text-xs text-gray-500">Awaiting pickup</p>
+                            </div>
+                        </div>
+
+                        <!-- Picked Up -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <div class="w-4 h-4 rounded-full {{ in_array($order->status, ['picked_up', 'washing', 'drying', 'folding', 'quality_check', 'ready', 'completed']) ? 'bg-blue-600' : 'bg-gray-300' }}"></div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">Picked Up</p>
+                                <p class="text-xs text-gray-500">In transit to laundry</p>
+                            </div>
+                        </div>
+
+                        <!-- Washing -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <div class="w-4 h-4 rounded-full {{ in_array($order->status, ['washing', 'drying', 'folding', 'quality_check', 'ready', 'completed']) ? 'bg-blue-600' : 'bg-gray-300' }}"></div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">Washing</p>
+                                <p class="text-xs text-gray-500">Being washed</p>
+                            </div>
+                        </div>
+
+                        <!-- Drying -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <div class="w-4 h-4 rounded-full {{ in_array($order->status, ['drying', 'folding', 'quality_check', 'ready', 'completed']) ? 'bg-blue-600' : 'bg-gray-300' }}"></div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">Drying</p>
+                                <p class="text-xs text-gray-500">Being dried</p>
+                            </div>
+                        </div>
+
+                        <!-- Folding -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <div class="w-4 h-4 rounded-full {{ in_array($order->status, ['folding', 'ready', 'completed']) ? 'bg-blue-600' : 'bg-gray-300' }}"></div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">Folding & Quality Check</p>
+                                <p class="text-xs text-gray-500">Being folded and inspected</p>
+                            </div>
+                        </div>
+
+                        <!-- Ready -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <div class="w-4 h-4 rounded-full {{ in_array($order->status, ['ready', 'completed']) ? 'bg-blue-600' : 'bg-gray-300' }}"></div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">Ready for Pickup</p>
+                                <p class="text-xs text-gray-500">Awaiting customer pickup</p>
+                            </div>
+                        </div>
+
+                        <!-- Completed -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <div class="w-4 h-4 rounded-full {{ $order->status === 'completed' ? 'bg-green-600' : 'bg-gray-300' }}"></div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">Completed</p>
+                                <p class="text-xs text-gray-500">Order finished</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -321,4 +415,54 @@
             </div>
         </div>
     </div>
+
+    <!-- Cancel Order Modal -->
+    <div id="cancelModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Cancel Order</h3>
+            </div>
+
+            <!-- Body -->
+            <div class="px-6 py-4">
+                <p class="text-gray-700 mb-4">Are you sure you want to cancel this order? This action cannot be undone.</p>
+                <p class="text-sm text-gray-600">Order #{{ $order->id }} will be marked as cancelled and you won't be able to recover it.</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3 justify-end">
+                <button type="button" 
+                        onclick="closeCancelModal()"
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                    Keep Order
+                </button>
+                <form action="{{ route('user.orders.cancel', $order) }}" method="POST" style="display: inline;">
+                    @csrf
+                    @method('PUT')
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                        Yes, Cancel Order
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openCancelModal() {
+            document.getElementById('cancelModal').classList.remove('hidden');
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancelModal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('cancelModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCancelModal();
+            }
+        });
+    </script>
 </x-app-layout>

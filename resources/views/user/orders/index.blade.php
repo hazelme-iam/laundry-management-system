@@ -78,6 +78,9 @@
                                         Weight
                                     </th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Add-ons
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Total Amount
                                     </th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -106,7 +109,20 @@
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $order->weight }} kg
+                                            {{ $order->weight ? $order->weight . ' kg' : 'To be measured' }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            @if($order->add_ons && count($order->add_ons) > 0)
+                                                <div class="space-y-1">
+                                                    @foreach($order->add_ons as $addOn)
+                                                        <span class="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded mr-1">
+                                                            {{ ucfirst(str_replace('_', ' ', $addOn)) }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <span class="text-gray-500">None</span>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                             ₱{{ number_format($order->total_amount, 2) }}
