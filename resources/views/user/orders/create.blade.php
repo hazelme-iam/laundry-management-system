@@ -136,8 +136,32 @@
 
                                     // Calculate total price
                                     function calculateTotalPrice() {
+                                        const weightOption = document.querySelector('input[name="weight_option"]:checked')?.value;
                                         const weight = parseFloat(document.getElementById('weight').value) || 0;
                                         
+                                        // Calculate add-ons total based on quantities
+                                        let addOnsTotal = 0;
+                                        const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
+                                        const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
+                                        
+                                        addOnsTotal += detergentQty * (addOnPrices['detergent'] || 0);
+                                        addOnsTotal += fabricConditionerQty * (addOnPrices['fabric_conditioner'] || 0);
+
+                                        // If "measure at shop" is selected, only calculate add-ons
+                                        if (weightOption === 'measure_at_shop') {
+                                            const subtotal = addOnsTotal;
+                                            
+                                            document.getElementById('base_amount_display').textContent = `₱0.00`;
+                                            document.getElementById('excess_weight_display').textContent = `0 kg`;
+                                            document.getElementById('add_ons_total_display').textContent = `₱${addOnsTotal.toFixed(2)}`;
+                                            document.getElementById('subtotal_display').textContent = `₱${subtotal.toFixed(2)}`;
+                                            
+                                            document.getElementById('subtotal').value = subtotal.toFixed(2);
+                                            document.getElementById('total_amount').value = subtotal.toFixed(2);
+                                            return;
+                                        }
+                                        
+                                        // For manual weight, require weight input
                                         if (weight < 1) {
                                             resetCalculations();
                                             return;
@@ -153,14 +177,6 @@
                                             excessWeight = weight - BASE_WEIGHT_LIMIT;
                                             baseAmount = BASE_PRICE + (excessWeight * EXCESS_PRICE_PER_KG);
                                         }
-                                        
-                                        // Calculate add-ons total based on quantities
-                                        let addOnsTotal = 0;
-                                        const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
-                                        const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
-                                        
-                                        addOnsTotal += detergentQty * (addOnPrices['detergent'] || 0);
-                                        addOnsTotal += fabricConditionerQty * (addOnPrices['fabric_conditioner'] || 0);
 
                                         // Calculate subtotal
                                         const subtotal = baseAmount + addOnsTotal;
@@ -242,6 +258,8 @@
                                         const address = document.getElementById('customer_address')?.value.trim();
                                         const weight = document.getElementById('weight')?.value.trim();
                                         const estimatedFinish = document.getElementById('estimated_finish')?.value.trim();
+                                        const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
+                                        const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
                                         
                                         // Weight option validation
                                         if (!weightOption) {
@@ -295,9 +313,12 @@
                                             return false;
                                         }
                                         
-                                        // Subtotal validation
+                                        // Subtotal validation - allow if add-ons are selected OR weight is provided
                                         const subtotal = parseFloat(document.getElementById('subtotal')?.value) || 0;
-                                        if (subtotal <= 0) {
+                                        const hasAddOns = detergentQty > 0 || fabricConditionerQty > 0;
+                                        const hasWeight = weightOption === 'manual_weight' && parseFloat(weight) >= 1;
+                                        
+                                        if (subtotal <= 0 && !hasAddOns && !hasWeight) {
                                             alert('Please enter weight or select add-ons to calculate subtotal');
                                             return false;
                                         }
