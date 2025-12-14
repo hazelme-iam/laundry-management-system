@@ -96,7 +96,7 @@
                placeholder="Search orders..."
                class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
 
-        <form method="GET" action="{{ route('admin.orders.index') }}" class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <form method="GET" action="{{ route('admin.orders.index') }}" class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
             <!-- Status filter -->
             <select name="status" onchange="this.form.submit()"
                     class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -122,6 +122,13 @@
                 <option value="walk_in" {{ request('source') == 'walk_in' ? 'selected' : '' }}>Walk-in (Admin created)</option>
                 <option value="online" {{ request('source') == 'online' ? 'selected' : '' }}>Placed Online</option>
             </select>
+
+            <!-- Backlog filter -->
+            <select name="backlog" onchange="this.form.submit()"
+                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">All Orders</option>
+                <option value="backlog" {{ request('backlog') == 'backlog' ? 'selected' : '' }}>Backlog Only (Will Wash Tomorrow)</option>
+            </select>
         </form>
     </div>
 </div>
@@ -139,6 +146,9 @@
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Order Type
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Kilos
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
@@ -184,6 +194,14 @@
                                     </span>
                                 @endif
                             </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    @if($order->confirmed_weight)
+                                        <span class="text-blue-600 font-semibold">{{ $order->confirmed_weight }}kg</span>
+                                        <span class="text-gray-500 text-xs">(confirmed)</span>
+                                    @else
+                                        <span class="text-gray-600">{{ $order->weight ?? 'N/A' }}kg</span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                         @if($order->status == 'completed') bg-green-100 text-green-800

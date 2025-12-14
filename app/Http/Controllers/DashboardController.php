@@ -45,6 +45,7 @@ class DashboardController extends Controller
         
         // Only show backlog if today's orders exceed capacity
         $backlogOrders = [];
+        $backlogNotification = null;
         if ($todayWeight > $dailyWasherCapacity) {
             // Get today's orders sorted by created_at (oldest first) to show which ones overflow
             $allTodayOrders = Order::with(['customer'])
@@ -54,19 +55,37 @@ class DashboardController extends Controller
                 ->get();
             
             $cumulativeWeight = 0;
+            $firstBacklogOrder = null;
             foreach ($allTodayOrders as $order) {
+                $previousWeight = $cumulativeWeight;
                 $cumulativeWeight += $order->weight;
                 // Only include orders that exceed the daily capacity
                 if ($cumulativeWeight > $dailyWasherCapacity) {
+                    $isFirstBacklog = $firstBacklogOrder === null;
+                    if ($isFirstBacklog) {
+                        $firstBacklogOrder = $order;
+                    }
+                    
                     $backlogOrders[] = [
                         'id' => str_pad($order->id, 3, '0', STR_PAD_LEFT),
                         'customer_name' => $order->customer->name ?? 'Unknown',
                         'weight' => $order->weight,
                         'service_type' => ucfirst($order->service_type ?? 'Standard'),
-                        'estimated_time' => $order->estimated_finish ? $order->estimated_finish->format('g:i A') : 'N/A'
+                        'estimated_time' => $order->estimated_finish ? $order->estimated_finish->format('g:i A') : 'N/A',
+                        'is_backlog_trigger' => $isFirstBacklog
                     ];
                 }
                 if (count($backlogOrders) >= 3) break;
+            }
+            
+            // Create notification for the order that triggered backlog
+            if ($firstBacklogOrder) {
+                $backlogNotification = [
+                    'order_id' => str_pad($firstBacklogOrder->id, 3, '0', STR_PAD_LEFT),
+                    'customer_name' => $firstBacklogOrder->customer->name ?? 'Unknown',
+                    'weight' => $firstBacklogOrder->weight,
+                    'message' => "Order #{$firstBacklogOrder->id} has been placed in backlog as it exceeds today's capacity."
+                ];
             }
         }
         
@@ -123,6 +142,7 @@ class DashboardController extends Controller
             'completedOrders' => $completedOrders,
             'chartData' => $chartData,
             'backlogOrders' => $backlogOrders,
+            'backlogNotification' => $backlogNotification,
             'todayOrders' => $todayOrders,
             'todayOrdersSummary' => $todayOrdersSummary,
             'orders' => $orders,
@@ -143,15 +163,41 @@ class DashboardController extends Controller
         
         // Today's orders weight (all orders created today)
         $today = now()->format('Y-m-d');
-        $todayWeight = Order::whereDate('created_at', $today)->sum('weight');
+        $todayOrders = Order::whereDate('created_at', $today)
+            ->orderBy('created_at', 'asc')
+            ->get();
         
-        // Currently in-progress weight (washing, drying, etc.)
-        $inProgressWeight = Order::whereIn('status', ['picked_up', 'washing', 'drying', 'folding', 'quality_check'])
-            ->sum('weight');
+        // Calculate capacity usage order by order - latest order that exceeds capacity goes to backlog
+        $todayCapacityUsed = 0;
+        $todayBacklogWeight = 0;
+        $backlogStarted = false;
         
-        // Allocate today's weight to capacity: up to daily limit, overflow is backlog
-        $todayCapacityUsed = min($todayWeight, $dailyWasherCapacity);
-        $todayBacklogWeight = max(0, $todayWeight - $dailyWasherCapacity);
+        foreach ($todayOrders as $order) {
+            $orderWeight = $order->confirmed_weight ?? $order->weight;
+            
+            // Check if adding this order would exceed capacity
+            if ($todayCapacityUsed + $orderWeight > $dailyWasherCapacity) {
+                // This order and all subsequent orders go to backlog
+                $backlogStarted = true;
+            }
+            
+            if ($backlogStarted) {
+                $todayBacklogWeight += $orderWeight;
+            } else {
+                $todayCapacityUsed += $orderWeight;
+            }
+        }
+        
+        // Confirmed weight (orders with confirmed_weight OR approved orders) - use this as today's capacity usage
+        $confirmedWeightOrders = Order::where(function ($query) {
+            $query->whereNotNull('confirmed_weight')
+                ->whereIn('status', ['picked_up', 'washing', 'drying', 'folding', 'quality_check', 'ready'])
+                ->orWhere('status', 'approved');
+        })->get();
+        
+        $confirmedWeight = $confirmedWeightOrders->sum(function ($order) {
+            return $order->confirmed_weight ?? $order->weight;
+        });
         
         // Backlog weight (orders due tomorrow but not completed)
         $tomorrow = now()->addDay()->format('Y-m-d');
@@ -162,9 +208,9 @@ class DashboardController extends Controller
         // Total backlog = today's overflow + tomorrow's orders
         $totalBacklogWeight = $todayBacklogWeight + $tomorrowBacklogWeight;
         
-        // Calculate utilization percentages based on today's allocated capacity
-        $washerUtilization = $dailyWasherCapacity > 0 ? round(($todayCapacityUsed / $dailyWasherCapacity) * 100) : 0;
-        $dryerUtilization = $dailyDryerCapacity > 0 ? round(($todayCapacityUsed / $dailyDryerCapacity) * 100) : 0;
+        // Calculate utilization percentages based on confirmed capacity
+        $washerUtilization = $dailyWasherCapacity > 0 ? round(($confirmedWeight / $dailyWasherCapacity) * 100) : 0;
+        $dryerUtilization = $dailyDryerCapacity > 0 ? round(($confirmedWeight / $dailyDryerCapacity) * 100) : 0;
         
         // Determine if there's backlog: only when today's capacity is full (100%+) or overflow exists
         $hasBacklog = $todayBacklogWeight > 0 || $washerUtilization >= 100 || $dryerUtilization >= 100;
@@ -173,18 +219,19 @@ class DashboardController extends Controller
             'washers' => [
                 'count' => self::WASHERS_COUNT,
                 'daily_capacity_kg' => $dailyWasherCapacity,
-                'current_load_kg' => $todayCapacityUsed,
+                'current_load_kg' => $confirmedWeight,
                 'utilization_percent' => $washerUtilization,
-                'remaining_capacity_kg' => max(0, $dailyWasherCapacity - $todayCapacityUsed)
+                'remaining_capacity_kg' => max(0, $dailyWasherCapacity - $confirmedWeight)
             ],
             'dryers' => [
                 'count' => self::DRYERS_COUNT,
                 'daily_capacity_kg' => $dailyDryerCapacity,
-                'current_load_kg' => $todayCapacityUsed,
+                'current_load_kg' => $confirmedWeight,
                 'utilization_percent' => $dryerUtilization,
-                'remaining_capacity_kg' => max(0, $dailyDryerCapacity - $todayCapacityUsed)
+                'remaining_capacity_kg' => max(0, $dailyDryerCapacity - $confirmedWeight)
             ],
-            'today_weight' => $todayWeight,
+            'today_weight' => $todayOrders->sum(function ($order) { return $order->confirmed_weight ?? $order->weight; }),
+            'confirmed_weight' => $confirmedWeight,
             'backlog_weight' => $totalBacklogWeight,
             'has_backlog' => $hasBacklog,
             'operating_hours' => self::OPERATING_HOURS_PER_DAY,
@@ -257,10 +304,17 @@ class DashboardController extends Controller
         // Get date range from request or default to last 30 days
         $startDate = $request->get('start_date', now()->subDays(30)->format('Y-m-d'));
         $endDate = $request->get('end_date', now()->format('Y-m-d'));
+        $orderStatus = $request->get('order_status');
+        $paymentStatus = $request->get('payment_status');
 
         // Get orders within date range
         $ordersQuery = Order::with(['customer', 'payments'])
             ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+
+        // Apply order status filter
+        if ($orderStatus) {
+            $ordersQuery->where('status', $orderStatus);
+        }
 
         // Total orders
         $totalOrders = $ordersQuery->count();
@@ -295,6 +349,46 @@ class DashboardController extends Controller
             }
         }
 
+        // Get all orders for table with filters applied
+        $tableQuery = Order::with(['customer', 'payments'])
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+
+        if ($orderStatus) {
+            $tableQuery->where('status', $orderStatus);
+        }
+
+        // Get all matching orders and filter by payment status if needed
+        $allOrders = $tableQuery->latest()->get();
+
+        if ($paymentStatus) {
+            $allOrders = $allOrders->filter(function ($order) use ($paymentStatus) {
+                if ($paymentStatus === 'fully_paid') {
+                    return $order->amount_paid >= $order->total_amount;
+                } elseif ($paymentStatus === 'partially_paid') {
+                    return $order->amount_paid > 0 && $order->amount_paid < $order->total_amount;
+                } elseif ($paymentStatus === 'unpaid') {
+                    return $order->amount_paid == 0;
+                }
+                return true;
+            });
+        }
+
+        // Manually paginate the filtered collection
+        $page = request()->get('page', 1);
+        $perPage = 15;
+        $total = $allOrders->count();
+        $items = $allOrders->slice(($page - 1) * $perPage, $perPage)->values();
+        
+        $orders = new \Illuminate\Pagination\Paginator(
+            $items,
+            $perPage,
+            $page,
+            [
+                'path' => request()->url(),
+                'query' => request()->query(),
+            ]
+        );
+
         // Calculate trends (compare with previous period)
         $periodDays = \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate)) + 1;
         $previousStartDate = \Carbon\Carbon::parse($startDate)->subDays($periodDays)->format('Y-m-d');
@@ -306,11 +400,19 @@ class DashboardController extends Controller
         $ordersTrend = $previousOrders > 0 ? round((($totalOrders - $previousOrders) / $previousOrders) * 100) : 0;
         $revenueTrend = $previousRevenue > 0 ? round((($totalRevenue - $previousRevenue) / $previousRevenue) * 100) : 0;
 
-        // Get paginated orders for table
-        $orders = Order::with(['customer'])
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->latest()
-            ->paginate(15);
+        // Calculate monthly sales data for the selected period
+        $monthlySales = Order::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as order_count, SUM(total_amount) as revenue')
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'month' => \Carbon\Carbon::parse($item->month . '-01')->format('M Y'),
+                    'orders' => $item->order_count,
+                    'revenue' => $item->revenue ?? 0
+                ];
+            });
 
         return view('admin.reports', [
             'totalOrders' => $totalOrders,
@@ -325,7 +427,8 @@ class DashboardController extends Controller
             'unpaid' => $unpaid,
             'orders' => $orders,
             'startDate' => $startDate,
-            'endDate' => $endDate
+            'endDate' => $endDate,
+            'monthlySales' => $monthlySales
         ]);
     }
 
