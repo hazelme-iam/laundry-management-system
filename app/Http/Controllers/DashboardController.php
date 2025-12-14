@@ -153,37 +153,26 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
         
-        // Calculate capacity usage order by order - latest order that exceeds capacity goes to backlog
+        // Smart backlog calculation: only orders that individually exceed remaining capacity go to backlog
         $todayCapacityUsed = 0;
         $todayBacklogWeight = 0;
-        $backlogStarted = false;
         
         foreach ($todayOrders as $order) {
             $orderWeight = $order->confirmed_weight ?? $order->weight;
             
-            // Check if adding this order would exceed capacity
+            // Check if THIS order alone would exceed remaining capacity
             if ($todayCapacityUsed + $orderWeight > $dailyWasherCapacity) {
-                // This order and all subsequent orders go to backlog
-                $backlogStarted = true;
-            }
-            
-            if ($backlogStarted) {
+                // This order exceeds capacity - goes to backlog
                 $todayBacklogWeight += $orderWeight;
             } else {
+                // This order fits within remaining capacity - process today
                 $todayCapacityUsed += $orderWeight;
             }
         }
         
-        // Confirmed weight (orders with confirmed_weight OR approved orders) - use this as today's capacity usage
-        $confirmedWeightOrders = Order::where(function ($query) {
-            $query->whereNotNull('confirmed_weight')
-                ->whereIn('status', ['picked_up', 'washing', 'drying', 'folding', 'quality_check', 'ready'])
-                ->orWhere('status', 'approved');
-        })->get();
-        
-        $confirmedWeight = $confirmedWeightOrders->sum(function ($order) {
-            return $order->confirmed_weight ?? $order->weight;
-        });
+        // Today's confirmed weight (only orders that fit in today's capacity, not backlog)
+        // This is the actual load being processed today
+        $confirmedWeight = $todayCapacityUsed;
         
         // Backlog weight (orders due tomorrow but not completed)
         $tomorrow = now()->addDay()->format('Y-m-d');
@@ -194,12 +183,13 @@ class DashboardController extends Controller
         // Total backlog = today's overflow + tomorrow's orders
         $totalBacklogWeight = $todayBacklogWeight + $tomorrowBacklogWeight;
         
-        // Calculate utilization percentages based on confirmed capacity
-        $washerUtilization = $dailyWasherCapacity > 0 ? round(($confirmedWeight / $dailyWasherCapacity) * 100) : 0;
-        $dryerUtilization = $dailyDryerCapacity > 0 ? round(($confirmedWeight / $dailyDryerCapacity) * 100) : 0;
+        // Calculate utilization percentages based on confirmed capacity (excluding backlog)
+        // Cap at 100% - backlog is tomorrow's work, not today's load
+        $washerUtilization = $dailyWasherCapacity > 0 ? min(100, round(($confirmedWeight / $dailyWasherCapacity) * 100)) : 0;
+        $dryerUtilization = $dailyDryerCapacity > 0 ? min(100, round(($confirmedWeight / $dailyDryerCapacity) * 100)) : 0;
         
-        // Determine if there's backlog: only when today's capacity is full (100%+) or overflow exists
-        $hasBacklog = $todayBacklogWeight > 0 || $washerUtilization >= 100 || $dryerUtilization >= 100;
+        // Determine if there's backlog: only when overflow exists
+        $hasBacklog = $todayBacklogWeight > 0;
         
         return [
             'washers' => [
