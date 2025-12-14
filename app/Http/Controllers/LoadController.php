@@ -161,6 +161,9 @@ class LoadController extends Controller
         // Release washer machine
         if ($load->washerMachine) {
             $load->washerMachine->update(['status' => 'available']);
+            // Notify admins that washing is finished and machine is now available
+            NotificationService::washingCompleted($load->order);
+            NotificationService::machineAvailable($load->washerMachine);
         }
 
         return redirect()->back()
@@ -207,6 +210,9 @@ class LoadController extends Controller
         // Release dryer machine
         if ($load->dryerMachine) {
             $load->dryerMachine->update(['status' => 'available']);
+            // Notify admins that drying is finished and machine is now available
+            NotificationService::dryingCompleted($load->order);
+            NotificationService::machineAvailable($load->dryerMachine);
         }
 
         return redirect()->back()

@@ -24,10 +24,10 @@
          x-transition:leave="transition ease-in duration-75"
          x-transition:leave-start="opacity-100 transform scale-100"
          x-transition:leave-end="opacity-0 transform scale-95"
-         class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 max-h-96 overflow-hidden">
+         class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 flex flex-col max-h-96">
         
         <!-- Header -->
-        <div class="px-4 py-3 border-b border-gray-200">
+        <div class="px-4 py-3 border-b border-gray-200 flex-shrink-0">
             <h3 class="text-sm font-medium text-gray-900">Notifications</h3>
             @if($unreadCount > 0)
                 <button onclick="markAllAsRead()" class="text-xs text-blue-600 hover:text-blue-800 mt-1">
@@ -37,7 +37,7 @@
         </div>
 
         <!-- Notifications List -->
-        <div class="max-h-80 overflow-y-auto">
+        <div class="overflow-y-auto flex-1">
             @if($notifications->count() > 0)
                 @foreach($notifications as $notification)
                     <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 transition-colors">
@@ -70,6 +70,34 @@
                                         <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
                                             <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        @break
+                                    @case('order_backlog')
+                                        <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        @break
+                                    @case('washing_completed')
+                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        @break
+                                    @case('drying_completed')
+                                        <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                            </svg>
+                                        </div>
+                                        @break
+                                    @case('machine_available')
+                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
                                         </div>
                                         @break
@@ -122,9 +150,9 @@
         </div>
 
         <!-- Footer -->
-        <div class="px-4 py-3 border-t border-gray-200">
-            <a href="{{ route('notifications.index') }}" class="text-sm text-blue-600 hover:text-blue-800">
-                View all notifications
+        <div class="px-4 py-3 border-t border-gray-200 flex-shrink-0">
+            <a href="{{ route('notifications.index') }}" class="block w-full text-center px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium text-sm transition">
+                View All Notifications →
             </a>
         </div>
     </div>

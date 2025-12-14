@@ -238,6 +238,9 @@ class OrderController extends Controller
 
         $order = Order::create($data);
         
+        // Reload order with relationships to ensure customer data is available
+        $order->load('customer');
+        
         // Automatically create optimized loads
         $loads = $order->createOptimizedLoads();
 
@@ -251,6 +254,7 @@ class OrderController extends Controller
         // Check if order exceeded capacity and went to backlog
         $today = now()->format('Y-m-d');
         $todayOrders = Order::whereDate('created_at', $today)
+            ->with('customer')
             ->orderBy('created_at', 'asc')
             ->get();
         
@@ -267,6 +271,11 @@ class OrderController extends Controller
                 break;
             }
             $cumulativeWeight += $orderWeight;
+        }
+        
+        // Send backlog notification to customer if order is in backlog
+        if ($isInBacklog) {
+            NotificationService::orderPlacedInBacklog($order);
         }
         
         $successMessage = 'Order created successfully.';
@@ -797,12 +806,39 @@ class OrderController extends Controller
             $order->createOptimizedLoads();
         }
 
+        // Check if order now exceeds capacity and notify customer if in backlog
+        $today = now()->format('Y-m-d');
+        $todayOrders = Order::whereDate('created_at', $today)
+            ->orderBy('created_at', 'asc')
+            ->get();
+        
+        $dailyWasherCapacity = 5 * 12 * 8; // WASHERS_COUNT * OPERATING_HOURS_PER_DAY * CYCLE_CAPACITY_KG
+        $cumulativeWeight = 0;
+        $isInBacklog = false;
+        
+        foreach ($todayOrders as $todayOrder) {
+            $orderWeight = $todayOrder->confirmed_weight ?? $todayOrder->weight;
+            if ($cumulativeWeight + $orderWeight > $dailyWasherCapacity) {
+                if ($todayOrder->id === $order->id) {
+                    $isInBacklog = true;
+                }
+                break;
+            }
+            $cumulativeWeight += $orderWeight;
+        }
+        
+        // Send backlog notification to customer if order is now in backlog
+        if ($isInBacklog) {
+            NotificationService::orderPlacedInBacklog($order);
+        }
+
         return response()->json([
             'success' => true,
-            'message' => "Weight confirmed: {$confirmedWeight} kg" . (isset($newSubtotal) ? " - Price updated to ₱" . number_format($newSubtotal, 2) : ""),
+            'message' => "Weight confirmed: {$confirmedWeight} kg" . (isset($newSubtotal) ? " - Price updated to ₱" . number_format($newSubtotal, 2) : "") . ($isInBacklog ? " - Order placed in backlog due to capacity." : ""),
             'confirmed_weight' => $confirmedWeight,
             'subtotal' => $order->subtotal,
-            'total_amount' => $order->total_amount
+            'total_amount' => $order->total_amount,
+            'is_backlog' => $isInBacklog
         ]);
     }
 
@@ -815,11 +851,29 @@ class OrderController extends Controller
             'status' => 'required|in:pending,approved,rejected,picked_up,washing,drying,folding,quality_check,ready,ready_for_pickup,delivery_pending,completed,cancelled'
         ]);
 
+        $oldStatus = $order->status;
         $newStatus = $request->status;
         $order->update([
             'status' => $newStatus,
             'updated_by' => Auth::id()
         ]);
+
+        // Send admin notifications for washing and drying completion
+        if ($newStatus === 'washing') {
+            // Notify admins when washing starts
+            NotificationService::orderStatusChanged($order);
+        } elseif ($newStatus === 'drying') {
+            // Notify admins when washing is done and drying starts
+            NotificationService::washingCompleted($order);
+            NotificationService::orderStatusChanged($order);
+        } elseif ($newStatus === 'folding') {
+            // Notify admins when drying is done
+            NotificationService::dryingCompleted($order);
+            NotificationService::orderStatusChanged($order);
+        } else {
+            // Send status change notification for other statuses
+            NotificationService::orderStatusChanged($order);
+        }
 
         // Send automatic notifications to online customers
         if ($order->customer->user_id) {

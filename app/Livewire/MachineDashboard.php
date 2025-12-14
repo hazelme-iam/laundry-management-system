@@ -3,6 +3,8 @@
 namespace App\Livewire;
 
 use App\Models\Machine;
+use App\Models\Load;
+use App\Services\NotificationService;
 use Livewire\Component;
 
 class MachineDashboard extends Component
@@ -16,6 +18,7 @@ class MachineDashboard extends Component
     public function mount()
     {
         $this->loadMachines();
+        $this->checkForCompletedCycles();
     }
 
     public function loadMachines()
@@ -29,6 +32,64 @@ class MachineDashboard extends Component
             'dryers_in_use' => $this->dryers->where('status', 'in_use')->count(),
             'dryers_available' => $this->dryers->where('status', 'idle')->count(),
         ];
+        
+        $this->checkForCompletedCycles();
+    }
+
+    /**
+     * Check if any washing or drying cycles have completed and trigger notifications
+     */
+    public function checkForCompletedCycles()
+    {
+        // Check washers
+        foreach ($this->washers as $washer) {
+            if ($washer->status === 'in_use' && $washer->washing_end && now()->greaterThanOrEqualTo($washer->washing_end)) {
+                // Find the load associated with this washer
+                $load = Load::where('washer_machine_id', $washer->id)
+                    ->where('status', 'washing')
+                    ->first();
+                
+                if ($load) {
+                    // Update load status
+                    $load->update([
+                        'wash_end' => now(),
+                        'updated_by' => auth()->id(),
+                    ]);
+                    
+                    // Send notifications
+                    NotificationService::washingCompleted($load->order);
+                    NotificationService::machineAvailable($washer);
+                    
+                    // Update machine status
+                    $washer->update(['status' => 'idle']);
+                }
+            }
+        }
+        
+        // Check dryers
+        foreach ($this->dryers as $dryer) {
+            if ($dryer->status === 'in_use' && $dryer->drying_end && now()->greaterThanOrEqualTo($dryer->drying_end)) {
+                // Find the load associated with this dryer
+                $load = Load::where('dryer_machine_id', $dryer->id)
+                    ->where('status', 'drying')
+                    ->first();
+                
+                if ($load) {
+                    // Update load status
+                    $load->update([
+                        'dry_end' => now(),
+                        'updated_by' => auth()->id(),
+                    ]);
+                    
+                    // Send notifications
+                    NotificationService::dryingCompleted($load->order);
+                    NotificationService::machineAvailable($dryer);
+                    
+                    // Update machine status
+                    $dryer->update(['status' => 'idle']);
+                }
+            }
+        }
     }
 
     public function render()

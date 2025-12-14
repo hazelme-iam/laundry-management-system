@@ -91,7 +91,7 @@ class NotificationService
                     [
                         'washer_utilization' => $washerUtilization,
                         'dryer_utilization' => $dryerUtilization,
-                        'url' => route('admin.machines.dashboard')
+                        'url' => route('machines.dashboard')
                     ]
                 );
             }
@@ -109,7 +109,7 @@ class NotificationService
                     [
                         'washer_utilization' => $washerUtilization,
                         'dryer_utilization' => $dryerUtilization,
-                        'url' => route('admin.machines.dashboard')
+                        'url' => route('machines.dashboard')
                     ]
                 );
             }
@@ -118,24 +118,29 @@ class NotificationService
 
     /**
      * New order notification for admins
+     * Only notify for online customer orders (not admin-created orders)
      */
     public static function newOrderCreated(Order $order): void
     {
-        $adminUsers = User::where('role', 'admin')->get();
-        
-        foreach ($adminUsers as $admin) {
-            self::create(
-                $admin,
-                'new_order',
-                'New Order Received',
-                "Order #{$order->id} has been created by {$order->customer->name}.",
-                [
-                    'order_id' => $order->id,
-                    'customer_name' => $order->customer->name,
-                    'weight' => $order->weight,
-                    'url' => route('admin.orders.show', $order->id)
-                ]
-            );
+        // Only notify if order was created by an online customer (not by admin)
+        // Check if the order was created by the customer themselves
+        if ($order->customer && $order->customer->user && $order->created_by === $order->customer->user_id) {
+            $adminUsers = User::where('role', 'admin')->get();
+            
+            foreach ($adminUsers as $admin) {
+                self::create(
+                    $admin,
+                    'new_order',
+                    'New Online Order Received',
+                    "Online order #{$order->id} has been created by {$order->customer->name}.",
+                    [
+                        'order_id' => $order->id,
+                        'customer_name' => $order->customer->name,
+                        'weight' => $order->weight,
+                        'url' => route('admin.orders.show', $order->id)
+                    ]
+                );
+            }
         }
     }
 
@@ -197,5 +202,104 @@ class NotificationService
                 'is_read' => true,
                 'read_at' => now(),
             ]);
+    }
+
+    /**
+     * Washing completed notification for admins
+     * Notifies admins when an order finishes washing
+     */
+    public static function washingCompleted(Order $order): void
+    {
+        $adminUsers = User::where('role', 'admin')->get();
+        
+        foreach ($adminUsers as $admin) {
+            self::create(
+                $admin,
+                'washing_completed',
+                "Order #{$order->id} - Washing Complete",
+                "Order #{$order->id} from {$order->customer->name} has finished washing and is ready for drying.",
+                [
+                    'order_id' => $order->id,
+                    'customer_name' => $order->customer->name,
+                    'status' => 'washing_done',
+                    'url' => route('admin.orders.show', $order->id)
+                ]
+            );
+        }
+    }
+
+    /**
+     * Drying completed notification for admins
+     * Notifies admins when an order finishes drying in machine
+     */
+    public static function dryingCompleted(Order $order): void
+    {
+        $adminUsers = User::where('role', 'admin')->get();
+        
+        foreach ($adminUsers as $admin) {
+            self::create(
+                $admin,
+                'drying_completed',
+                "Order #{$order->id} - Drying Complete",
+                "Order #{$order->id} from {$order->customer->name} has finished drying and is ready for folding.",
+                [
+                    'order_id' => $order->id,
+                    'customer_name' => $order->customer->name,
+                    'status' => 'drying_done',
+                    'url' => route('admin.orders.show', $order->id)
+                ]
+            );
+        }
+    }
+
+    /**
+     * Machine available notification for admins
+     * Notifies admins when a machine becomes available
+     */
+    public static function machineAvailable(Machine $machine): void
+    {
+        $adminUsers = User::where('role', 'admin')->get();
+        
+        foreach ($adminUsers as $admin) {
+            self::create(
+                $admin,
+                'machine_available',
+                "Machine #{$machine->id} Now Available",
+                "{$machine->type} #{$machine->id} is now available and ready for use.",
+                [
+                    'machine_id' => $machine->id,
+                    'machine_type' => $machine->type,
+                    'machine_name' => $machine->name,
+                    'url' => route('machines.dashboard')
+                ]
+            );
+        }
+    }
+
+    /**
+     * Backlog notification for online customers
+     * Notifies customer when their order is placed in backlog (will be washed tomorrow)
+     */
+    public static function orderPlacedInBacklog(Order $order): void
+    {
+        // Only notify if customer has a user account (online customer)
+        if ($order->customer && $order->customer->user) {
+            // Use confirmed weight if available, otherwise use weight
+            $displayWeight = $order->confirmed_weight ?? $order->weight ?? 'TBD';
+            
+            self::create(
+                $order->customer->user,
+                'order_backlog',
+                "Order #{$order->id} Placed in Backlog",
+                "Your laundry order #{$order->id} ({$displayWeight}kg) has been placed in backlog. Due to today's high volume, it will be washed tomorrow instead. We appreciate your patience!",
+                [
+                    'order_id' => $order->id,
+                    'weight' => $displayWeight,
+                    'customer_name' => $order->customer->name,
+                    'estimated_finish' => $order->estimated_finish?->format('M d, Y g:i A'),
+                    'url' => route('user.orders.show', $order->id)
+                ]
+            );
+        }
     }
 }

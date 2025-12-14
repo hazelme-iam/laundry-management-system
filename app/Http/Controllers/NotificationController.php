@@ -15,9 +15,71 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $notifications = $user->notifications()->latest()->paginate(20);
+        $type = $request->get('type');
+        
+        // Build query
+        $query = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id);
+        
+        // Apply type filter if provided
+        if ($type) {
+            $query->where('type', $type);
+        }
+        
+        // Get notifications
+        $notifications = $query->latest()->paginate(15);
+        
+        // Get counts for filter tabs
+        $totalCount = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id)
+            ->count();
+        
+        $orderStatusCount = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id)
+            ->where('type', 'order_status')
+            ->count();
+        
+        $backlogCount = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id)
+            ->where('type', 'order_backlog')
+            ->count();
+        
+        $pickupCount = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id)
+            ->where('type', 'pickup_reminder')
+            ->count();
+        
+        $washingCount = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id)
+            ->where('type', 'washing_completed')
+            ->count();
+        
+        $dryingCount = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id)
+            ->where('type', 'drying_completed')
+            ->count();
+        
+        $machineAvailableCount = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id)
+            ->where('type', 'machine_available')
+            ->count();
+        
+        $unreadCount = Notification::where('notifiable_type', get_class($user))
+            ->where('notifiable_id', $user->id)
+            ->unread()
+            ->count();
 
-        return view('user.notifications', compact('notifications'));
+        return view('user.notifications', compact(
+            'notifications',
+            'totalCount',
+            'orderStatusCount',
+            'backlogCount',
+            'pickupCount',
+            'washingCount',
+            'dryingCount',
+            'machineAvailableCount',
+            'unreadCount'
+        ));
     }
 
     /**
