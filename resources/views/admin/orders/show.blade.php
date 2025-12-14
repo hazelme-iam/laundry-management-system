@@ -162,7 +162,7 @@
                                 </div>
                                 <div class="border-t border-gray-200 pt-3 flex justify-between">
                                     <span class="text-gray-600 font-medium">Balance Due:</span>
-                                    <span class="font-bold text-lg {{ $order->total_amount - $order->amount_paid == 0 ? 'text-green-600' : 'text-red-600' }}">
+                                    <span class="font-bold text-lg {{ $order->isFullyPaid() ? 'text-green-600' : 'text-red-600' }}">
                                         ₱{{ number_format($order->total_amount - $order->amount_paid, 2) }}
                                     </span>
                                 </div>
@@ -172,7 +172,7 @@
                         <!-- Record Payment Form -->
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Record Payment</h3>
-                            @if($order->total_amount - $order->amount_paid > 0)
+                            @if($order->total_amount - $order->amount_paid > 0 || $order->status === 'pending')
                             <div class="space-y-3">
                                 <div>
                                     <label for="payment_amount" class="block text-sm font-medium text-gray-700 mb-1">Amount (₱)</label>
@@ -197,7 +197,7 @@
                                     Record Payment
                                 </button>
                             </div>
-                            @else
+                            @elseif($order->isFullyPaid())
                             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                                 <p class="text-green-800 font-medium">✓ Order is fully paid</p>
                             </div>

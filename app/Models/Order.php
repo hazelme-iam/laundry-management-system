@@ -275,6 +275,16 @@ class Order extends Model
         return $this->confirmed_weight ?? $this->weight;
     }
 
+    public function isFullyPaid()
+    {
+        // Pending orders should never be marked as fully paid
+        if ($this->status === 'pending') {
+            return false;
+        }
+        
+        return $this->amount_paid >= $this->total_amount;
+    }
+
     public function createOptimizedLoads()
     {
         // Check if loads already exist for this order

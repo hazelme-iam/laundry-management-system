@@ -45,594 +45,628 @@
                                 </div>
                             </div>
 
-                            <!-- Contact & Address Section -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                <!-- Phone Number -->
-                                <div>
-                                    <label for="customer_phone" class="block text-sm font-medium text-gray-700">Phone Number *</label>
-                                    <div class="relative">
-                                        <input type="tel" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10" 
-                                               id="customer_phone" name="customer_phone" value="{{ old('customer_phone', $customer->phone) }}" 
-                                               placeholder="09XXXXXXXXX" required minlength="11" maxlength="11" pattern="[0-9]{11}"
-                                               onblur="validatePhoneField()">
-                                        <span id="phone_status" class="absolute right-3 top-3 hidden">
-                                            <svg id="phone_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                            </svg>
-                                            <svg id="phone_x" class="w-5 h-5 text-red-500 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                            </svg>
-                                        </span>
+                            <!-- Contact & Address Section - FIXED ALIGNMENT -->
+                            <div class="space-y-6 mb-6">
+                                <!-- Phone Number and Weight Option in same row -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Phone Number -->
+                                    <div>
+                                        <label for="customer_phone" class="block text-sm font-medium text-gray-700">Phone Number *</label>
+                                        <div class="relative">
+                                            <input type="tel" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10" 
+                                                   id="customer_phone" name="customer_phone" value="{{ old('customer_phone', $customer->phone) }}" 
+                                                   placeholder="09XXXXXXXXX" required minlength="11" maxlength="11" pattern="[0-9]{11}"
+                                                   onblur="validatePhoneField()">
+                                            <span id="phone_status" class="absolute right-3 top-3 hidden">
+                                                <svg id="phone_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                </svg>
+                                                <svg id="phone_x" class="w-5 h-5 text-red-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div id="phone_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                            <span id="phone_error_text">Phone number must be exactly 11 digits</span>
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500">Format: 09XXXXXXXXX (11 digits total)</p>
                                     </div>
-                                    <div id="phone_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                                        <span id="phone_error_text">Phone number must be exactly 11 digits</span>
+
+                                    <!-- Weight Measurement Option -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">How will you provide the weight? *</label>
+                                        <div class="space-y-2">
+                                            <label class="flex items-center">
+                                                <input type="radio" name="weight_option" value="measure_at_shop" 
+                                                       class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+                                                       {{ old('weight_option', 'measure_at_shop') == 'measure_at_shop' ? 'checked' : '' }}>
+                                                <span class="ml-2 text-sm text-gray-700">Measure at shop</span>
+                                            </label>
+                                            <label class="flex items-center">
+                                                <input type="radio" name="weight_option" value="manual_weight"
+                                                       class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+                                                       {{ old('weight_option') == 'manual_weight' ? 'checked' : '' }}>
+                                                <span class="ml-2 text-sm text-gray-700">I know the exact weight</span>
+                                            </label>
+                                        </div>
                                     </div>
-                                    <p class="mt-1 text-xs text-gray-500">Format: 09XXXXXXXXX (11 digits total)</p>
                                 </div>
 
-                                <!-- Weight Measurement Option -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">How will you provide the weight? *</label>
-                                    <div class="space-y-2">
-                                        <label class="flex items-center">
-                                            <input type="radio" name="weight_option" value="measure_at_shop" 
-                                                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
-                                                   {{ old('weight_option', 'measure_at_shop') == 'measure_at_shop' ? 'checked' : '' }}>
-                                            <span class="ml-2 text-sm text-gray-700">Measure at shop</span>
-                                        </label>
-                                        <label class="flex items-center">
-                                            <input type="radio" name="weight_option" value="manual_weight"
-                                                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
-                                                   {{ old('weight_option') == 'manual_weight' ? 'checked' : '' }}>
-                                            <span class="ml-2 text-sm text-gray-700">I know the exact weight</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- Weight Input (conditional) -->
+                                <!-- Weight Input (conditional) - Full width when visible -->
                                 <div id="weight_input_container" class="hidden">
-                                    <label for="weight" class="block text-sm font-medium text-gray-700">Weight (KG) *</label>
-                                    <div class="relative">
-                                        <input type="number" step="0.01" min="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10" 
-                                               id="weight" name="weight" value="{{ old('weight') }}"
-                                               placeholder="e.g., 5.5"
-                                               onblur="validateWeightField()">
-                                        <span id="weight_status" class="absolute right-3 top-3 hidden">
-                                            <svg id="weight_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                            </svg>
-                                            <svg id="weight_x" class="w-5 h-5 text-red-500 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                            </svg>
-                                        </span>
+                                    <div class="max-w-md">
+                                        <label for="weight" class="block text-sm font-medium text-gray-700">Weight (KG) *</label>
+                                        <div class="relative">
+                                            <input type="number" step="0.01" min="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10" 
+                                                   id="weight" name="weight" value="{{ old('weight') }}"
+                                                   placeholder="e.g., 5.5"
+                                                   onblur="validateWeightField()">
+                                            <span id="weight_status" class="absolute right-3 top-3 hidden">
+                                                <svg id="weight_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                </svg>
+                                                <svg id="weight_x" class="w-5 h-5 text-red-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div id="weight_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                            Weight must be at least 0.1 kg
+                                        </div>
+                                        @error('weight')
+                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
                                     </div>
-                                    <div id="weight_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                                        Weight must be at least 0.1 kg
-                                    </div>
-                                    @error('weight')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
                                 </div>
+                            </div>
 
-                                <script>
-                                    // Pricing configuration
-                                    const addOnPrices = {
-                                        'detergent': 16,
-                                        'fabric_conditioner': 14
-                                    };
-                                    const BASE_PRICE = 150;
-                                    const BASE_WEIGHT_LIMIT = 5;
-                                    const EXCESS_PRICE_PER_KG = 30;
+                            <script>
+                                // Pricing configuration
+                                const addOnPrices = {
+                                    'detergent': 16,
+                                    'fabric_conditioner': 14
+                                };
+                                const BASE_PRICE = 150;
+                                const BASE_WEIGHT_LIMIT = 5;
+                                const EXCESS_PRICE_PER_KG = 30;
 
-                                    // Quantity control functions
-                                    function increaseQuantity(addOnType) {
-                                        const input = document.getElementById(`${addOnType}_qty`);
-                                        if (input) {
-                                            input.value = parseInt(input.value) + 1;
-                                            updateAddOnSubtotal(addOnType);
-                                            calculateTotalPrice();
-                                        }
+                                // Quantity control functions
+                                function increaseQuantity(addOnType) {
+                                    const input = document.getElementById(`${addOnType}_qty`);
+                                    if (input) {
+                                        input.value = parseInt(input.value) + 1;
+                                        updateAddOnSubtotal(addOnType);
+                                        calculateTotalPrice();
                                     }
+                                }
 
-                                    function decreaseQuantity(addOnType) {
-                                        const input = document.getElementById(`${addOnType}_qty`);
-                                        if (input && parseInt(input.value) > 0) {
-                                            input.value = parseInt(input.value) - 1;
-                                            updateAddOnSubtotal(addOnType);
-                                            calculateTotalPrice();
-                                        }
+                                function decreaseQuantity(addOnType) {
+                                    const input = document.getElementById(`${addOnType}_qty`);
+                                    if (input && parseInt(input.value) > 0) {
+                                        input.value = parseInt(input.value) - 1;
+                                        updateAddOnSubtotal(addOnType);
+                                        calculateTotalPrice();
                                     }
+                                }
 
-                                    function updateAddOnSubtotal(addOnType) {
-                                        const qty = parseInt(document.getElementById(`${addOnType}_qty`)?.value) || 0;
-                                        const price = addOnPrices[addOnType] || 0;
-                                        const subtotal = qty * price;
-                                        const subtotalElement = document.getElementById(`${addOnType}_subtotal`);
-                                        if (subtotalElement) {
-                                            subtotalElement.textContent = `₱${subtotal.toFixed(2)}`;
-                                        }
+                                function updateAddOnSubtotal(addOnType) {
+                                    const qty = parseInt(document.getElementById(`${addOnType}_qty`)?.value) || 0;
+                                    const price = addOnPrices[addOnType] || 0;
+                                    const subtotal = qty * price;
+                                    const subtotalElement = document.getElementById(`${addOnType}_subtotal`);
+                                    if (subtotalElement) {
+                                        subtotalElement.textContent = `₱${subtotal.toFixed(2)}`;
                                     }
+                                }
 
-                                    // Calculate total price
-                                    function calculateTotalPrice() {
-                                        const weightOption = document.querySelector('input[name="weight_option"]:checked')?.value;
-                                        const weight = parseFloat(document.getElementById('weight').value) || 0;
+                                // Calculate total price
+                                function calculateTotalPrice() {
+                                    const weightOption = document.querySelector('input[name="weight_option"]:checked')?.value;
+                                    const weight = parseFloat(document.getElementById('weight').value) || 0;
+                                    
+                                    // Calculate add-ons total based on quantities
+                                    let addOnsTotal = 0;
+                                    const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
+                                    const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
+                                    
+                                    addOnsTotal += detergentQty * (addOnPrices['detergent'] || 0);
+                                    addOnsTotal += fabricConditionerQty * (addOnPrices['fabric_conditioner'] || 0);
+
+                                    // If "measure at shop" is selected, only calculate add-ons
+                                    if (weightOption === 'measure_at_shop') {
+                                        const subtotal = addOnsTotal;
                                         
-                                        // Calculate add-ons total based on quantities
-                                        let addOnsTotal = 0;
-                                        const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
-                                        const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
-                                        
-                                        addOnsTotal += detergentQty * (addOnPrices['detergent'] || 0);
-                                        addOnsTotal += fabricConditionerQty * (addOnPrices['fabric_conditioner'] || 0);
-
-                                        // If "measure at shop" is selected, only calculate add-ons
-                                        if (weightOption === 'measure_at_shop') {
-                                            const subtotal = addOnsTotal;
-                                            
-                                            document.getElementById('base_amount_display').textContent = `₱0.00`;
-                                            document.getElementById('excess_weight_display').textContent = `0 kg`;
-                                            document.getElementById('add_ons_total_display').textContent = `₱${addOnsTotal.toFixed(2)}`;
-                                            document.getElementById('subtotal_display').textContent = `₱${subtotal.toFixed(2)}`;
-                                            
-                                            document.getElementById('subtotal').value = subtotal.toFixed(2);
-                                            document.getElementById('total_amount').value = subtotal.toFixed(2);
-                                            return;
-                                        }
-                                        
-                                        // For manual weight, require weight input
-                                        if (weight < 1) {
-                                            resetCalculations();
-                                            return;
-                                        }
-
-                                        // Calculate base amount
-                                        let baseAmount, excessWeight;
-                                        
-                                        if (weight <= BASE_WEIGHT_LIMIT) {
-                                            baseAmount = BASE_PRICE;
-                                            excessWeight = 0;
-                                        } else {
-                                            excessWeight = weight - BASE_WEIGHT_LIMIT;
-                                            baseAmount = BASE_PRICE + (excessWeight * EXCESS_PRICE_PER_KG);
-                                        }
-
-                                        // Calculate subtotal
-                                        const subtotal = baseAmount + addOnsTotal;
-
-                                        // Update display elements
-                                        document.getElementById('base_amount_display').textContent = `₱${baseAmount.toFixed(2)}`;
-                                        document.getElementById('excess_weight_display').textContent = `${excessWeight.toFixed(2)} kg`;
+                                        document.getElementById('base_amount_display').textContent = `₱0.00`;
+                                        document.getElementById('excess_weight_display').textContent = `0 kg`;
                                         document.getElementById('add_ons_total_display').textContent = `₱${addOnsTotal.toFixed(2)}`;
                                         document.getElementById('subtotal_display').textContent = `₱${subtotal.toFixed(2)}`;
-
-                                        // Update form input
+                                        
                                         document.getElementById('subtotal').value = subtotal.toFixed(2);
                                         document.getElementById('total_amount').value = subtotal.toFixed(2);
-                                    }
-
-                                    function resetCalculations() {
-                                        const elements = {
-                                            'base_amount_display': '₱0.00',
-                                            'excess_weight_display': '0 kg',
-                                            'add_ons_total_display': '₱0.00',
-                                            'subtotal_display': '₱0.00'
-                                        };
-                                        
-                                        Object.keys(elements).forEach(id => {
-                                            const element = document.getElementById(id);
-                                            if (element) {
-                                                element.textContent = elements[id];
-                                            }
-                                        });
-                                        
-                                        const subtotal = document.getElementById('subtotal');
-                                        const totalAmount = document.getElementById('total_amount');
-                                        if (subtotal) subtotal.value = '0';
-                                        if (totalAmount) totalAmount.value = '0';
-                                    }
-
-                                    // Toggle weight input visibility
-                                    function toggleWeightInputNow() {
-                                        const weightOption = document.querySelector('input[name="weight_option"]:checked');
-                                        const weightContainer = document.getElementById('weight_input_container');
-                                        const weightInput = document.getElementById('weight');
-                                        
-                                        if (!weightOption || !weightContainer || !weightInput) return;
-                                        
-                                        if (weightOption.value === 'manual_weight') {
-                                            weightContainer.classList.remove('hidden');
-                                            weightInput.setAttribute('required', 'required');
-                                            calculateTotalPrice();
-                                        } else {
-                                            weightContainer.classList.add('hidden');
-                                            weightInput.removeAttribute('required');
-                                            weightInput.value = '';
-                                            resetCalculations();
-                                        }
+                                        return;
                                     }
                                     
-                                    // Attach listeners
-                                    const weightOptions = document.querySelectorAll('input[name="weight_option"]');
-                                    weightOptions.forEach(option => {
-                                        option.addEventListener('change', toggleWeightInputNow);
+                                    // For manual weight, require weight input
+                                    if (weight < 1) {
+                                        resetCalculations();
+                                        return;
+                                    }
+
+                                    // Calculate base amount
+                                    let baseAmount, excessWeight;
+                                    
+                                    if (weight <= BASE_WEIGHT_LIMIT) {
+                                        baseAmount = BASE_PRICE;
+                                        excessWeight = 0;
+                                    } else {
+                                        excessWeight = weight - BASE_WEIGHT_LIMIT;
+                                        baseAmount = BASE_PRICE + (excessWeight * EXCESS_PRICE_PER_KG);
+                                    }
+
+                                    // Calculate subtotal
+                                    const subtotal = baseAmount + addOnsTotal;
+
+                                    // Update display elements
+                                    document.getElementById('base_amount_display').textContent = `₱${baseAmount.toFixed(2)}`;
+                                    document.getElementById('excess_weight_display').textContent = `${excessWeight.toFixed(2)} kg`;
+                                    document.getElementById('add_ons_total_display').textContent = `₱${addOnsTotal.toFixed(2)}`;
+                                    document.getElementById('subtotal_display').textContent = `₱${subtotal.toFixed(2)}`;
+
+                                    // Update form input
+                                    document.getElementById('subtotal').value = subtotal.toFixed(2);
+                                    document.getElementById('total_amount').value = subtotal.toFixed(2);
+                                }
+
+                                function resetCalculations() {
+                                    const elements = {
+                                        'base_amount_display': '₱0.00',
+                                        'excess_weight_display': '0 kg',
+                                        'add_ons_total_display': '₱0.00',
+                                        'subtotal_display': '₱0.00'
+                                    };
+                                    
+                                    Object.keys(elements).forEach(id => {
+                                        const element = document.getElementById(id);
+                                        if (element) {
+                                            element.textContent = elements[id];
+                                        }
                                     });
                                     
-                                    // Weight input listener
+                                    const subtotal = document.getElementById('subtotal');
+                                    const totalAmount = document.getElementById('total_amount');
+                                    if (subtotal) subtotal.value = '0';
+                                    if (totalAmount) totalAmount.value = '0';
+                                }
+
+                                // Toggle weight input visibility
+                                function toggleWeightInputNow() {
+                                    const weightOption = document.querySelector('input[name="weight_option"]:checked');
+                                    const weightContainer = document.getElementById('weight_input_container');
                                     const weightInput = document.getElementById('weight');
-                                    if (weightInput) {
-                                        weightInput.addEventListener('input', calculateTotalPrice);
-                                    }
-
-                                    // Add-ons listener
-                                    const addOnCheckboxes = document.querySelectorAll('.add-on-checkbox');
-                                    addOnCheckboxes.forEach(checkbox => {
-                                        checkbox.addEventListener('change', calculateTotalPrice);
-                                    });
-
-                                    // Show blank field notice inline
-                                    function showBlankFieldNotice(fieldName, fieldId, errorElementId) {
-                                        const field = document.getElementById(fieldId);
-                                        const errorElement = document.getElementById(errorElementId);
-                                        if (field) {
-                                            field.classList.add('border-red-500', 'border-2');
-                                            field.focus();
-                                        }
-                                        if (errorElement) {
-                                            errorElement.textContent = `${fieldName} is required. Please fill it out.`;
-                                            errorElement.classList.remove('hidden');
-                                        }
-                                    }
                                     
-                                    // Clear blank field notice
-                                    function clearBlankFieldNotice(fieldId, errorElementId) {
-                                        const field = document.getElementById(fieldId);
-                                        const errorElement = document.getElementById(errorElementId);
-                                        if (field) {
-                                            field.classList.remove('border-red-500', 'border-2');
-                                        }
-                                        if (errorElement) {
-                                            errorElement.classList.add('hidden');
-                                        }
+                                    if (!weightOption || !weightContainer || !weightInput) return;
+                                    
+                                    if (weightOption.value === 'manual_weight') {
+                                        weightContainer.classList.remove('hidden');
+                                        weightInput.setAttribute('required', 'required');
+                                        calculateTotalPrice();
+                                    } else {
+                                        weightContainer.classList.add('hidden');
+                                        weightInput.removeAttribute('required');
+                                        weightInput.value = '';
+                                        resetCalculations();
                                     }
+                                }
+                                
+                                // Attach listeners
+                                const weightOptions = document.querySelectorAll('input[name="weight_option"]');
+                                weightOptions.forEach(option => {
+                                    option.addEventListener('change', toggleWeightInputNow);
+                                });
+                                
+                                // Weight input listener
+                                const weightInput = document.getElementById('weight');
+                                if (weightInput) {
+                                    weightInput.addEventListener('input', calculateTotalPrice);
+                                }
 
-                                    // Form validation function
-                                    function validateOrderForm() {
-                                        const weightOption = document.querySelector('input[name="weight_option"]:checked')?.value;
-                                        const phone = document.getElementById('customer_phone')?.value.trim();
-                                        const address = document.getElementById('customer_address')?.value.trim();
-                                        const weight = document.getElementById('weight')?.value.trim();
-                                        const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
-                                        const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
-                                        
-                                        // Weight option validation
-                                        if (!weightOption) {
-                                            alert('Please select how you will provide the weight');
-                                            return false;
-                                        }
-                                        
-                                        // Phone validation
-                                        if (!phone) {
-                                            showBlankFieldNotice('Phone Number', 'customer_phone', 'phone_error');
-                                            return false;
-                                        } else {
-                                            clearBlankFieldNotice('customer_phone', 'phone_error');
-                                        }
-                                        
-                                        if (phone.length !== 11) {
-                                            const phoneErrorText = document.getElementById('phone_error_text');
-                                            if (phoneErrorText) phoneErrorText.textContent = 'Phone number must be exactly 11 digits';
-                                            document.getElementById('phone_error')?.classList.remove('hidden');
-                                            document.getElementById('customer_phone')?.focus();
-                                            return false;
-                                        }
-                                        
-                                        const phonePattern = /^[0-9]{11}$/;
-                                        if (!phonePattern.test(phone)) {
-                                            const phoneErrorText = document.getElementById('phone_error_text');
-                                            if (phoneErrorText) phoneErrorText.textContent = 'Phone number must contain only numbers';
-                                            document.getElementById('phone_error')?.classList.remove('hidden');
-                                            document.getElementById('customer_phone')?.focus();
-                                            return false;
-                                        }
-                                        
-                                        // Address validation - optional, no longer required
-                                        clearBlankFieldNotice('customer_address', 'address_error');
-                                        
-                                        // Weight validation (only if manual_weight selected)
-                                        if (weightOption === 'manual_weight') {
-                                            if (!weight) {
-                                                showBlankFieldNotice('Weight', 'weight', 'weight_error');
-                                                return false;
-                                            } else {
-                                                clearBlankFieldNotice('weight', 'weight_error');
-                                            }
-                                            if (parseFloat(weight) < 1) {
-                                                const weightErrorText = document.getElementById('weight_error');
-                                                if (weightErrorText) {
-                                                    weightErrorText.textContent = 'Weight must be at least 1kg';
-                                                    weightErrorText.classList.remove('hidden');
-                                                }
-                                                document.getElementById('weight')?.focus();
-                                                return false;
-                                            }
-                                        }
-                                        
-                                        // Subtotal validation - allow if add-ons are selected OR weight is provided OR measure at shop is selected
-                                        const subtotal = parseFloat(document.getElementById('subtotal')?.value) || 0;
-                                        const hasAddOns = detergentQty > 0 || fabricConditionerQty > 0;
-                                        const hasWeight = weightOption === 'manual_weight' && parseFloat(weight) >= 1;
-                                        const isMeasureAtShop = weightOption === 'measure_at_shop';
-                                        
-                                        if (subtotal <= 0 && !hasAddOns && !hasWeight && !isMeasureAtShop) {
-                                            alert('Please enter weight or select add-ons to calculate subtotal');
-                                            return false;
-                                        }
-                                        
-                                        // Show confirmation modal with order summary
-                                        showOrderConfirmationModal(weightOption, weight, subtotal);
+                                // Add-ons listener
+                                const addOnCheckboxes = document.querySelectorAll('.add-on-checkbox');
+                                addOnCheckboxes.forEach(checkbox => {
+                                    checkbox.addEventListener('change', calculateTotalPrice);
+                                });
+
+                                // Show blank field notice inline
+                                function showBlankFieldNotice(fieldName, fieldId, errorElementId) {
+                                    const field = document.getElementById(fieldId);
+                                    const errorElement = document.getElementById(errorElementId);
+                                    if (field) {
+                                        field.classList.add('border-red-500', 'border-2');
+                                        field.focus();
+                                    }
+                                    if (errorElement) {
+                                        errorElement.textContent = `${fieldName} is required. Please fill it out.`;
+                                        errorElement.classList.remove('hidden');
+                                    }
+                                }
+                                
+                                // Clear blank field notice
+                                function clearBlankFieldNotice(fieldId, errorElementId) {
+                                    const field = document.getElementById(fieldId);
+                                    const errorElement = document.getElementById(errorElementId);
+                                    if (field) {
+                                        field.classList.remove('border-red-500', 'border-2');
+                                    }
+                                    if (errorElement) {
+                                        errorElement.classList.add('hidden');
+                                    }
+                                }
+
+                                // Form validation function
+                                function validateOrderForm() {
+                                    const weightOption = document.querySelector('input[name="weight_option"]:checked')?.value;
+                                    const phone = document.getElementById('customer_phone')?.value.trim();
+                                    const address = document.getElementById('customer_address')?.value.trim();
+                                    const weight = document.getElementById('weight')?.value.trim();
+                                    const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
+                                    const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
+                                    
+                                    // Weight option validation
+                                    if (!weightOption) {
+                                        alert('Please select how you will provide the weight');
                                         return false;
                                     }
-
-                                    // Open modal function
-                                    function openModal(modalId) {
-                                        const modal = document.getElementById(modalId);
-                                        if (modal) {
-                                            modal.classList.remove('hidden');
-                                            document.body.classList.add('overflow-hidden');
-                                        }
+                                    
+                                    // Phone validation
+                                    if (!phone) {
+                                        showBlankFieldNotice('Phone Number', 'customer_phone', 'phone_error');
+                                        return false;
+                                    } else {
+                                        clearBlankFieldNotice('customer_phone', 'phone_error');
                                     }
-
-                                    // Close modal function
-                                    function closeModal(modalId) {
-                                        const modal = document.getElementById(modalId);
-                                        if (modal) {
-                                            modal.classList.add('hidden');
-                                            document.body.classList.remove('overflow-hidden');
-                                        }
-                                    }
-
-                                    // Submit order form
-                                    function submitOrderForm() {
-                                        const form = document.getElementById('orderForm');
-                                        if (form) {
-                                            form.submit();
-                                        } else {
-                                            console.error('Order form not found');
-                                        }
-                                    }
-
-                                    function confirmCreateOrderSubmit() {
-                                        if (typeof window.showPageLoader === 'function') window.showPageLoader();
-                                        if (typeof window.showButtonLoader === 'function') window.showButtonLoader('create-order-btn');
-                                        submitOrderForm();
-                                    }
-
-                                    window.confirmCreateOrderSubmit = confirmCreateOrderSubmit;
-
-                                    function handleCreateOrderClick() {
-                                        if (typeof validateOrderForm === 'function') {
-                                            if (validateOrderForm()) {
-                                                if (typeof window.showPageLoader === 'function') window.showPageLoader();
-                                                if (typeof window.showButtonLoader === 'function') window.showButtonLoader('create-order-btn');
-                                                if (typeof submitOrderForm === 'function') submitOrderForm();
-                                            }
-                                        }
-                                    }
-
-                                    window.handleCreateOrderClick = handleCreateOrderClick;
-
-                                    // Real-time validation functions
-                                    function validatePhoneField() {
-                                        const phone = document.getElementById('customer_phone')?.value.trim() || '';
-                                        const phoneCheck = document.getElementById('phone_check');
-                                        const phoneX = document.getElementById('phone_x');
-                                        const phoneError = document.getElementById('phone_error');
+                                    
+                                    if (phone.length !== 11) {
                                         const phoneErrorText = document.getElementById('phone_error_text');
-                                        const phoneStatus = document.getElementById('phone_status');
-                                        
-                                        if (phone.length === 11 && /^[0-9]{11}$/.test(phone)) {
-                                            phoneCheck?.classList.remove('hidden');
-                                            phoneX?.classList.add('hidden');
-                                            phoneError?.classList.add('hidden');
-                                            phoneStatus?.classList.remove('hidden');
-                                        } else if (phone.length === 0) {
-                                            phoneStatus?.classList.add('hidden');
-                                            phoneError?.classList.add('hidden');
-                                        } else if (phone.length > 0 && phone.length < 11) {
-                                            phoneCheck?.classList.add('hidden');
-                                            phoneX?.classList.remove('hidden');
-                                            phoneErrorText.textContent = 'Phone number must be 11 digits (currently ' + phone.length + ' digits)';
-                                            phoneError?.classList.remove('hidden');
-                                            phoneStatus?.classList.remove('hidden');
-                                        } else {
-                                            phoneCheck?.classList.add('hidden');
-                                            phoneX?.classList.remove('hidden');
-                                            phoneErrorText.textContent = 'Phone number must be exactly 11 digits';
-                                            phoneError?.classList.remove('hidden');
-                                            phoneStatus?.classList.remove('hidden');
-                                        }
+                                        if (phoneErrorText) phoneErrorText.textContent = 'Phone number must be exactly 11 digits';
+                                        document.getElementById('phone_error')?.classList.remove('hidden');
+                                        document.getElementById('customer_phone')?.focus();
+                                        return false;
                                     }
-
-                                    function validateWeightField() {
-                                        const weight = parseFloat(document.getElementById('weight')?.value) || 0;
-                                        const weightCheck = document.getElementById('weight_check');
-                                        const weightX = document.getElementById('weight_x');
-                                        const weightError = document.getElementById('weight_error');
-                                        const weightStatus = document.getElementById('weight_status');
-                                        
-                                        if (weight >= 0.1) {
-                                            weightCheck?.classList.remove('hidden');
-                                            weightX?.classList.add('hidden');
-                                            weightError?.classList.add('hidden');
-                                            weightStatus?.classList.remove('hidden');
-                                        } else if (document.getElementById('weight')?.value) {
-                                            weightCheck?.classList.add('hidden');
-                                            weightX?.classList.remove('hidden');
-                                            weightError?.classList.remove('hidden');
-                                            weightStatus?.classList.remove('hidden');
-                                        } else {
-                                            weightStatus?.classList.add('hidden');
-                                            weightError?.classList.add('hidden');
-                                        }
+                                    
+                                    const phonePattern = /^[0-9]{11}$/;
+                                    if (!phonePattern.test(phone)) {
+                                        const phoneErrorText = document.getElementById('phone_error_text');
+                                        if (phoneErrorText) phoneErrorText.textContent = 'Phone number must contain only numbers';
+                                        document.getElementById('phone_error')?.classList.remove('hidden');
+                                        document.getElementById('customer_phone')?.focus();
+                                        return false;
                                     }
-
-                                    function validateAddressField() {
-                                        const address = document.getElementById('customer_address')?.value.trim() || '';
-                                        const addressCheck = document.getElementById('address_check');
-                                        const addressX = document.getElementById('address_x');
-                                        const addressError = document.getElementById('address_error');
-                                        const addressErrorText = document.getElementById('address_error_text');
-                                        const addressStatus = document.getElementById('address_status');
-                                        
-                                        if (address.length > 0) {
-                                            addressCheck?.classList.remove('hidden');
-                                            addressX?.classList.add('hidden');
-                                            addressError?.classList.add('hidden');
-                                            addressStatus?.classList.remove('hidden');
+                                    
+                                    // Address validation - optional, no longer required
+                                    clearBlankFieldNotice('customer_address', 'address_error');
+                                    
+                                    // Weight validation (only if manual_weight selected)
+                                    if (weightOption === 'manual_weight') {
+                                        if (!weight) {
+                                            showBlankFieldNotice('Weight', 'weight', 'weight_error');
+                                            return false;
                                         } else {
-                                            addressStatus?.classList.add('hidden');
-                                            addressError?.classList.add('hidden');
+                                            clearBlankFieldNotice('weight', 'weight_error');
                                         }
-                                    }
-
-                                    // Show confirmation modal with order details
-                                    function showOrderConfirmationModal(weightOption, weight, subtotal) {
-                                        const weightDisplay = weightOption === 'manual_weight' ? `${weight} kg` : 'To be measured at shop';
-                                        
-                                        // Build add-ons display
-                                        const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
-                                        const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
-                                        
-                                        let addOnsDisplay = '';
-                                        if (detergentQty > 0) {
-                                            addOnsDisplay += `Detergent x${detergentQty} (₱${(detergentQty * 16).toFixed(2)})<br>`;
-                                        }
-                                        if (fabricConditionerQty > 0) {
-                                            addOnsDisplay += `Fabric Conditioner x${fabricConditionerQty} (₱${(fabricConditionerQty * 14).toFixed(2)})<br>`;
-                                        }
-                                        if (!addOnsDisplay) {
-                                            addOnsDisplay = 'None';
-                                        }
-                                        
-                                        const modalContent = `
-                                            <div class="space-y-3 text-left">
-                                                <p class="text-gray-700"><strong>Weight:</strong> ${weightDisplay}</p>
-                                                <p class="text-gray-700"><strong>Add-ons:</strong><br>${addOnsDisplay}</p>
-                                                <p class="text-gray-700"><strong>Subtotal:</strong> ₱${parseFloat(subtotal).toFixed(2)}</p>
-                                                <hr class="my-3">
-                                                <p class="text-sm text-gray-600">Your order will be submitted for admin approval. Discount and final payment will be handled by the admin.</p>
-                                            </div>
-                                        `;
-                                        
-                                        const modal = document.getElementById('createOrderModal');
-                                        if (modal) {
-                                            const messageElement = modal.querySelector('.confirmation-message');
-                                            if (messageElement) {
-                                                messageElement.innerHTML = modalContent;
+                                        if (parseFloat(weight) < 1) {
+                                            const weightErrorText = document.getElementById('weight_error');
+                                            if (weightErrorText) {
+                                                weightErrorText.textContent = 'Weight must be at least 1kg';
+                                                weightErrorText.classList.remove('hidden');
                                             }
-                                            openModal('createOrderModal');
+                                            document.getElementById('weight')?.focus();
+                                            return false;
                                         }
                                     }
                                     
-                                    // Initial state
-                                    toggleWeightInputNow();
-                                </script>
-                            </div>
+                                    // Subtotal validation - allow if weight is provided OR measure at shop is selected
+                                    const hasAddOns = detergentQty > 0 || fabricConditionerQty > 0;
+                                    const hasWeight = weightOption === 'manual_weight' && parseFloat(weight) >= 1;
+                                    const isMeasureAtShop = weightOption === 'measure_at_shop';
+                                    
+                                    // Allow submission if weight is provided or measure at shop is selected (add-ons are optional)
+                                    if (!hasWeight && !isMeasureAtShop) {
+                                        alert('Please select how you will provide the weight');
+                                        return false;
+                                    }
+                                    
+                                    // Show confirmation modal with order summary
+                                    showOrderConfirmationModal(weightOption, weight, subtotal);
+                                    return false;
+                                }
 
-                            <!-- Address Details Card (Optional) -->
+                                // Open modal function
+                                function openModal(modalId) {
+                                    const modal = document.getElementById(modalId);
+                                    if (modal) {
+                                        modal.classList.remove('hidden');
+                                        document.body.classList.add('overflow-hidden');
+                                    }
+                                }
+
+                                // Close modal function
+                                function closeModal(modalId) {
+                                    const modal = document.getElementById(modalId);
+                                    if (modal) {
+                                        modal.classList.add('hidden');
+                                        document.body.classList.remove('overflow-hidden');
+                                    }
+                                }
+
+                                // Submit order form
+                                function submitOrderForm() {
+                                    const form = document.getElementById('orderForm');
+                                    if (form) {
+                                        form.submit();
+                                    } else {
+                                        console.error('Order form not found');
+                                    }
+                                }
+
+                                function confirmCreateOrderSubmit() {
+                                    if (typeof window.showPageLoader === 'function') window.showPageLoader();
+                                    if (typeof window.showButtonLoader === 'function') window.showButtonLoader('create-order-btn');
+                                    submitOrderForm();
+                                }
+
+                                window.confirmCreateOrderSubmit = confirmCreateOrderSubmit;
+
+                                function handleCreateOrderClick() {
+                                    if (typeof validateOrderForm === 'function') {
+                                        if (validateOrderForm()) {
+                                            if (typeof window.showPageLoader === 'function') window.showPageLoader();
+                                            if (typeof window.showButtonLoader === 'function') window.showButtonLoader('create-order-btn');
+                                            if (typeof submitOrderForm === 'function') submitOrderForm();
+                                        }
+                                    }
+                                }
+
+                                window.handleCreateOrderClick = handleCreateOrderClick;
+
+                                // Real-time validation functions
+                                function validatePhoneField() {
+                                    const phone = document.getElementById('customer_phone')?.value.trim() || '';
+                                    const phoneCheck = document.getElementById('phone_check');
+                                    const phoneX = document.getElementById('phone_x');
+                                    const phoneError = document.getElementById('phone_error');
+                                    const phoneErrorText = document.getElementById('phone_error_text');
+                                    const phoneStatus = document.getElementById('phone_status');
+                                    
+                                    if (phone.length === 11 && /^[0-9]{11}$/.test(phone)) {
+                                        phoneCheck?.classList.remove('hidden');
+                                        phoneX?.classList.add('hidden');
+                                        phoneError?.classList.add('hidden');
+                                        phoneStatus?.classList.remove('hidden');
+                                    } else if (phone.length === 0) {
+                                        phoneStatus?.classList.add('hidden');
+                                        phoneError?.classList.add('hidden');
+                                    } else if (phone.length > 0 && phone.length < 11) {
+                                        phoneCheck?.classList.add('hidden');
+                                        phoneX?.classList.remove('hidden');
+                                        phoneErrorText.textContent = 'Phone number must be 11 digits (currently ' + phone.length + ' digits)';
+                                        phoneError?.classList.remove('hidden');
+                                        phoneStatus?.classList.remove('hidden');
+                                    } else {
+                                        phoneCheck?.classList.add('hidden');
+                                        phoneX?.classList.remove('hidden');
+                                        phoneErrorText.textContent = 'Phone number must be exactly 11 digits';
+                                        phoneError?.classList.remove('hidden');
+                                        phoneStatus?.classList.remove('hidden');
+                                    }
+                                }
+
+                                function validateWeightField() {
+                                    const weight = parseFloat(document.getElementById('weight')?.value) || 0;
+                                    const weightCheck = document.getElementById('weight_check');
+                                    const weightX = document.getElementById('weight_x');
+                                    const weightError = document.getElementById('weight_error');
+                                    const weightStatus = document.getElementById('weight_status');
+                                    
+                                    if (weight >= 0.1) {
+                                        weightCheck?.classList.remove('hidden');
+                                        weightX?.classList.add('hidden');
+                                        weightError?.classList.add('hidden');
+                                        weightStatus?.classList.remove('hidden');
+                                    } else if (document.getElementById('weight')?.value) {
+                                        weightCheck?.classList.add('hidden');
+                                        weightX?.classList.remove('hidden');
+                                        weightError?.classList.remove('hidden');
+                                        weightStatus?.classList.remove('hidden');
+                                    } else {
+                                        weightStatus?.classList.add('hidden');
+                                        weightError?.classList.add('hidden');
+                                    }
+                                }
+
+                                function validateAddressField() {
+                                    const address = document.getElementById('customer_address')?.value.trim() || '';
+                                    const addressCheck = document.getElementById('address_check');
+                                    const addressX = document.getElementById('address_x');
+                                    const addressError = document.getElementById('address_error');
+                                    const addressErrorText = document.getElementById('address_error_text');
+                                    const addressStatus = document.getElementById('address_status');
+                                    
+                                    if (address.length > 0) {
+                                        addressCheck?.classList.remove('hidden');
+                                        addressX?.classList.add('hidden');
+                                        addressError?.classList.add('hidden');
+                                        addressStatus?.classList.remove('hidden');
+                                    } else {
+                                        addressStatus?.classList.add('hidden');
+                                        addressError?.classList.add('hidden');
+                                    }
+                                }
+
+                                // Show confirmation modal with order details
+                                function showOrderConfirmationModal(weightOption, weight, subtotal) {
+                                    const weightDisplay = weightOption === 'manual_weight' ? `${weight} kg` : 'To be measured at shop';
+                                    
+                                    // Build add-ons display
+                                    const detergentQty = parseInt(document.getElementById('detergent_qty')?.value) || 0;
+                                    const fabricConditionerQty = parseInt(document.getElementById('fabric_conditioner_qty')?.value) || 0;
+                                    
+                                    let addOnsDisplay = '';
+                                    if (detergentQty > 0) {
+                                        addOnsDisplay += `Detergent x${detergentQty} (₱${(detergentQty * 16).toFixed(2)})<br>`;
+                                    }
+                                    if (fabricConditionerQty > 0) {
+                                        addOnsDisplay += `Fabric Conditioner x${fabricConditionerQty} (₱${(fabricConditionerQty * 14).toFixed(2)})<br>`;
+                                    }
+                                    if (!addOnsDisplay) {
+                                        addOnsDisplay = 'None';
+                                    }
+                                    
+                                    const subtotalValue = isNaN(parseFloat(subtotal)) ? '0.00' : parseFloat(subtotal).toFixed(2);
+                                    
+                                    const modalContent = `
+                                        <div class="space-y-3 text-left">
+                                            <p class="text-gray-700"><strong>Weight:</strong> ${weightDisplay}</p>
+                                            <p class="text-gray-700"><strong>Add-ons:</strong><br>${addOnsDisplay}</p>
+                                            <p class="text-gray-700"><strong>Subtotal:</strong> ₱${subtotalValue}</p>
+                                            <hr class="my-3">
+                                            <p class="text-sm text-gray-600">Your order will be submitted for admin approval. Discount and final payment will be handled by the admin.</p>
+                                        </div>
+                                    `;
+                                    
+                                    const modal = document.getElementById('createOrderModal');
+                                    if (modal) {
+                                        const messageElement = modal.querySelector('.confirmation-message');
+                                        if (messageElement) {
+                                            messageElement.innerHTML = modalContent;
+                                        }
+                                        openModal('createOrderModal');
+                                    }
+                                }
+                                
+                                // Initial state
+                                toggleWeightInputNow();
+                            </script>
+
+                            <!-- Address Details Card (Optional) - FIXED ALIGNMENT -->
                             <div class="bg-gray-50 rounded-lg p-4 mb-6">
                                 <h3 class="text-sm font-medium text-gray-900 mb-3">Address Details <span class="text-xs text-gray-500">(Optional)</span></h3>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                    <!-- Barangay Dropdown -->
+                                
+                                <!-- Centered Dropdowns -->
+                                <div class="space-y-6">
+                                    <!-- Dropdowns in a single row -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <!-- Barangay Dropdown -->
+                                        <div>
+                                            <label for="barangay" class="block text-sm font-medium text-gray-700">Barangay</label>
+                                            <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                    id="barangay" name="barangay" onchange="updateAddressField()">
+                                                <option value="">Select Barangay</option>
+                                                <option value="Poblacion" {{ old('barangay') == 'Poblacion' ? 'selected' : '' }}>Poblacion</option>
+                                                <option value="Baluarte" {{ old('barangay') == 'Baluarte' ? 'selected' : '' }}>Baluarte</option>
+                                                <option value="Binuangan" {{ old('barangay') == 'Binuangan' ? 'selected' : '' }}>Binuangan</option>
+                                                <option value="Gracia" {{ old('barangay') == 'Gracia' ? 'selected' : '' }}>Gracia</option>
+                                                <option value="Mohon" {{ old('barangay') == 'Mohon' ? 'selected' : '' }}>Mohon</option>
+                                                <option value="Rosario" {{ old('barangay') == 'Rosario' ? 'selected' : '' }}>Rosario</option>
+                                                <option value="Santa Ana" {{ old('barangay') == 'Santa Ana' ? 'selected' : '' }}>Santa Ana</option>
+                                                <option value="Santo Niño" {{ old('barangay') == 'Santo Niño' ? 'selected' : '' }}>Santo Niño</option>
+                                                <option value="Sugbongcogon" {{ old('barangay') == 'Sugbongcogon' ? 'selected' : '' }}>Sugbongcogon</option>
+                                            </select>
+                                            @error('barangay')
+                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Purok Dropdown -->
+                                        <div>
+                                            <label for="purok" class="block text-sm font-medium text-gray-700">Purok/Zone</label>
+                                            <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                    id="purok" name="purok" onchange="updateAddressField()">
+                                                <option value="">Select Purok</option>
+                                                <option value="Purok 1" {{ old('purok') == 'Purok 1' ? 'selected' : '' }}>Purok 1</option>
+                                                <option value="Purok 2" {{ old('purok') == 'Purok 2' ? 'selected' : '' }}>Purok 2</option>
+                                                <option value="Purok 3" {{ old('purok') == 'Purok 3' ? 'selected' : '' }}>Purok 3</option>
+                                                <option value="Purok 4" {{ old('purok') == 'Purok 4' ? 'selected' : '' }}>Purok 4</option>
+                                                <option value="Purok 5" {{ old('purok') == 'Purok 5' ? 'selected' : '' }}>Purok 5</option>
+                                                <option value="Purok 6" {{ old('purok') == 'Purok 6' ? 'selected' : '' }}>Purok 6</option>
+                                                <option value="Purok 7" {{ old('purok') == 'Purok 7' ? 'selected' : '' }}>Purok 7</option>
+                                                <option value="Purok 8" {{ old('purok') == 'Purok 8' ? 'selected' : '' }}>Purok 8</option>
+                                            </select>
+                                            @error('purok')
+                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Street Dropdown -->
+                                        <div>
+                                            <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
+                                            <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                    id="street" name="street" onchange="updateAddressField()">
+                                                <option value="">Select Street</option>
+                                                <option value="Rizal Street" {{ old('street') == 'Rizal Street' ? 'selected' : '' }}>Rizal Street</option>
+                                                <option value="Mabini Street" {{ old('street') == 'Mabini Street' ? 'selected' : '' }}>Mabini Street</option>
+                                                <option value="Bonifacio Street" {{ old('street') == 'Bonifacio Street' ? 'selected' : '' }}>Bonifacio Street</option>
+                                                <option value="Luna Street" {{ old('street') == 'Luna Street' ? 'selected' : '' }}>Luna Street</option>
+                                                <option value="Burgos Street" {{ old('street') == 'Burgos Street' ? 'selected' : '' }}>Burgos Street</option>
+                                                <option value="Del Pilar Street" {{ old('street') == 'Del Pilar Street' ? 'selected' : '' }}>Del Pilar Street</option>
+                                                <option value="Aguinaldo Street" {{ old('street') == 'Aguinaldo Street' ? 'selected' : '' }}>Aguinaldo Street</option>
+                                            </select>
+                                            @error('street')
+                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- Full Address (Full width) -->
                                     <div>
-                                        <label for="barangay" class="block text-sm font-medium text-gray-700">Barangay</label>
-                                        <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                                id="barangay" name="barangay">
-                                            <option value="">Select Barangay</option>
-                                            <option value="Poblacion" {{ old('barangay') == 'Poblacion' ? 'selected' : '' }}>Poblacion</option>
-                                            <option value="Baluarte" {{ old('barangay') == 'Baluarte' ? 'selected' : '' }}>Baluarte</option>
-                                            <option value="Binuangan" {{ old('barangay') == 'Binuangan' ? 'selected' : '' }}>Binuangan</option>
-                                            <option value="Gracia" {{ old('barangay') == 'Gracia' ? 'selected' : '' }}>Gracia</option>
-                                            <option value="Mohon" {{ old('barangay') == 'Mohon' ? 'selected' : '' }}>Mohon</option>
-                                            <option value="Rosario" {{ old('barangay') == 'Rosario' ? 'selected' : '' }}>Rosario</option>
-                                            <option value="Santa Ana" {{ old('barangay') == 'Santa Ana' ? 'selected' : '' }}>Santa Ana</option>
-                                            <option value="Santo Niño" {{ old('barangay') == 'Santo Niño' ? 'selected' : '' }}>Santo Niño</option>
-                                            <option value="Sugbongcogon" {{ old('barangay') == 'Sugbongcogon' ? 'selected' : '' }}>Sugbongcogon</option>
-                                        </select>
-                                        @error('barangay')
+                                        <label for="customer_address" class="block text-sm font-medium text-gray-700">Complete Address Details</label>
+                                        <div class="relative">
+                                            <textarea class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                                      id="customer_address" name="customer_address" rows="3" 
+                                                      placeholder="e.g., House #, Landmarks, Additional directions"
+                                                      onblur="validateAddressField()">{{ old('customer_address', $customer->address) }}</textarea>
+                                            <span id="address_status" class="absolute right-3 top-3 hidden">
+                                                <svg id="address_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                </svg>
+                                                <svg id="address_x" class="w-5 h-5 text-red-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div id="address_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                            <span id="address_error_text">Please enter your complete address</span>
+                                        </div>
+                                        @error('customer_address')
                                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                         @enderror
                                     </div>
-
-                                    <!-- Purok Dropdown -->
-                                    <div>
-                                        <label for="purok" class="block text-sm font-medium text-gray-700">Purok/Zone</label>
-                                        <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                                id="purok" name="purok">
-                                            <option value="">Select Purok</option>
-                                            <option value="Purok 1" {{ old('purok') == 'Purok 1' ? 'selected' : '' }}>Purok 1</option>
-                                            <option value="Purok 2" {{ old('purok') == 'Purok 2' ? 'selected' : '' }}>Purok 2</option>
-                                            <option value="Purok 3" {{ old('purok') == 'Purok 3' ? 'selected' : '' }}>Purok 3</option>
-                                            <option value="Purok 4" {{ old('purok') == 'Purok 4' ? 'selected' : '' }}>Purok 4</option>
-                                            <option value="Purok 5" {{ old('purok') == 'Purok 5' ? 'selected' : '' }}>Purok 5</option>
-                                            <option value="Purok 6" {{ old('purok') == 'Purok 6' ? 'selected' : '' }}>Purok 6</option>
-                                            <option value="Purok 7" {{ old('purok') == 'Purok 7' ? 'selected' : '' }}>Purok 7</option>
-                                            <option value="Purok 8" {{ old('purok') == 'Purok 8' ? 'selected' : '' }}>Purok 8</option>
-                                        </select>
-                                        @error('purok')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-
-                                    <!-- Street Dropdown -->
-                                    <div>
-                                        <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
-                                        <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                                id="street" name="street">
-                                            <option value="">Select Street</option>
-                                            <option value="Rizal Street" {{ old('street') == 'Rizal Street' ? 'selected' : '' }}>Rizal Street</option>
-                                            <option value="Mabini Street" {{ old('street') == 'Mabini Street' ? 'selected' : '' }}>Mabini Street</option>
-                                            <option value="Bonifacio Street" {{ old('street') == 'Bonifacio Street' ? 'selected' : '' }}>Bonifacio Street</option>
-                                            <option value="Luna Street" {{ old('street') == 'Luna Street' ? 'selected' : '' }}>Luna Street</option>
-                                            <option value="Burgos Street" {{ old('street') == 'Burgos Street' ? 'selected' : '' }}>Burgos Street</option>
-                                            <option value="Del Pilar Street" {{ old('street') == 'Del Pilar Street' ? 'selected' : '' }}>Del Pilar Street</option>
-                                            <option value="Aguinaldo Street" {{ old('street') == 'Aguinaldo Street' ? 'selected' : '' }}>Aguinaldo Street</option>
-                                        </select>
-                                        @error('street')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <!-- Full Address -->
-                                <div>
-                                    <label for="customer_address" class="block text-sm font-medium text-gray-700">Complete Address Details</label>
-                                    <div class="relative">
-                                        <textarea class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                                  id="customer_address" name="customer_address" rows="3" 
-                                                  placeholder="e.g., House #, Landmarks, Additional directions"
-                                                  onblur="validateAddressField()">{{ old('customer_address', $customer->address) }}</textarea>
-                                        <span id="address_status" class="absolute right-3 top-3 hidden">
-                                            <svg id="address_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                            </svg>
-                                            <svg id="address_x" class="w-5 h-5 text-red-500 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                    <div id="address_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                                        <span id="address_error_text">Please enter your complete address</span>
-                                    </div>
-                                    @error('customer_address')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
                                 </div>
                             </div>
+
+                            <script>
+                                function updateAddressField() {
+                                    const barangay = document.getElementById('barangay').value;
+                                    const purok = document.getElementById('purok').value;
+                                    const street = document.getElementById('street').value;
+                                    
+                                    // Build the address from selected values
+                                    const addressParts = [];
+                                    if (barangay) addressParts.push(barangay);
+                                    if (purok) addressParts.push(purok);
+                                    if (street) addressParts.push(street);
+                                    
+                                    // Update the address field with the combined values
+                                    const addressField = document.getElementById('customer_address');
+                                    if (addressParts.length > 0) {
+                                        addressField.value = addressParts.join(', ');
+                                    } else {
+                                        addressField.value = '';
+                                    }
+                                }
+                            </script>
 
                             <!-- Add-ons Section with Quantity -->
                             <div class="mb-6">
@@ -694,37 +728,35 @@
                                 </div>
                             </div>
 
-                           <!-- Subtotal and Pickup Date Side by Side -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-    <!-- Subtotal (Admin will handle discount, total amount, and payment) -->
-    <div>
-        <label for="subtotal" class="block text-sm font-medium text-gray-700">Subtotal (₱) *</label>
-        <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50" 
-               id="subtotal" name="subtotal" value="{{ old('subtotal') }}" required readonly>
-        @error('subtotal')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-        @enderror
-        <p class="mt-1 text-xs text-gray-500">Discount and final payment will be handled by admin upon approval</p>
-    </div>
+                            <!-- Subtotal and Pickup Date Side by Side -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <!-- Subtotal (Admin will handle discount, total amount, and payment) -->
+                                <div>
+                                    <label for="subtotal" class="block text-sm font-medium text-gray-700">Subtotal (₱) *</label>
+                                    <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50" 
+                                           id="subtotal" name="subtotal" value="{{ old('subtotal', '0') }}" readonly>
+                                    @error('subtotal')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500">Discount and final payment will be handled by admin upon approval</p>
+                                </div>
 
-    <!-- Pickup Date -->
-    <div>
-        <label for="pickup_date" class="block text-sm font-medium text-gray-700">Pickup Date (Optional)</label>
-        <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-               id="pickup_date" name="pickup_date" value="{{ old('pickup_date') }}">
-        @error('pickup_date')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-        @enderror
-        <p class="mt-1 text-xs text-gray-500">When would you like to pick up your laundry? (Admin will set estimated finish date)</p>
-    </div>
-</div>
+                                <!-- Pickup Date -->
+                                <div>
+                                    <label for="pickup_date" class="block text-sm font-medium text-gray-700">Pickup Date (Optional)</label>
+                                    <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                           id="pickup_date" name="pickup_date" value="{{ old('pickup_date') }}">
+                                    @error('pickup_date')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500">When would you like to pick up your laundry? (Admin will set estimated finish date)</p>
+                                </div>
+                            </div>
 
-<!-- Hidden fields for form submission (set by admin) -->
-<input type="hidden" id="discount" name="discount" value="0">
-<input type="hidden" id="total_amount" name="total_amount" value="0">
-<input type="hidden" id="amount_paid" name="amount_paid" value="0">
-
-
+                            <!-- Hidden fields for form submission (set by admin) -->
+                            <input type="hidden" id="discount" name="discount" value="0">
+                            <input type="hidden" id="total_amount" name="total_amount" value="0">
+                            <input type="hidden" id="amount_paid" name="amount_paid" value="0">
 
                             <!-- Remarks -->
                             <div class="mb-6">
