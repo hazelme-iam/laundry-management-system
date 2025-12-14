@@ -5,12 +5,12 @@
             <!-- Breadcrumb Navigation -->
             <x-breadcrumbs :items="[
                 'Laundry Management' => route('admin.orders.index'),
-                'New Order' => null
+                'New Laundry' => null
             ]" />
             
             <div class="bg-white rounded-lg shadow overflow-hidden">
                 <div class="p-6">
-                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Create New Order</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-6">New Laundry</h1>
 
                     <form action="{{ route('admin.orders.store') }}" method="POST" id="orderForm">
                         @csrf
@@ -242,7 +242,7 @@
                         <!-- Buttons -->
                         <div class="mt-6 flex space-x-3">
                             <button type="button" onclick="openModal('createOrderModal')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                                Create Order
+                                Add New Laundry
                             </button>
                             <a href="{{ route('admin.orders.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
                                 Cancel
@@ -257,9 +257,9 @@
     <!-- Confirmation Modal -->
     <x-confirmationmodal 
         :modalId="'createOrderModal'"
-        title="Confirm Order Creation"
-        message="Are you sure you want to create this order? Please review all details before confirming."
-        confirmText="Create Order"
+        title="Confirm Adding New Laundry"
+        message="Are you sure you want to add this laundry? Please review all details before confirming."
+        confirmText="Add New Laundry"
         cancelText="Cancel"
         confirmColor="blue"
         formId="orderForm"

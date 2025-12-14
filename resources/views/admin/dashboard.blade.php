@@ -46,7 +46,7 @@
                 <x-breadcrumbs :items="$breadcrumbs ?? []" />
             </div>
 
-            {{-- Top Section: 2x2 Stats + Order Completion --}}
+            {{-- Top Section: 2x2 Stats + la Completion --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 px-4 sm:px-0">
                 {{-- LEFT: 2x2 Stats Grid --}}
                 <div class="lg:col-span-2 space-y-4">
@@ -54,16 +54,16 @@
                     <div class="grid grid-cols-2 gap-4">
                         <!-- Total Orders -->
                         <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                            <div class="text-sm text-gray-500">Total Orders</div>
+                            <div class="text-sm text-gray-500">Total Laundry</div>
                             <div class="text-2xl font-bold text-blue-600">{{ $totalOrders ?? 0 }}</div>
-                            <div class="text-xs text-gray-400 mt-1">Total Orders</div>
+                            <div class="text-xs text-gray-400 mt-1">Total Laundry</div>
                         </div>
 
                         <!-- Pending Orders -->
                         <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                            <div class="text-sm text-gray-500">Pending Orders</div>
+                            <div class="text-sm text-gray-500">Pending Laundry</div>
                             <div class="text-2xl font-bold text-red-600">{{ $pendingOrders ?? 0 }}</div>
-                            <div class="text-xs text-gray-400 mt-1">Pending Orders</div>
+                            <div class="text-xs text-gray-400 mt-1">Pending Laundry</div>
                         </div>
                     </div>
 
@@ -71,14 +71,14 @@
                     <div class="grid grid-cols-2 gap-4">
                         <!-- In Progress Orders -->
                         <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                            <div class="text-sm text-gray-500">In progress Orders</div>
+                            <div class="text-sm text-gray-500">In Progress Laundry</div>
                             <div class="text-2xl font-bold text-yellow-600">{{ $inProgressOrders ?? 0 }}</div>
                             <div class="text-xs text-gray-400 mt-1">In Progress</div>
                         </div>
 
                         <!-- Completed Orders -->
                         <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                            <div class="text-sm text-gray-500">Completed Orders</div>
+                            <div class="text-sm text-gray-500">Completed Laundry</div>
                             <div class="text-2xl font-bold text-green-600">{{ $completedOrders ?? 0 }}</div>
                             <div class="text-xs text-gray-400 mt-1">Completed</div>
                         </div>
