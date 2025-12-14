@@ -4,7 +4,6 @@
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">Reports</h2>
     </x-slot>
 
-    <!-- Add this gray background wrapper -->
     <div class="min-h-screen bg-gray-100">
         <div class="py-6 md:py-12">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,20 +14,32 @@
                 </div>
                 
                 <!-- Header Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div>
                     <div class="p-6">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
                                 <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Reports</h1>
                                 <p class="text-gray-600 mt-1">View and analyze your business data</p>
                             </div>
-                            <div>
-                                <button class="w-full md:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <button onclick="window.print()" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4H9a2 2 0 00-2 2v2a2 2 0 002 2h4a2 2 0 002-2v-2a2 2 0 00-2-2zm0 0H7v4m10 0v4"></path>
                                     </svg>
-                                    Export
+                                    Print
                                 </button>
+                                <a href="{{ route('admin.reports.export', ['start_date' => $startDate, 'end_date' => $endDate, 'format' => 'pdf']) }}" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    PDF
+                                </a>
+                                <a href="{{ route('admin.reports.export', ['start_date' => $startDate, 'end_date' => $endDate, 'format' => 'csv']) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    CSV
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -37,19 +48,22 @@
                 <!-- Date Range Picker Card -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                     <div class="p-6">
-                        <form class="space-y-4 md:space-y-0 md:grid md:grid-cols-4 gap-4">
+                        <form method="GET" class="space-y-4 md:space-y-0 md:grid md:grid-cols-4 gap-4">
                             <div>
                                 <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                                <input type="date" id="start_date" name="start_date" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="date" id="start_date" name="start_date" value="{{ request('start_date', now()->subDays(30)->format('Y-m-d')) }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                                <input type="date" id="end_date" name="end_date" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="date" id="end_date" name="end_date" value="{{ request('end_date', now()->format('Y-m-d')) }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
-                            <div class="md:col-span-2 md:flex md:items-end">
+                            <div class="md:col-span-2 md:flex md:items-end gap-2">
                                 <button type="submit" class="w-full md:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                     Apply Filter
                                 </button>
+                                <a href="{{ route('admin.reports') }}" class="w-full md:w-auto text-center bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">
+                                    Reset
+                                </a>
                             </div>
                         </form>
                     </div>
@@ -57,111 +71,167 @@
 
                 <!-- Summary Cards Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Total Orders -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
                             <div class="text-sm font-medium text-gray-500">Total Orders</div>
-                            <div class="text-2xl font-bold text-gray-900">1,234</div>
-                            <div class="text-sm text-green-600">+12% from last month</div>
+                            <div class="text-2xl font-bold text-gray-900">{{ $totalOrders }}</div>
+                            <div class="text-sm {{ $ordersTrend >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                                {{ $ordersTrend >= 0 ? '+' : '' }}{{ $ordersTrend }}% from last period
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Total Revenue -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
                             <div class="text-sm font-medium text-gray-500">Total Revenue</div>
-                            <div class="text-2xl font-bold text-gray-900">₱45,678.90</div>
-                            <div class="text-sm text-green-600">+8% from last month</div>
+                            <div class="text-2xl font-bold text-gray-900">₱{{ number_format($totalRevenue, 2) }}</div>
+                            <div class="text-sm {{ $revenueTrend >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                                {{ $revenueTrend >= 0 ? '+' : '' }}{{ $revenueTrend }}% from last period
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Average Order Value -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
                             <div class="text-sm font-medium text-gray-500">Average Order Value</div>
-                            <div class="text-2xl font-bold text-gray-900">₱1,234.56</div>
-                            <div class="text-sm text-red-600">-2% from last month</div>
+                            <div class="text-2xl font-bold text-gray-900">₱{{ number_format($avgOrderValue, 2) }}</div>
+                            <div class="text-sm text-gray-600">Per order</div>
                         </div>
                     </div>
+
+                    <!-- Completed Orders -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
                             <div class="text-sm font-medium text-gray-500">Completed Orders</div>
-                            <div class="text-2xl font-bold text-gray-900">1,156</div>
-                            <div class="text-sm text-green-600">+15% from last month</div>
+                            <div class="text-2xl font-bold text-gray-900">{{ $completedOrders }}</div>
+                            <div class="text-sm text-gray-600">{{ round(($completedOrders / $totalOrders) * 100, 1) }}% completion rate</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Reports Table Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <!-- Table Header -->
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                            <h2 class="text-lg font-medium text-gray-900">Order History</h2>
-                            <div class="w-full sm:w-auto">
-                                <select class="w-full sm:w-auto appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                    <option>Last 7 days</option>
-                                    <option>Last 30 days</option>
-                                    <option>This month</option>
-                                    <option>Last month</option>
-                                    <option>This year</option>
-                                </select>
+                <!-- Order Status Breakdown -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Status Distribution -->
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Order Status Distribution</h3>
+                            <div class="space-y-3">
+                                @foreach($statusBreakdown as $status => $count)
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span class="text-gray-600">{{ ucfirst(str_replace('_', ' ', $status)) }}</span>
+                                        <span class="font-semibold text-gray-900">{{ $count }}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: {{ ($count / $totalOrders) * 100 }}%"></div>
+                                    </div>
+                                </div>
+                                @endforeach
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Table Content -->
-                        @php
-                            $rows = [];
-                            for ($i = 1; $i <= 5; $i++) {
-                                $rows[] = (object)[
-                                    'id' => 1000 + $i,
-                                    'customer' => (object)['name' => 'Customer ' . $i],
-                                    'created_at' => now()->subDays($i),
-                                    'status' => 'completed',
-                                    'total' => rand(1000, 5000)
-                                ];
-                            }
-                        @endphp
+                    <!-- Payment Status -->
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Payment Status</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span class="text-gray-600">Fully Paid</span>
+                                        <span class="font-semibold text-gray-900">{{ $fullyPaid }}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-600 h-2 rounded-full" style="width: {{ ($fullyPaid / $totalOrders) * 100 }}%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span class="text-gray-600">Partially Paid</span>
+                                        <span class="font-semibold text-gray-900">{{ $partiallyPaid }}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-yellow-600 h-2 rounded-full" style="width: {{ ($partiallyPaid / $totalOrders) * 100 }}%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span class="text-gray-600">Unpaid</span>
+                                        <span class="font-semibold text-gray-900">{{ $unpaid }}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-red-600 h-2 rounded-full" style="width: {{ ($unpaid / $totalOrders) * 100 }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders Table -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <h2 class="text-lg font-medium text-gray-900 mb-6">Recent Orders</h2>
                         
-                        <!-- Mobile-friendly table -->
-                        <div class="overflow-x-auto -mx-6 sm:mx-0">
-                            <x-table :headers="['Order ID', 'Customer', 'Date', 'Status', 'Total']" :rows="collect($rows)">
-                                @foreach($rows as $order)
-                                    <x-table-row>
-                                        <x-table-cell>#{{ $order->id }}</x-table-cell>
-                                        <x-table-cell>{{ $order->customer->name }}</x-table-cell>
-                                        <x-table-cell>{{ $order->created_at->format('Y-m-d') }}</x-table-cell>
-                                        <x-table-cell>
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                {{ ucfirst($order->status) }}
+                        @if($orders->count() > 0)
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach($orders as $order)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                            <a href="{{ route('admin.orders.show', $order->id) }}">#{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</a>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->customer->name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $order->created_at->format('M d, Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                @if($order->status === 'completed') bg-green-100 text-green-800
+                                                @elseif($order->status === 'ready') bg-blue-100 text-blue-800
+                                                @elseif($order->status === 'cancelled') bg-red-100 text-red-800
+                                                @else bg-yellow-100 text-yellow-800
+                                                @endif">
+                                                {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                                             </span>
-                                        </x-table-cell>
-                                        <x-table-cell>₱{{ number_format($order->total, 2) }}</x-table-cell>
-                                    </x-table-row>
-                                @endforeach
-                            </x-table>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">₱{{ number_format($order->total_amount, 2) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                @if($order->amount_paid >= $order->total_amount) bg-green-100 text-green-800
+                                                @elseif($order->amount_paid > 0) bg-yellow-100 text-yellow-800
+                                                @else bg-red-100 text-red-800
+                                                @endif">
+                                                ₱{{ number_format($order->amount_paid, 2) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
 
                         <!-- Pagination -->
                         <div class="mt-6 pt-6 border-t">
-                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div class="text-sm text-gray-700">
-                                    Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">24</span> results
-                                </div>
-                                <div class="flex flex-wrap gap-2">
-                                    <button class="px-3 py-1 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        Previous
-                                    </button>
-                                    <button class="px-3 py-1 rounded-md border border-blue-600 bg-blue-600 text-sm font-medium text-white">
-                                        1
-                                    </button>
-                                    <button class="px-3 py-1 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        2
-                                    </button>
-                                    <button class="px-3 py-1 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        3
-                                    </button>
-                                    <button class="px-3 py-1 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        Next
-                                    </button>
-                                </div>
-                            </div>
+                            {{ $orders->links() }}
                         </div>
+                        @else
+                        <div class="text-center py-12">
+                            <p class="text-gray-600">No orders found for the selected date range.</p>
+                        </div>
+                        @endif
                     </div>
                 </div>
                 

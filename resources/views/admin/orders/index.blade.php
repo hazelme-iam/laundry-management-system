@@ -13,7 +13,7 @@
                 </div>
                 
                 <!-- Header Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div >
                     <div class="p-6">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
@@ -147,6 +147,9 @@
                                     Total Amount
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Payment Status
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Pickup Date
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -195,6 +198,26 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     ₱{{ number_format($order->total_amount, 2) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @php
+                                        $paymentStatus = 'unpaid';
+                                        $statusColor = 'bg-red-100 text-red-800';
+                                        $statusText = 'Unpaid';
+                                        
+                                        if ($order->amount_paid >= $order->total_amount) {
+                                            $paymentStatus = 'fully_paid';
+                                            $statusColor = 'bg-green-100 text-green-800';
+                                            $statusText = 'Fully Paid';
+                                        } elseif ($order->amount_paid > 0) {
+                                            $paymentStatus = 'partially_paid';
+                                            $statusColor = 'bg-yellow-100 text-yellow-800';
+                                            $statusText = 'Partially Paid (₱' . number_format($order->amount_paid, 2) . ')';
+                                        }
+                                    @endphp
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
+                                        {{ $statusText }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $order->pickup_date?->format('M d, Y') ?? 'N/A' }}

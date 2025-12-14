@@ -28,6 +28,9 @@ class Order extends Model
         'customer_id',
         'status',
         'weight',
+        'confirmed_weight',
+        'weight_confirmed_at',
+        'weight_confirmed_by',
         'add_ons',
         'subtotal',
         'discount',
@@ -75,11 +78,13 @@ class Order extends Model
         'washing_end' => 'datetime',
         'drying_start' => 'datetime',
         'drying_end' => 'datetime',
+        'weight_confirmed_at' => 'datetime',
         'subtotal' => 'decimal:2',
         'discount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'amount_paid' => 'decimal:2',
         'weight' => 'decimal:2',
+        'confirmed_weight' => 'decimal:2',
         'weight_per_load' => 'decimal:2',
     ];
 
@@ -99,6 +104,16 @@ class Order extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function weightConfirmedBy()
+    {
+        return $this->belongsTo(User::class, 'weight_confirmed_by');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 
     public function primaryWasher()
@@ -236,7 +251,7 @@ class Order extends Model
 
     public function findOptimalLoadToJoin()
     {
-        if (!$this->canBeConsolidated()) {
+        if (!$this->weight || !$this->canBeConsolidated()) {
             return null;
         }
 
@@ -250,6 +265,16 @@ class Order extends Model
             ->first();
     }
 
+    public function isWeightConfirmed()
+    {
+        return $this->confirmed_weight !== null;
+    }
+
+    public function getEffectiveWeight()
+    {
+        return $this->confirmed_weight ?? $this->weight;
+    }
+
     public function createOptimizedLoads()
     {
         // Check if loads already exist for this order
@@ -259,7 +284,7 @@ class Order extends Model
         
         $loads = collect();
         $machineCapacity = 8.0;
-        $weight = (float) $this->weight;
+        $weight = (float) $this->getEffectiveWeight();
         
         // Try to consolidate with existing loads first
         if ($this->canBeConsolidated()) {

@@ -30,7 +30,7 @@ class OrderController extends Controller
     public function index()
     {
         // Use selective eager loading - only load what's needed for the list view
-        $query = Order::with(['customer', 'creator']);
+        $query = Order::with(['customer', 'creator', 'payments']);
 
         // Status filter
         if (request('status')) {
@@ -145,10 +145,9 @@ class OrderController extends Controller
         $data = $request->validate([
             'customer_id' => 'required', // Will validate manually
             'weight' => ['required', new ValidWeight],
-            'add_ons' => 'nullable|array',
-            'add_ons.*' => 'string|in:detergent,fabric_conditioner',
+            'detergent_qty' => 'nullable|numeric|min:0',
+            'fabric_conditioner_qty' => 'nullable|numeric|min:0',
             'subtotal' => ['required', new ValidMonetary],
-            'discount' => ['required', new ValidMonetary],
             'total_amount' => ['required', new ValidMonetary],
             'amount_paid' => ['required', new ValidMonetary],
             'pickup_date' => ['nullable', 'date', new ValidFutureDate(true, 1)],
@@ -184,11 +183,20 @@ class OrderController extends Controller
         // Sanitize text inputs to prevent XSS
         $data['remarks'] = Str::limit(strip_tags($data['remarks'] ?? ''), 1000);
 
-        // Validate business logic
-        if ($data['discount'] > $data['subtotal']) {
-            return back()->withErrors(['discount' => 'Discount cannot be greater than subtotal.'])->withInput();
+        // Build add_ons from quantity fields
+        $addOns = [];
+        $detergentQty = (int) ($data['detergent_qty'] ?? 0);
+        $fabricConditionerQty = (int) ($data['fabric_conditioner_qty'] ?? 0);
+
+        if ($detergentQty > 0) {
+            $addOns['detergent'] = $detergentQty;
         }
 
+        if ($fabricConditionerQty > 0) {
+            $addOns['fabric_conditioner'] = $fabricConditionerQty;
+        }
+
+        // Validate business logic
         if ($data['amount_paid'] > $data['total_amount']) {
             return back()->withErrors(['amount_paid' => 'Amount paid cannot be greater than total amount.'])->withInput();
         }
@@ -197,6 +205,8 @@ class OrderController extends Controller
         $data['status'] = 'pending';
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
+        $data['add_ons'] = count($addOns) > 0 ? $addOns : null;
+        $data['discount'] = 0; // No discount in admin form
 
         $order = Order::create($data);
         
@@ -219,7 +229,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         // Always load fresh data for Livewire auto-refresh
-        $order->load(['customer', 'creator', 'updater', 'loads.washerMachine', 'loads.dryerMachine', 'assignedWasher', 'assignedDryer']);
+        $order->load(['customer', 'creator', 'updater', 'loads.washerMachine', 'loads.dryerMachine', 'assignedWasher', 'assignedDryer', 'payments.recordedBy']);
         
         // Calculate drying time for this order
         $dryingTime = $this->calculateDryingTime($order->weight);
@@ -505,11 +515,23 @@ class OrderController extends Controller
             $remarks = ($remarks ? $remarks . ' | ' : '') . 'Weight to be measured at shop upon arrival.';
         }
 
+        $addOns = [];
+        $detergentQty = (int) ($data['detergent_qty'] ?? 0);
+        $fabricConditionerQty = (int) ($data['fabric_conditioner_qty'] ?? 0);
+
+        if ($detergentQty > 0) {
+            $addOns['detergent'] = $detergentQty;
+        }
+
+        if ($fabricConditionerQty > 0) {
+            $addOns['fabric_conditioner'] = $fabricConditionerQty;
+        }
+
         // Create order with pending status for admin approval
         $orderData = [
             'customer_id' => $customer->id,
             'weight' => $weight,
-            'add_ons' => $data['add_ons'] ?? null,
+            'add_ons' => count($addOns) > 0 ? $addOns : null,
             'subtotal' => $data['subtotal'],
             'discount' => $data['discount'] ?? 0,
             'total_amount' => $data['total_amount'] ?? 0,
@@ -649,6 +671,85 @@ class OrderController extends Controller
     }
 
     /**
+     * Confirm weight for an order
+     */
+    public function confirmWeight(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'confirmed_weight' => 'required|numeric|min:0.1|max:100',
+        ]);
+
+        // Prevent confirmation if order is already in processing
+        if (in_array($order->status, ['washing', 'drying', 'folding', 'quality_check', 'ready', 'completed'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot confirm weight for orders already in processing.'
+            ], 422);
+        }
+
+        $confirmedWeight = $data['confirmed_weight'];
+
+        // Recalculate pricing if weight was null (measure at shop option)
+        $updateData = [
+            'confirmed_weight' => $confirmedWeight,
+            'weight_confirmed_at' => now(),
+            'weight_confirmed_by' => Auth::id(),
+            'updated_by' => Auth::id()
+        ];
+
+        // If original weight was null, recalculate subtotal and total_amount based on confirmed weight
+        if ($order->weight === null) {
+            // Pricing rule: ₱150 for up to 5kg + ₱30 per additional kg
+            $basePrice = 150;
+            $baseWeightLimit = 5;
+            $excessPricePerKg = 30;
+
+            if ($confirmedWeight <= $baseWeightLimit) {
+                $newSubtotal = $basePrice;
+            } else {
+                $excessWeight = $confirmedWeight - $baseWeightLimit;
+                $newSubtotal = $basePrice + ($excessWeight * $excessPricePerKg);
+            }
+
+            // Add existing add-ons cost
+            if ($order->add_ons && count($order->add_ons) > 0) {
+                $addOnPrices = [
+                    'detergent' => 16,
+                    'fabric_conditioner' => 14,
+                ];
+
+                foreach ($order->add_ons as $key => $value) {
+                    $addOn = is_int($key) ? $value : $key;
+                    $qty = is_int($key) ? 1 : (int) $value;
+                    
+                    if (isset($addOnPrices[$addOn])) {
+                        $newSubtotal += $addOnPrices[$addOn] * $qty;
+                    }
+                }
+            }
+
+            // Update subtotal and total_amount (discount is always 0 for online orders)
+            $updateData['subtotal'] = $newSubtotal;
+            $updateData['total_amount'] = $newSubtotal;
+        }
+
+        $order->update($updateData);
+
+        // If loads don't exist yet, create them now with confirmed weight
+        if ($order->loads()->count() === 0) {
+            $order->createOptimizedLoads();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Weight confirmed: {$confirmedWeight} kg" . (isset($newSubtotal) ? " - Price updated to ₱" . number_format($newSubtotal, 2) : ""),
+            'confirmed_weight' => $confirmedWeight,
+            'subtotal' => $order->subtotal,
+            'total_amount' => $order->total_amount
+        ]);
+    }
+
+    /**
      * Update order status
      */
     public function updateStatus(Request $request, Order $order)
@@ -657,10 +758,29 @@ class OrderController extends Controller
             'status' => 'required|in:pending,approved,rejected,picked_up,washing,drying,folding,quality_check,ready,ready_for_pickup,delivery_pending,completed,cancelled'
         ]);
 
+        $newStatus = $request->status;
         $order->update([
-            'status' => $request->status,
+            'status' => $newStatus,
             'updated_by' => Auth::id()
         ]);
+
+        // Send automatic notifications to online customers
+        if ($order->customer->user_id) {
+            $user = User::find($order->customer->user_id);
+            
+            if ($user) {
+                if ($newStatus === 'ready') {
+                    // Send receipt notification when order is ready
+                    $user->notify(new \App\Notifications\OrderReceiptNotification($order));
+                } elseif ($newStatus === 'completed') {
+                    // Send completion notification
+                    $user->notify(new \App\Notifications\OrderUpdateNotification(
+                        $order,
+                        'Your order has been completed and is ready for pickup!'
+                    ));
+                }
+            }
+        }
 
         return response()->json(['success' => true]);
     }
@@ -753,5 +873,136 @@ class OrderController extends Controller
             'success' => true,
             'duration' => $dryingTime
         ]);
+    }
+
+    public function recordPayment(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'payment_date' => 'required|date_format:Y-m-d H:i',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        // Calculate remaining balance
+        $remainingBalance = $order->total_amount - $order->amount_paid;
+
+        // Allow overpayment (customer might give more cash for change)
+        // Just ensure the payment amount is positive
+        if ($data['amount'] <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => "Payment amount must be greater than zero"
+            ], 422);
+        }
+
+        // Calculate change if overpaid (payment amount - remaining balance before this payment)
+        $remainingBalanceBeforePayment = $order->total_amount - $order->amount_paid;
+        $change = $data['amount'] - $remainingBalanceBeforePayment;
+
+        // Create payment record with cash_given and change
+        $payment = $order->payments()->create([
+            'amount' => $data['amount'],
+            'cash_given' => $data['amount'],
+            'change' => $change > 0 ? $change : 0,
+            'payment_date' => $data['payment_date'],
+            'recorded_by' => Auth::id(),
+            'notes' => $data['notes'] ?? null,
+        ]);
+
+        // Update order's amount_paid (cap it at total_amount to avoid overpayment in balance calculation)
+        $newAmountPaid = min($order->amount_paid + $data['amount'], $order->total_amount);
+        $order->update([
+            'amount_paid' => $newAmountPaid,
+            'updated_by' => Auth::id()
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => "Payment of ₱" . number_format($data['amount'], 2) . " recorded successfully" . ($change > 0 ? " (Change: ₱" . number_format($change, 2) . ")" : ""),
+            'amount_paid' => $newAmountPaid,
+            'balance' => $order->total_amount - $newAmountPaid,
+            'change' => $change > 0 ? $change : 0,
+            'payment' => $payment
+        ]);
+    }
+
+    public function downloadReceipt(Order $order)
+    {
+        // Load payments relationship
+        $order->load('payments.recordedBy');
+        
+        return view('user.orders.receipt', compact('order'));
+    }
+
+    public function sendReceiptEmail(Order $order)
+    {
+        // Check if order has an associated online customer with user
+        if (!$order->customer->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This is not an online customer order.'
+            ], 422);
+        }
+
+        $user = User::find($order->customer->user_id);
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found.'
+            ], 422);
+        }
+
+        try {
+            // Send receipt notification to customer
+            $user->notify(new \App\Notifications\OrderReceiptNotification($order));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Receipt notification sent to {$user->name}"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send notification: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function sendOrderUpdate(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'message' => 'required|string|max:500',
+        ]);
+
+        // Check if order has an associated online customer with user
+        if (!$order->customer->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This is not an online customer order.'
+            ], 422);
+        }
+
+        $user = User::find($order->customer->user_id);
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found.'
+            ], 422);
+        }
+
+        try {
+            // Send order update notification to customer
+            $user->notify(new \App\Notifications\OrderUpdateNotification($order, $data['message']));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Update notification sent to {$user->name}"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send notification: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

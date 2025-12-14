@@ -1,51 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Receipt #{{ $order->id }}</title>
+    <title>Order Receipt</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f5f5;
+            margin: 0;
             padding: 20px;
         }
-        .receipt-container {
-            max-width: 800px;
+        .container {
+            max-width: 600px;
             margin: 0 auto;
             background-color: white;
-            padding: 40px;
+            padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .receipt-header {
+        .header {
             text-align: center;
-            margin-bottom: 30px;
             border-bottom: 2px solid #e5e7eb;
             padding-bottom: 20px;
+            margin-bottom: 30px;
         }
-        .receipt-header h1 {
-            font-size: 28px;
+        .header h1 {
             color: #1f2937;
-            margin-bottom: 5px;
+            margin: 0 0 5px 0;
+            font-size: 28px;
         }
-        .receipt-header p {
+        .header p {
             color: #6b7280;
+            margin: 0;
             font-size: 14px;
         }
         .receipt-number {
-            font-size: 18px;
             color: #3b82f6;
             font-weight: bold;
+            font-size: 18px;
             margin-top: 10px;
         }
         .section {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
         .section-title {
             font-size: 14px;
@@ -70,30 +67,6 @@
             color: #1f2937;
             font-weight: 500;
         }
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-        .status-approved {
-            background-color: #dbeafe;
-            color: #0c4a6e;
-        }
-        .status-completed {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-        .status-cancelled {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -103,10 +76,10 @@
             background-color: #f3f4f6;
             padding: 12px;
             text-align: left;
-            font-size: 13px;
-            font-weight: bold;
+            font-weight: 600;
             color: #374151;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 2px solid #e5e7eb;
+            font-size: 13px;
         }
         td {
             padding: 12px;
@@ -116,63 +89,38 @@
         .text-right {
             text-align: right;
         }
-        .total-row {
-            background-color: #f9fafb;
-            font-weight: bold;
-            color: #1f2937;
-        }
         .payment-section {
-            background-color: #f0fdf4;
-            padding: 15px;
+            background-color: #f0f9ff;
+            border: 1px solid #bfdbfe;
             border-radius: 6px;
-            margin-bottom: 20px;
-        }
-        .payment-section .info-row {
-            margin-bottom: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
         }
         .footer {
             text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
             color: #6b7280;
             font-size: 12px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+            margin-top: 30px;
         }
-        .print-button {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .print-button button {
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        @media print {
-            body {
-                background-color: white;
-                padding: 0;
-            }
-            .receipt-container {
-                box-shadow: none;
-                padding: 0;
-            }
-            .print-button {
-                display: none;
-            }
+        .success-badge {
+            display: inline-block;
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="receipt-container">
-        <!-- Header -->
-        <div class="receipt-header">
-            <h1>📋 Order Receipt</h1>
+    <div class="container">
+        <div class="header">
+            <h1>Order Receipt</h1>
             <p>Thank you for your order!</p>
-            <div class="receipt-number">Order #{{ str_pad($order->id, 3, '0', STR_PAD_LEFT) }}</div>
+            <div class="receipt-number">Order #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</div>
         </div>
 
         <!-- Customer Information -->
@@ -190,10 +138,6 @@
                 <span class="info-label">Email:</span>
                 <span class="info-value">{{ $order->customer->email ?? 'N/A' }}</span>
             </div>
-            <div class="info-row">
-                <span class="info-label">Address:</span>
-                <span class="info-value">{{ $order->customer->address ?? 'N/A' }}</span>
-            </div>
         </div>
 
         <!-- Order Details -->
@@ -205,11 +149,7 @@
             </div>
             <div class="info-row">
                 <span class="info-label">Status:</span>
-                <span class="info-value">
-                    <span class="status-badge status-{{ $order->status }}">
-                        {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                    </span>
-                </span>
+                <span class="info-value"><span class="success-badge">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</span></span>
             </div>
             <div class="info-row">
                 <span class="info-label">Weight:</span>
@@ -223,12 +163,6 @@
                     @endif
                 </span>
             </div>
-            @if($order->pickup_date)
-            <div class="info-row">
-                <span class="info-label">Pickup Date:</span>
-                <span class="info-value">{{ $order->pickup_date->format('M d, Y') }}</span>
-            </div>
-            @endif
             @if($order->estimated_finish)
             <div class="info-row">
                 <span class="info-label">Estimated Finish:</span>
@@ -237,7 +171,7 @@
             @endif
         </div>
 
-        <!-- Items -->
+        <!-- Items & Add-ons -->
         <div class="section">
             <div class="section-title">Items & Add-ons</div>
             <table>
@@ -300,7 +234,7 @@
                 <span class="info-value">-₱{{ number_format($order->discount, 2) }}</span>
             </div>
             @endif
-            <div class="info-row" style="font-size: 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
+            <div class="info-row" style="font-size: 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb; font-weight: bold;">
                 <span class="info-label">Total Amount:</span>
                 <span class="info-value">₱{{ number_format($order->total_amount, 2) }}</span>
             </div>
@@ -308,7 +242,7 @@
 
         <!-- Payment Status -->
         <div class="payment-section">
-            <div class="section-title" style="border: none; margin-bottom: 10px;">Payment Status (Cash Only)</div>
+            <div class="section-title" style="border: none; margin-bottom: 10px;">Payment Status</div>
             <div class="info-row">
                 <span class="info-label">Amount Due:</span>
                 <span class="info-value">₱{{ number_format($order->total_amount, 2) }}</span>
@@ -323,11 +257,10 @@
             </div>
             @if($order->payments && $order->payments->count() > 0)
                 @php
-                    $lastPayment = $order->payments->sortByDesc('payment_date')->first();
                     $totalCashGiven = $order->payments->sum('cash_given');
                     $totalChange = $order->payments->sum('change');
                 @endphp
-            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.3);">
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.1);">
                 <div class="info-row">
                     <span class="info-label">Total Cash Given:</span>
                     <span class="info-value">₱{{ number_format($totalCashGiven, 2) }}</span>
@@ -336,22 +269,6 @@
                 <div class="info-row" style="font-weight: bold; font-size: 15px; color: #10b981;">
                     <span class="info-label">Total Change:</span>
                     <span class="info-value">₱{{ number_format($totalChange, 2) }}</span>
-                </div>
-                @endif
-            </div>
-            @elseif($order->amount_paid > 0)
-            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.3);">
-                <div class="info-row">
-                    <span class="info-label">Cash Given:</span>
-                    <span class="info-value">₱{{ number_format($order->amount_paid, 2) }}</span>
-                </div>
-                @php
-                    $change = $order->amount_paid - $order->total_amount;
-                @endphp
-                @if($change > 0)
-                <div class="info-row" style="font-weight: bold; font-size: 15px; color: #10b981;">
-                    <span class="info-label">Change:</span>
-                    <span class="info-value">₱{{ number_format($change, 2) }}</span>
                 </div>
                 @endif
             </div>
@@ -369,7 +286,6 @@
                         <th class="text-right">Amount Paid</th>
                         <th class="text-right">Cash Given</th>
                         <th class="text-right">Change</th>
-                        <th>Recorded By</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -379,42 +295,16 @@
                         <td class="text-right">₱{{ number_format($payment->amount, 2) }}</td>
                         <td class="text-right">₱{{ number_format($payment->cash_given ?? $payment->amount, 2) }}</td>
                         <td class="text-right">₱{{ number_format($payment->change ?? 0, 2) }}</td>
-                        <td>{{ $payment->recordedBy->name ?? 'Unknown' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
-            @if($order->payments->first()?->notes)
-            <div style="margin-top: 15px; padding: 10px; background-color: #f3f4f6; border-radius: 6px;">
-                <p style="font-size: 13px; color: #374151;"><strong>Notes:</strong></p>
-                @foreach($order->payments as $payment)
-                    @if($payment->notes)
-                    <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">• {{ $payment->notes }}</p>
-                    @endif
-                @endforeach
-            </div>
-            @endif
         </div>
         @endif
 
-        <!-- Special Instructions -->
-        @if($order->remarks)
-        <div class="section">
-            <div class="section-title">Special Instructions</div>
-            <p style="color: #374151; font-size: 14px; line-height: 1.6;">{{ $order->remarks }}</p>
-        </div>
-        @endif
-
-        <!-- Footer -->
         <div class="footer">
-            <p>This is an official receipt for your laundry order.</p>
-            <p>Please keep this receipt for your records.</p>
-            <p>Generated on {{ now()->format('M d, Y g:i A') }}</p>
-        </div>
-
-        <!-- Print Button -->
-        <div class="print-button">
-            <button onclick="window.print()">🖨️ Print Receipt</button>
+            <p>Thank you for choosing our laundry service!</p>
+            <p>If you have any questions, please contact us.</p>
         </div>
     </div>
 </body>

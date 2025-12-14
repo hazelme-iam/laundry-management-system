@@ -251,4 +251,174 @@ class DashboardController extends Controller
         
         return $statusColors[$status] ?? 'text-gray-600';
     }
+
+    public function reports(Request $request)
+    {
+        // Get date range from request or default to last 30 days
+        $startDate = $request->get('start_date', now()->subDays(30)->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->format('Y-m-d'));
+
+        // Get orders within date range
+        $ordersQuery = Order::with(['customer', 'payments'])
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+
+        // Total orders
+        $totalOrders = $ordersQuery->count();
+
+        // Revenue calculation
+        $totalRevenue = $ordersQuery->sum('total_amount');
+        $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
+
+        // Completed orders
+        $completedOrders = $ordersQuery->where('status', 'completed')->count();
+
+        // Status breakdown
+        $statusBreakdown = $ordersQuery->get()
+            ->groupBy('status')
+            ->map(function ($group) {
+                return $group->count();
+            })
+            ->toArray();
+
+        // Payment status breakdown
+        $fullyPaid = 0;
+        $partiallyPaid = 0;
+        $unpaid = 0;
+
+        foreach ($ordersQuery->get() as $order) {
+            if ($order->amount_paid >= $order->total_amount) {
+                $fullyPaid++;
+            } elseif ($order->amount_paid > 0) {
+                $partiallyPaid++;
+            } else {
+                $unpaid++;
+            }
+        }
+
+        // Calculate trends (compare with previous period)
+        $periodDays = \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate)) + 1;
+        $previousStartDate = \Carbon\Carbon::parse($startDate)->subDays($periodDays)->format('Y-m-d');
+        $previousEndDate = \Carbon\Carbon::parse($startDate)->subDay()->format('Y-m-d');
+
+        $previousOrders = Order::whereBetween('created_at', [$previousStartDate . ' 00:00:00', $previousEndDate . ' 23:59:59'])->count();
+        $previousRevenue = Order::whereBetween('created_at', [$previousStartDate . ' 00:00:00', $previousEndDate . ' 23:59:59'])->sum('total_amount');
+
+        $ordersTrend = $previousOrders > 0 ? round((($totalOrders - $previousOrders) / $previousOrders) * 100) : 0;
+        $revenueTrend = $previousRevenue > 0 ? round((($totalRevenue - $previousRevenue) / $previousRevenue) * 100) : 0;
+
+        // Get paginated orders for table
+        $orders = Order::with(['customer'])
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->latest()
+            ->paginate(15);
+
+        return view('admin.reports', [
+            'totalOrders' => $totalOrders,
+            'totalRevenue' => $totalRevenue,
+            'avgOrderValue' => $avgOrderValue,
+            'completedOrders' => $completedOrders,
+            'ordersTrend' => $ordersTrend,
+            'revenueTrend' => $revenueTrend,
+            'statusBreakdown' => $statusBreakdown,
+            'fullyPaid' => $fullyPaid,
+            'partiallyPaid' => $partiallyPaid,
+            'unpaid' => $unpaid,
+            'orders' => $orders,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ]);
+    }
+
+    public function exportReports(Request $request)
+    {
+        $startDate = $request->get('start_date', now()->subDays(30)->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->format('Y-m-d'));
+        $format = $request->get('format', 'pdf');
+
+        // Get all orders for export (no pagination)
+        $orders = Order::with(['customer', 'payments'])
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->latest()
+            ->get();
+
+        // Calculate statistics
+        $totalOrders = $orders->count();
+        $totalRevenue = $orders->sum('total_amount');
+        $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
+        $completedOrders = $orders->where('status', 'completed')->count();
+
+        $fullyPaid = $orders->filter(fn($o) => $o->amount_paid >= $o->total_amount)->count();
+        $partiallyPaid = $orders->filter(fn($o) => $o->amount_paid > 0 && $o->amount_paid < $o->total_amount)->count();
+        $unpaid = $orders->filter(fn($o) => $o->amount_paid == 0)->count();
+
+        if ($format === 'csv') {
+            return $this->exportToCSV($orders, $startDate, $endDate);
+        } else {
+            return $this->exportToPDF($orders, $startDate, $endDate, $totalOrders, $totalRevenue, $avgOrderValue, $completedOrders, $fullyPaid, $partiallyPaid, $unpaid);
+        }
+    }
+
+    private function exportToCSV($orders, $startDate, $endDate)
+    {
+        $filename = "laundry_report_{$startDate}_to_{$endDate}.csv";
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function() use ($orders) {
+            $file = fopen('php://output', 'w');
+            
+            // Write headers
+            fputcsv($file, ['Order ID', 'Customer', 'Date', 'Status', 'Total Amount', 'Amount Paid', 'Payment Status']);
+            
+            // Write data
+            foreach ($orders as $order) {
+                $paymentStatus = 'Unpaid';
+                if ($order->amount_paid >= $order->total_amount) {
+                    $paymentStatus = 'Fully Paid';
+                } elseif ($order->amount_paid > 0) {
+                    $paymentStatus = 'Partially Paid';
+                }
+                
+                fputcsv($file, [
+                    '#' . str_pad($order->id, 5, '0', STR_PAD_LEFT),
+                    $order->customer->name ?? 'Unknown',
+                    $order->created_at->format('Y-m-d'),
+                    ucfirst(str_replace('_', ' ', $order->status)),
+                    '₱' . number_format($order->total_amount, 2),
+                    '₱' . number_format($order->amount_paid, 2),
+                    $paymentStatus
+                ]);
+            }
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    private function exportToPDF($orders, $startDate, $endDate, $totalOrders, $totalRevenue, $avgOrderValue, $completedOrders, $fullyPaid, $partiallyPaid, $unpaid)
+    {
+        $html = view('admin.reports-pdf', [
+            'orders' => $orders,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'totalOrders' => $totalOrders,
+            'totalRevenue' => $totalRevenue,
+            'avgOrderValue' => $avgOrderValue,
+            'completedOrders' => $completedOrders,
+            'fullyPaid' => $fullyPaid,
+            'partiallyPaid' => $partiallyPaid,
+            'unpaid' => $unpaid
+        ])->render();
+
+        // Using simple HTML to PDF conversion
+        $filename = "laundry_report_{$startDate}_to_{$endDate}.pdf";
+        
+        return response($html)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', "attachment; filename=\"$filename\"");
+    }
 }
