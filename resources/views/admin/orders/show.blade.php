@@ -162,7 +162,7 @@
                                 </div>
                                 <div class="border-t border-gray-200 pt-3 flex justify-between">
                                     <span class="text-gray-600 font-medium">Balance Due:</span>
-                                    <span class="font-bold text-lg {{ $order->total_amount - $order->amount_paid == 0 ? 'text-green-600' : 'text-red-600' }}">
+                                    <span class="font-bold text-lg {{ $order->isFullyPaid() ? 'text-green-600' : 'text-red-600' }}">
                                         ₱{{ number_format($order->total_amount - $order->amount_paid, 2) }}
                                     </span>
                                 </div>
@@ -172,7 +172,7 @@
                         <!-- Record Payment Form -->
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Record Payment</h3>
-                            @if($order->total_amount - $order->amount_paid > 0)
+                            @if($order->total_amount - $order->amount_paid > 0 || $order->status === 'pending')
                             <div class="space-y-3">
                                 <div>
                                     <label for="payment_amount" class="block text-sm font-medium text-gray-700 mb-1">Amount (₱)</label>
@@ -192,12 +192,12 @@
                                     <textarea id="payment_notes" rows="2" placeholder="e.g., Cash payment, partial payment..."
                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                                 </div>
-                                <button type="button" onclick="recordPayment({{ $order->id }})" 
+                                <button type="button" onclick="recordPaymentClick({{ $order->id }})" 
                                         class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
                                     Record Payment
                                 </button>
                             </div>
-                            @else
+                            @elseif($order->isFullyPaid())
                             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                                 <p class="text-green-800 font-medium">✓ Order is fully paid</p>
                             </div>
@@ -1007,7 +1007,72 @@
         formId="dryer-form"
     />
 
+    <!-- Record Payment Confirmation Modal -->
+    <x-confirmationmodal 
+        modalId="recordPaymentModal"
+        title="Confirm Payment Recording"
+        message="Are you sure you want to record this payment? This action will update the order's payment status."
+        confirmText="Record Payment"
+        cancelText="Cancel"
+        confirmColor="green"
+        formId="nonExistentForm"
+    />
+
     <script>
+        // Store order ID for record payment modal
+        let recordPaymentOrderId = null;
+
+        // Record payment button click - open modal directly
+        function recordPaymentClick(orderId) {
+            const paymentAmount = document.getElementById('payment_amount')?.value;
+            
+            if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
+                alert('Please enter a valid payment amount');
+                return;
+            }
+
+            recordPaymentOrderId = orderId;
+            openModal('recordPaymentModal');
+        }
+
+        // Submit record payment from modal
+        function submitRecordPayment() {
+            const paymentAmount = document.getElementById('payment_amount')?.value;
+            const paymentDateInput = document.getElementById('payment_date')?.value;
+            const paymentNotes = document.getElementById('payment_notes')?.value;
+
+            // Convert datetime-local format (2025-12-14T16:53) to Y-m-d H:i format (2025-12-14 16:53)
+            const paymentDate = paymentDateInput.replace('T', ' ');
+
+            fetch(`/orders/${recordPaymentOrderId}/record-payment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    amount: paymentAmount,
+                    payment_date: paymentDate,
+                    notes: paymentNotes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal('recordPaymentModal');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to record payment'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error recording payment');
+            });
+        }
+
         // Handle confirm weight modal submission
         setTimeout(function() {
             const confirmWeightModal = document.getElementById('confirmWeightModal');
@@ -1021,6 +1086,23 @@
                             e.preventDefault();
                             e.stopPropagation();
                             submitConfirmWeight();
+                            return false;
+                        };
+                        break;
+                    }
+                }
+            }
+
+            // Handle record payment modal submission
+            const recordPaymentModal = document.getElementById('recordPaymentModal');
+            if (recordPaymentModal) {
+                const allButtons = recordPaymentModal.querySelectorAll('button');
+                for (let btn of allButtons) {
+                    if (btn.textContent.includes('Record Payment')) {
+                        btn.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            submitRecordPayment();
                             return false;
                         };
                         break;

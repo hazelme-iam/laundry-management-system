@@ -600,8 +600,8 @@ class OrderController extends Controller
             'add_ons' => count($addOns) > 0 ? $addOns : null,
             'subtotal' => $data['subtotal'],
             'discount' => $data['discount'] ?? 0,
-            'total_amount' => $data['total_amount'] ?? 0,
-            'amount_paid' => $data['amount_paid'] ?? 0,
+            'total_amount' => $data['subtotal'] ?? 0,
+            'amount_paid' => 0,
             'pickup_date' => $data['pickup_date'],
             'remarks' => $remarks,
             'status' => 'pending', // Pending admin approval
