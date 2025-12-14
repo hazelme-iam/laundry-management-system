@@ -9,6 +9,7 @@ use App\Models\Load;
 use App\Models\User;
 use App\Services\CacheService;
 use App\Services\NotificationService;
+use App\Services\ShopService;
 use App\Rules\ValidWeight;
 use App\Rules\ValidMonetary;
 use App\Rules\ValidFutureDate;
@@ -352,21 +353,7 @@ class OrderController extends Controller
         $weight = $request->weight;
         $addOns = $request->add_ons ?? [];
         
-        // Base price: 150 per kilo (minimum)
-        $basePrice = 150;
-        $subtotal = $basePrice * max(1, $weight);
-        
-        // Add-on prices
-        $addOnPrices = [
-            'detergent' => 16,
-            'fabric_conditioner' => 14,
-        ];
-        
-        foreach ($addOns as $addOn) {
-            if (isset($addOnPrices[$addOn])) {
-                $subtotal += $addOnPrices[$addOn];
-            }
-        }
+        $subtotal = ShopService::calculateOrderTotal($weight, $addOns);
         
         return response()->json([
             'subtotal' => number_format($subtotal, 2),
@@ -658,16 +645,7 @@ class OrderController extends Controller
      */
     private function calculateDryingTime($weight)
     {
-        $baseTime = $weight * self::DRYING_TIME_PER_KG;
-        
-        // Ensure it's within min/max bounds
-        if ($baseTime < self::MIN_DRYING_TIME) {
-            return self::MIN_DRYING_TIME;
-        } elseif ($baseTime > self::MAX_DRYING_TIME) {
-            return self::MAX_DRYING_TIME;
-        }
-        
-        return (int) $baseTime;
+        return ShopService::calculateDryingTime($weight);
     }
 
     /**

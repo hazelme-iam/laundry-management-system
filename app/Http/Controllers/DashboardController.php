@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\ShopSetting;
+use App\Services\ShopService;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -15,6 +17,9 @@ class DashboardController extends Controller
     public function index()
     {
         $breadcrumbs = [];
+        
+        // Get shop settings
+        $shopSettings = ShopSetting::get();
         
         // Calculate daily capacity
         $capacityData = $this->calculateDailyCapacity();
@@ -122,7 +127,8 @@ class DashboardController extends Controller
             'todayOrdersSummary' => $todayOrdersSummary,
             'orders' => $orders,
             'capacityData' => $capacityData,
-            'breadcrumbs' => $breadcrumbs
+            'breadcrumbs' => $breadcrumbs,
+            'shopSettings' => $shopSettings
         ]);
     }
     

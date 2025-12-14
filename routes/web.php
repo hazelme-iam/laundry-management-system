@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\MachineController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ShopSettingsController;
 
 
 Route::get('/', function () {
@@ -91,6 +92,10 @@ Route::middleware([
     Route::post('/orders/{order}/assign-washer', [MachineController::class, 'assignWasher'])->name('machines.assign-washer');
     Route::post('/orders/{order}/assign-dryer', [MachineController::class, 'assignDryer'])->name('machines.assign-dryer');
     Route::post('/machines/check-completed', [MachineController::class, 'checkCompletedMachines'])->name('machines.check-completed');
+
+    // Shop Settings
+    Route::get('/settings/shop', [ShopSettingsController::class, 'edit'])->name('admin.settings.shop.edit');
+    Route::put('/settings/shop', [ShopSettingsController::class, 'update'])->name('admin.settings.shop.update');
 });
 
 
