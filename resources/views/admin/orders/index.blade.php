@@ -91,12 +91,14 @@
                 <!-- resources/views/admin/orders/index.blade.php -->
 <!-- Replace the existing filters block with this form -->
 <div class="p-4 border-b">
-    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+    <form method="GET" action="{{ route('admin.orders.index') }}" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
         <input type="text"
-               placeholder="Search orders..."
+               name="search"
+               placeholder="Search orders by ID..."
+               value="{{ request('search') }}"
                class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
 
-        <form method="GET" action="{{ route('admin.orders.index') }}" class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
             <!-- Status filter -->
             <select name="status" onchange="this.form.submit()"
                     class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -127,8 +129,11 @@
                 <option value="">All Orders</option>
                 <option value="backlog" {{ request('backlog') == 'backlog' ? 'selected' : '' }}>Backlog Only (Will Wash Tomorrow)</option>
             </select>
-        </form>
-    </div>
+        </div>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            Search
+        </button>
+    </form>
 </div>
 
                 <!-- Table -->
