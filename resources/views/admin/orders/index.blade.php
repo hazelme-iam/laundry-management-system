@@ -107,8 +107,6 @@
                 <option value="picked_up" {{ request('status') == 'picked_up' ? 'selected' : '' }}>Picked Up</option>
                 <option value="washing" {{ request('status') == 'washing' ? 'selected' : '' }}>Washing</option>
                 <option value="drying" {{ request('status') == 'drying' ? 'selected' : '' }}>Drying</option>
-                <option value="folding" {{ request('status') == 'folding' ? 'selected' : '' }}>Folding</option>
-                <option value="quality_check" {{ request('status') == 'quality_check' ? 'selected' : '' }}>Quality Check</option>
                 <option value="ready" {{ request('status') == 'ready' ? 'selected' : '' }}>Ready</option>
                 <option value="delivery_pending" {{ request('status') == 'delivery_pending' ? 'selected' : '' }}>Delivery Pending</option>
                 <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
