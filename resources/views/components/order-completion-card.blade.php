@@ -1,7 +1,7 @@
 {{-- resources/views/components/order-completion-card.blade.php --}}
 <div class="bg-white rounded-lg xs:rounded-xl sm:rounded-2xl p-3 xs:p-4 sm:p-5 md:p-6 shadow-md xs:shadow-lg border border-gray-100">
     <div class="flex flex-wrap xs:flex-nowrap items-center justify-between mb-3 xs:mb-4 gap-2 xs:gap-0">
-        <h2 class="text-sm xs:text-base sm:text-lg font-semibold text-gray-800 truncate flex-1 min-w-0">Order Completion</h2>
+        <h2 class="text-sm xs:text-base sm:text-lg font-semibold text-gray-800 truncate flex-1 min-w-0">Laundry Completion</h2>
         <span class="text-xs xs:text-sm text-gray-500 bg-gray-50 px-2 py-1 rounded-full whitespace-nowrap">Today</span>
     </div>
     
@@ -50,7 +50,7 @@
                 
                 <div class="pt-2 xs:pt-3 border-t border-gray-200 mt-2 xs:mt-3">
                     <div class="flex justify-between items-center text-xs xs:text-sm p-1">
-                        <span class="text-gray-600 font-medium">Total Orders:</span>
+                        <span class="text-gray-600 font-medium">Total Laundry:</span>
                         <span class="font-semibold text-gray-800 bg-gray-100 px-3 py-1.5 rounded-lg">
                             {{ ($completed ?? 0) + ($unfinished ?? 0) }}
                         </span>

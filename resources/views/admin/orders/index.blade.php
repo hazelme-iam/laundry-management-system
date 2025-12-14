@@ -36,7 +36,7 @@
                     </div>
                     <div class="bg-white rounded-lg p-4 sm:p-6 shadow border cursor-pointer hover:shadow-md transition-shadow" 
                          onclick="window.location.href='{{ route('admin.orders.pending') }}'">
-                        <div class="text-sm text-gray-500">Pending Orders</div>
+                        <div class="text-sm text-gray-500">Pending Laundry</div>
                         <div class="text-2xl font-bold text-yellow-600">{{ $pendingCount }}</div>
                         
                     </div>
@@ -137,7 +137,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Order ID
+                                    Laundry ID
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Customer
