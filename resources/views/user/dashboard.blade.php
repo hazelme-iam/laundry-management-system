@@ -1,4 +1,13 @@
 <x-sidebar-app>
+    @php
+        $userOrders = auth()->user()->orders()->get();
+        $totalOrders = $userOrders->count();
+        $activeOrders = $userOrders->whereIn('status', ['pending', 'in_progress', 'approved', 'picked_up', 'washing', 'drying', 'folding', 'quality_check'])->count();
+        $readyOrders = $userOrders->where('status', 'ready')->count();
+        $totalSpent = $userOrders->sum('total_amount');
+        $recentOrders = $userOrders->sortByDesc('created_at')->take(5);
+    @endphp
+    
     <!-- Mobile header offset for fixed sidebar -->
     <div class="pt-16 sm:pt-0 min-h-screen bg-gray-50">
         <div class="py-4 sm:py-6 lg:py-8">
@@ -15,10 +24,10 @@
                             <!-- Optional quick stats for mobile -->
                             <div class="md:hidden flex items-center gap-2 pt-2">
                                 <div class="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-full font-medium">
-                                    {{ auth()->user()->orders()->count() ?? 0 }} orders
+                                    {{ $totalOrders }} orders
                                 </div>
                                 <div class="text-xs px-2 py-1 bg-green-50 text-green-700 rounded-full font-medium">
-                                    ₱{{ number_format(auth()->user()->orders()->sum('total_amount') ?? 0, 0) }}
+                                    ₱{{ number_format($totalSpent, 0) }}
                                 </div>
                             </div>
                         </div>
@@ -33,7 +42,7 @@
                             <div>
                                 <div class="text-xs font-medium text-gray-500 mb-1">Total Laundry</div>
                                 <div class="text-xl font-bold text-gray-900">
-                                    {{ auth()->user()->orders()->count() ?? 0 }}
+                                    {{ $totalOrders }}
                                 </div>
                             </div>
                             <div class="p-2 bg-blue-50 rounded-lg">
@@ -50,7 +59,7 @@
                             <div>
                                 <div class="text-xs font-medium text-gray-500 mb-1">Active</div>
                                 <div class="text-xl font-bold text-blue-600">
-                                    {{ auth()->user()->orders()->whereIn('status', ['pending', 'in_progress'])->count() ?? 0 }}
+                                    {{ $activeOrders }}
                                 </div>
                             </div>
                             <div class="p-2 bg-blue-50 rounded-lg">
@@ -67,7 +76,7 @@
                             <div>
                                 <div class="text-xs font-medium text-gray-500 mb-1">Ready</div>
                                 <div class="text-xl font-bold text-green-600">
-                                    {{ auth()->user()->orders()->where('status', 'ready')->count() ?? 0 }}
+                                    {{ $readyOrders }}
                                 </div>
                             </div>
                             <div class="p-2 bg-green-50 rounded-lg">
@@ -84,7 +93,7 @@
                             <div>
                                 <div class="text-xs font-medium text-gray-500 mb-1">Total Spent</div>
                                 <div class="text-xl font-bold text-purple-600">
-                                    ₱{{ number_format(auth()->user()->orders()->sum('total_amount') ?? 0, 0) }}
+                                    ₱{{ number_format($totalSpent, 0) }}
                                 </div>
                             </div>
                             <div class="p-2 bg-purple-50 rounded-lg">
@@ -102,7 +111,7 @@
                     <div class="p-5 sm:p-6 border-b border-gray-100">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <h2 class="text-lg sm:text-xl font-semibold text-gray-900">Recent Laundry</h2>
-                            @if(auth()->user()->orders()->count() > 5)
+                            @if($totalOrders > 5)
                                 <a href="{{ route('user.orders.index') }}" 
                                    class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
                                     View All
@@ -116,7 +125,7 @@
 
                     <!-- Table Content -->
                     <div class="p-4 sm:p-0">
-                        @if(auth()->user()->orders()->count() > 0)
+                        @if($totalOrders > 0)
                             <!-- Desktop Table -->
                             <div class="hidden sm:block overflow-x-auto">
                                 <table class="min-w-full divide-y divide-gray-200">
@@ -130,7 +139,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
-                                        @foreach(auth()->user()->orders()->latest()->take(5) as $order)
+                                        @foreach($recentOrders as $order)
                                             <tr class="hover:bg-gray-50 transition-colors">
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                     #{{ $order->id }}
@@ -164,7 +173,7 @@
 
                             <!-- Mobile Cards List -->
                             <div class="sm:hidden space-y-3">
-                                @foreach(auth()->user()->orders()->latest()->take(5) as $order)
+                                @foreach($recentOrders as $order)
                                     <div class="bg-white border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                                         <div class="flex justify-between items-start mb-3">
                                             <div>

@@ -2,39 +2,87 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0 px-4 sm:px-0">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Laundry Details</h1>
-                    <p class="text-gray-600">Order #{{ $order->id }}</p>
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-4 sm:space-y-0 px-3 sm:px-0">
+    <div class="w-full sm:w-auto">
+        <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Laundry Details</h1>
+        <p class="text-sm sm:text-base text-gray-600 mt-1">Order #{{ $order->id }}</p>
+    </div>
+    <div class="w-full sm:w-auto">
+        <!-- Mobile: Vertical stacked layout, Desktop: Horizontal layout -->
+        <div class="flex flex-col xs:flex-row sm:flex-row gap-2 sm:gap-3">
+            <!-- Back Button -->
+            <a href="{{ route('user.orders.index') }}" 
+               class="order-2 xs:order-1 sm:order-1 flex-1 sm:flex-none px-4 py-3 sm:py-2 border border-gray-300 rounded-xl sm:rounded-lg text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition text-center text-sm sm:text-base font-medium">
+                <div class="flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 sm:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    <span class="sm:hidden">Back</span>
+                    <span class="hidden sm:inline">Back to List</span>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <a href="{{ route('user.orders.index') }}" 
-                       class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-center">
-                        Back to Laundry List 
-                    </a>
-                    <a href="{{ route('user.orders.receipt', $order) }}" 
-                       class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-center flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414l4 4v10.172A2 2 0 0114.172 18H6a2 2 0 01-2-2V4z" />
-                            <path d="M9 9a1 1 0 100-2 1 1 0 000 2zm0 3a1 1 0 100-2 1 1 0 000 2zm0 3a1 1 0 100-2 1 1 0 000 2z" />
+            </a>
+            
+            <!-- Download Receipt Button - Primary on mobile -->
+            <a href="{{ route('user.orders.receipt', $order) }}" 
+               class="order-1 xs:order-2 sm:order-2 flex-1 sm:flex-none px-4 py-3 sm:py-2 bg-green-600 text-white rounded-xl sm:rounded-lg hover:bg-green-700 active:bg-green-800 transition text-center text-sm sm:text-base font-medium shadow-sm hover:shadow">
+                <div class="flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414l4 4v10.172A2 2 0 0114.172 18H6a2 2 0 01-2-2V4z" />
+                        <path d="M9 9a1 1 0 100-2 1 1 0 000 2zm0 3a1 1 0 100-2 1 1 0 000 2zm0 3a1 1 0 100-2 1 1 0 000 2z" />
+                    </svg>
+                    <span class="sm:hidden">Receipt</span>
+                    <span class="hidden sm:inline">Download Receipt</span>
+                </div>
+            </a>
+
+            <!-- Conditional Buttons -->
+            @if($order->status === 'pending')
+                <button type="button" 
+                        onclick="openCancelModal()"
+                        class="order-3 xs:order-3 sm:order-3 flex-1 sm:flex-none px-4 py-3 sm:py-2 bg-red-600 text-white rounded-xl sm:rounded-lg hover:bg-red-700 active:bg-red-800 transition text-center text-sm sm:text-base font-medium">
+                    <div class="flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                        Download Receipt
-                    </a>
-                    @if($order->status === 'pending')
-                        <button type="button" 
-                                onclick="openCancelModal()"
-                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                            Cancel Laundry
-                        </button>
-                    @endif
-                    @if($order->status === 'pending' || $order->status === 'approved')
-                        <a href="{{ route('user.orders.create') }}" 
-                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-center">
-                            Add New Laundry
-                        </a>
-                    @endif
+                        <span class="sm:hidden">Cancel</span>
+                        <span class="hidden sm:inline">Cancel Laundry</span>
+                    </div>
+                </button>
+            @endif
+            
+            @if($order->status === 'pending' || $order->status === 'approved')
+                <a href="{{ route('user.orders.create') }}" 
+                   class="order-4 xs:order-4 sm:order-4 flex-1 sm:flex-none px-4 py-3 sm:py-2 bg-blue-600 text-white rounded-xl sm:rounded-lg hover:bg-blue-700 active:bg-blue-800 transition text-center text-sm sm:text-base font-medium shadow-sm hover:shadow">
+                    <div class="flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span class="sm:hidden">New</span>
+                        <span class="hidden sm:inline">Add New</span>
+                    </div>
+                </a>
+            @endif
+        </div>
+        
+        <!-- Mobile Status Banner - Extra info on mobile -->
+        <div class="mt-3 sm:hidden">
+            <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="font-medium text-gray-700">Status:</span>
+                    <span class="px-2 py-1 rounded-full font-semibold 
+                        {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : 
+                           ($order->status === 'cancelled' ? 'bg-red-100 text-red-800' : 
+                           (in_array($order->status, ['picked_up', 'washing', 'drying', 'folding', 'quality_check']) ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800')) }}">
+                        {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                    </span>
+                </div>
+                <div class="text-gray-500">
+                    {{ $order->created_at->format('M d, Y') }}
                 </div>
             </div>
+        </div>
+    </div>
+</div>
 
             <!-- Order Status Card -->
             <div class="bg-white rounded-lg shadow overflow-hidden mx-4 sm:mx-0 mb-6">
