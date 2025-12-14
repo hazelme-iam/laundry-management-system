@@ -25,7 +25,7 @@
     ][$size] ?? 'sm:max-w-md';
 
     // Color classes
-    $colorClasses = [
+    $colorClassesArray = [
         'blue' => [
             'bg' => 'bg-blue-100',
             'text' => 'text-blue-600',
@@ -50,6 +50,12 @@
             'button' => 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
             'ring' => 'ring-yellow-500',
         ],
+        'amber' => [
+            'bg' => 'bg-amber-100',
+            'text' => 'text-amber-600',
+            'button' => 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500',
+            'ring' => 'ring-amber-500',
+        ],
         'indigo' => [
             'bg' => 'bg-indigo-100',
             'text' => 'text-indigo-600',
@@ -62,7 +68,9 @@
             'button' => 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500',
             'ring' => 'ring-purple-500',
         ],
-    ][$confirmColor] ?? $colorClasses['blue'];
+    ];
+    
+    $colorClasses = $colorClassesArray[$confirmColor] ?? $colorClassesArray['blue'];
 
     // Default icon based on color
     $defaultIcon = $confirmColor === 'red' 

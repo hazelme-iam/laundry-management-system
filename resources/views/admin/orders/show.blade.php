@@ -488,6 +488,17 @@
                 return;
             }
 
+            // Store weight in modal and open confirmation
+            document.getElementById('confirmWeightModal').dataset.weight = weight;
+            document.getElementById('confirmWeightModal').dataset.orderId = orderId;
+            openModal('confirmWeightModal');
+        }
+
+        function submitConfirmWeight() {
+            const modal = document.getElementById('confirmWeightModal');
+            const weight = modal.dataset.weight;
+            const orderId = modal.dataset.orderId;
+
             fetch(`/orders/${orderId}/confirm-weight`, {
                 method: 'POST',
                 headers: {
@@ -501,7 +512,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
+                    closeModal('confirmWeightModal');
                     location.reload();
                 } else {
                     alert('Error: ' + (data.message || 'Failed to confirm weight'));
@@ -974,6 +985,17 @@
         formId="washer-form"
     />
 
+    <!-- Confirm Weight Modal -->
+    <x-confirmationmodal 
+        modalId="confirmWeightModal"
+        title="Confirm Weight"
+        message="Are you sure you want to confirm this weight? This action cannot be undone."
+        confirmText="Confirm Weight"
+        cancelText="Cancel"
+        confirmColor="amber"
+        formId="nonExistentForm"
+    />
+
     <!-- Assign Dryer Confirmation Modal -->
     <x-confirmationmodal 
         modalId="assignDryerModal"
@@ -984,4 +1006,27 @@
         confirmColor="green"
         formId="dryer-form"
     />
+
+    <script>
+        // Handle confirm weight modal submission
+        setTimeout(function() {
+            const confirmWeightModal = document.getElementById('confirmWeightModal');
+            if (confirmWeightModal) {
+                // Find all buttons in the modal
+                const allButtons = confirmWeightModal.querySelectorAll('button');
+                // The confirm button should be the one with "Confirm Weight" text
+                for (let btn of allButtons) {
+                    if (btn.textContent.includes('Confirm Weight')) {
+                        btn.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            submitConfirmWeight();
+                            return false;
+                        };
+                        break;
+                    }
+                }
+            }
+        }, 100);
+    </script>
 </x-sidebar-app>
