@@ -32,6 +32,11 @@ class OrderController extends Controller
         // Use selective eager loading - only load what's needed for the list view
         $query = Order::with(['customer', 'creator', 'payments']);
 
+        // Search filter: search by order ID
+        if ($search = request('search')) {
+            $query->where('id', 'like', '%' . $search . '%');
+        }
+
         // Backlog filter: orders marked as backlog
         if (request('backlog') === 'backlog') {
             $query->where('is_backlog', true);

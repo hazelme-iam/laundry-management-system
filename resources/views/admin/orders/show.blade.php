@@ -10,7 +10,7 @@
             <div class="px-4 sm:px-0 mb-6 flex items-center justify-between">
                 <x-breadcrumbs :items="[
                     'Laundry Management' => route('admin.orders.index'),
-                    'Order Details' => null
+                    'Laundry Details' => null
                 ]" />
                 <a href="{{ route('user.orders.receipt', $order->id) }}" target="_blank" 
                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
