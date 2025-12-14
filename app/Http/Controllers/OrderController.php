@@ -32,27 +32,55 @@ class OrderController extends Controller
         // Use selective eager loading - only load what's needed for the list view
         $query = Order::with(['customer', 'creator', 'payments']);
 
-        // Status filter
-        if (request('status')) {
-            $query->where('status', request('status'));
-        }
+        // Backlog filter: orders that will be washed tomorrow (exceed today's capacity)
+        if (request('backlog') === 'backlog') {
+            $today = now()->format('Y-m-d');
+            $todayOrders = Order::whereDate('created_at', $today)
+                ->orderBy('created_at', 'asc')
+                ->get();
+            
+            $dailyWasherCapacity = 5 * 12 * 8; // WASHERS_COUNT * OPERATING_HOURS_PER_DAY * CYCLE_CAPACITY_KG
+            $cumulativeWeight = 0;
+            $backlogOrderIds = [];
+            
+            foreach ($todayOrders as $order) {
+                $orderWeight = $order->confirmed_weight ?? $order->weight;
+                if ($cumulativeWeight + $orderWeight > $dailyWasherCapacity) {
+                    $backlogOrderIds[] = $order->id;
+                }
+                $cumulativeWeight += $orderWeight;
+            }
+            
+            // Filter to only backlog orders
+            if (!empty($backlogOrderIds)) {
+                $query->whereIn('id', $backlogOrderIds);
+            } else {
+                // No backlog orders, return empty result
+                $query->whereRaw('1 = 0');
+            }
+        } else {
+            // Status filter
+            if (request('status')) {
+                $query->where('status', request('status'));
+            }
 
-        // Source filter: online vs walk-in
-        if ($src = request('source')) {
-            if ($src === 'online') {
-                // Online: customer has a user_id and order was created by that same user
-                $query->whereHas('customer', function ($q) {
-                    $q->whereNotNull('customers.user_id')
-                      ->whereColumn('customers.user_id', 'orders.created_by');
-                });
-            } elseif ($src === 'walk_in') {
-                // Walk-in: either customer has no user account, OR order was created by someone else (admin)
-                $query->whereHas('customer', function ($q) {
-                    $q->where(function ($x) {
-                        $x->whereNull('customers.user_id')
-                          ->orWhereColumn('customers.user_id', '!=', 'orders.created_by');
+            // Source filter: online vs walk-in
+            if ($src = request('source')) {
+                if ($src === 'online') {
+                    // Online: customer has a user_id and order was created by that same user
+                    $query->whereHas('customer', function ($q) {
+                        $q->whereNotNull('customers.user_id')
+                          ->whereColumn('customers.user_id', 'orders.created_by');
                     });
-                });
+                } elseif ($src === 'walk_in') {
+                    // Walk-in: either customer has no user account, OR order was created by someone else (admin)
+                    $query->whereHas('customer', function ($q) {
+                        $q->where(function ($x) {
+                            $x->whereNull('customers.user_id')
+                              ->orWhereColumn('customers.user_id', '!=', 'orders.created_by');
+                        });
+                    });
+                }
             }
         }
 
@@ -220,7 +248,33 @@ class OrderController extends Controller
         // Send notifications
         NotificationService::newOrderCreated($order);
 
-        return redirect()->route('admin.orders.index')->with('success', 'Order created successfully.');
+        // Check if order exceeded capacity and went to backlog
+        $today = now()->format('Y-m-d');
+        $todayOrders = Order::whereDate('created_at', $today)
+            ->orderBy('created_at', 'asc')
+            ->get();
+        
+        $dailyWasherCapacity = 5 * 12 * 8; // WASHERS_COUNT * OPERATING_HOURS_PER_DAY * CYCLE_CAPACITY_KG
+        $cumulativeWeight = 0;
+        $isInBacklog = false;
+        
+        foreach ($todayOrders as $todayOrder) {
+            $orderWeight = $todayOrder->confirmed_weight ?? $todayOrder->weight;
+            if ($cumulativeWeight + $orderWeight > $dailyWasherCapacity) {
+                if ($todayOrder->id === $order->id) {
+                    $isInBacklog = true;
+                }
+                break;
+            }
+            $cumulativeWeight += $orderWeight;
+        }
+        
+        $successMessage = 'Order created successfully.';
+        if ($isInBacklog) {
+            $successMessage .= ' This order has been placed in backlog as it exceeds today\'s capacity.';
+        }
+
+        return redirect()->route('admin.orders.index')->with('success', $successMessage);
     }
 
     /**
