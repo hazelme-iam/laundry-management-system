@@ -254,22 +254,33 @@ class NotificationService
 
     /**
      * Machine available notification for admins
-     * Notifies admins when a machine becomes available
+     * Notifies admins when a machine becomes available after finishing an order
      */
-    public static function machineAvailable(Machine $machine): void
+    public static function machineAvailable(Machine $machine, Order $order = null): void
     {
         $adminUsers = User::where('role', 'admin')->get();
         
         foreach ($adminUsers as $admin) {
+            // Build title and message based on whether order is provided
+            if ($order) {
+                $title = "Order #{$order->id} - {$machine->type} #{$machine->id} Now Available";
+                $message = "Order #{$order->id} from {$order->customer->name} has finished and {$machine->type} #{$machine->id} is now available.";
+            } else {
+                $title = "Machine #{$machine->id} Now Available";
+                $message = "{$machine->type} #{$machine->id} is now available and ready for use.";
+            }
+            
             self::create(
                 $admin,
                 'machine_available',
-                "Machine #{$machine->id} Now Available",
-                "{$machine->type} #{$machine->id} is now available and ready for use.",
+                $title,
+                $message,
                 [
                     'machine_id' => $machine->id,
                     'machine_type' => $machine->type,
                     'machine_name' => $machine->name,
+                    'order_id' => $order?->id,
+                    'customer_name' => $order?->customer?->name,
                     'url' => route('machines.dashboard')
                 ]
             );

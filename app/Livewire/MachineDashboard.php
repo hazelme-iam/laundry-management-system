@@ -58,7 +58,7 @@ class MachineDashboard extends Component
                     
                     // Send notifications
                     NotificationService::washingCompleted($load->order);
-                    NotificationService::machineAvailable($washer);
+                    NotificationService::machineAvailable($washer, $load->order);
                     
                     // Update machine status
                     $washer->update(['status' => 'idle']);
@@ -83,7 +83,7 @@ class MachineDashboard extends Component
                     
                     // Send notifications
                     NotificationService::dryingCompleted($load->order);
-                    NotificationService::machineAvailable($dryer);
+                    NotificationService::machineAvailable($dryer, $load->order);
                     
                     // Update machine status
                     $dryer->update(['status' => 'idle']);
