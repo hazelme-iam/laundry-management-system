@@ -247,11 +247,12 @@ class OrderController extends Controller
                 }
                 // Mark this order as backlog
                 $todayOrder->update(['is_backlog' => true]);
+                // Do NOT add to cumulativeWeight - backlog orders don't count toward today's capacity
             } else {
                 // Mark as not backlog
                 $todayOrder->update(['is_backlog' => false]);
+                $cumulativeWeight += $orderWeight;
             }
-            $cumulativeWeight += $orderWeight;
         }
         
         // Send backlog notification to customer if order is in backlog
@@ -435,14 +436,16 @@ class OrderController extends Controller
         foreach ($todayOrders as $order) {
             $orderWeight = $order->confirmed_weight ?? $order->weight;
             
+            // Smart backlog: only mark as backlog if THIS order exceeds remaining capacity
             if ($cumulativeWeight + $orderWeight > $dailyWasherCapacity) {
                 // This order exceeds capacity - mark as backlog
                 $order->update(['is_backlog' => true]);
+                // Do NOT add to cumulativeWeight - backlog orders don't count toward today's capacity
             } else {
-                // This order fits within capacity - mark as not backlog
+                // This order fits within remaining capacity - mark as not backlog
                 $order->update(['is_backlog' => false]);
+                $cumulativeWeight += $orderWeight;
             }
-            $cumulativeWeight += $orderWeight;
         }
     }
 
