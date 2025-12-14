@@ -27,9 +27,10 @@
 
                             <!-- Email -->
                             <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email <span class="text-red-500">*</span></label>
                                 <input type="email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                       id="email" name="email" value="{{ old('email') }}">
+                                       id="email" name="email" value="{{ old('email') }}" required>
+                                <p class="mt-1 text-xs text-gray-500">Required to create a login account for the customer</p>
                                 @error('email')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror

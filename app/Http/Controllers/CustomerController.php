@@ -135,7 +135,7 @@ class CustomerController extends Controller
     {
         $validated = $request->validate([
             'name'      => 'required|string|max:255',
-            'email'     => 'nullable|email|max:255',
+            'email'     => 'nullable|email|max:255|unique:users,email',
             'phone'     => 'required|string|max:20',
             'barangay'  => 'nullable|string|max:255',
             'purok'     => 'nullable|string|max:255',
@@ -161,8 +161,21 @@ class CustomerController extends Controller
         
         $completeAddress = !empty($addressParts) ? implode(', ', $addressParts) : null;
 
+        // Create a user account for the walk-in customer if email is provided
+        $user = null;
+        $tempPassword = null;
+        if ($request->filled('email')) {
+            $tempPassword = \Str::random(12);
+            $user = User::create([
+                'name'     => $validated['name'],
+                'email'    => $validated['email'],
+                'password' => \Hash::make($tempPassword),
+                'role'     => 'customer',
+            ]);
+        }
+
         // Create customer
-        Customer::create([
+        $customer = Customer::create([
             'name'          => $validated['name'],
             'email'         => $validated['email'],
             'phone'         => $validated['phone'],
@@ -171,14 +184,20 @@ class CustomerController extends Controller
             'street'        => $validated['street'],
             'address'       => $completeAddress,
             'notes'         => $validated['notes'],
-            'customer_type' => 'walk-in', // Default type for admin-created customers
+            'customer_type' => 'walk-in',
+            'user_id'       => $user?->id,
         ]);
 
         // Clear customer cache so new customer appears in dropdowns
         CacheService::clearCustomerCache();
 
         return redirect()->route('admin.customers.index')
-                         ->with('success', 'Customer created successfully.');
+                         ->with('success', 'Customer created successfully.')
+                         ->with('customer_created', [
+                             'name' => $validated['name'],
+                             'email' => $validated['email'],
+                             'password' => $tempPassword,
+                         ]);
     }
 
     // Show specific customer

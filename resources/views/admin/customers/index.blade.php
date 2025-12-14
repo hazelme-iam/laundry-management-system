@@ -23,6 +23,24 @@
                 </div>
             @endif
             
+            @if (session('customer_created'))
+                <div class="bg-blue-50 border border-blue-300 text-blue-800 px-4 py-4 rounded relative" role="alert">
+                    <div class="font-semibold mb-2">New Customer Account Created</div>
+                    <div class="text-sm space-y-2">
+                        <p><strong>Name:</strong> {{ session('customer_created')['name'] }}</p>
+                        <p><strong>Email:</strong> {{ session('customer_created')['email'] }}</p>
+                        @if(session('customer_created')['password'])
+                            <p class="mt-3 p-3 bg-white border border-blue-200 rounded">
+                                <strong>Temporary Password:</strong> 
+                                <code class="bg-gray-100 px-2 py-1 rounded font-mono text-blue-600">{{ session('customer_created')['password'] }}</code>
+                                <button type="button" onclick="copyToClipboard('{{ session('customer_created')['password'] }}')" class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">Copy</button>
+                            </p>
+                            <p class="text-xs text-blue-700 mt-2">Share this password with the customer so they can log in.</p>
+                        @endif
+                    </div>
+                </div>
+            @endif
+            
             @if (session('error'))
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                     <span class="block sm:inline">{{ session('error') }}</span>
@@ -329,4 +347,13 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Delete button onclick:', onclickAttr);
     });
 });
+
+// Copy password to clipboard
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Password copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
+}
 </script>
