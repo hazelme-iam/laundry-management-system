@@ -13,7 +13,7 @@
                 </div>
                 
                 <!-- Header Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div>
                     <div class="p-6">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
@@ -338,13 +338,8 @@
                                             return false;
                                         }
                                         
-                                        // Address validation
-                                        if (!address) {
-                                            showBlankFieldNotice('Complete Address', 'customer_address', 'address_error');
-                                            return false;
-                                        } else {
-                                            clearBlankFieldNotice('customer_address', 'address_error');
-                                        }
+                                        // Address validation - optional, no longer required
+                                        clearBlankFieldNotice('customer_address', 'address_error');
                                         
                                         // Weight validation (only if manual_weight selected)
                                         if (weightOption === 'manual_weight') {
@@ -547,15 +542,15 @@
                                 </script>
                             </div>
 
-                            <!-- Address Details Card -->
+                            <!-- Address Details Card (Optional) -->
                             <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                                <h3 class="text-sm font-medium text-gray-900 mb-3">Address Details</h3>
+                                <h3 class="text-sm font-medium text-gray-900 mb-3">Address Details <span class="text-xs text-gray-500">(Optional)</span></h3>
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                     <!-- Barangay Dropdown -->
                                     <div>
-                                        <label for="barangay" class="block text-sm font-medium text-gray-700">Barangay *</label>
+                                        <label for="barangay" class="block text-sm font-medium text-gray-700">Barangay</label>
                                         <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                                id="barangay" name="barangay" required>
+                                                id="barangay" name="barangay">
                                             <option value="">Select Barangay</option>
                                             <option value="Poblacion" {{ old('barangay') == 'Poblacion' ? 'selected' : '' }}>Poblacion</option>
                                             <option value="Baluarte" {{ old('barangay') == 'Baluarte' ? 'selected' : '' }}>Baluarte</option>
@@ -574,9 +569,9 @@
 
                                     <!-- Purok Dropdown -->
                                     <div>
-                                        <label for="purok" class="block text-sm font-medium text-gray-700">Purok/Zone *</label>
+                                        <label for="purok" class="block text-sm font-medium text-gray-700">Purok/Zone</label>
                                         <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                                id="purok" name="purok" required>
+                                                id="purok" name="purok">
                                             <option value="">Select Purok</option>
                                             <option value="Purok 1" {{ old('purok') == 'Purok 1' ? 'selected' : '' }}>Purok 1</option>
                                             <option value="Purok 2" {{ old('purok') == 'Purok 2' ? 'selected' : '' }}>Purok 2</option>
@@ -594,9 +589,9 @@
 
                                     <!-- Street Dropdown -->
                                     <div>
-                                        <label for="street" class="block text-sm font-medium text-gray-700">Street *</label>
+                                        <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
                                         <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                                                id="street" name="street" required>
+                                                id="street" name="street">
                                             <option value="">Select Street</option>
                                             <option value="Rizal Street" {{ old('street') == 'Rizal Street' ? 'selected' : '' }}>Rizal Street</option>
                                             <option value="Mabini Street" {{ old('street') == 'Mabini Street' ? 'selected' : '' }}>Mabini Street</option>
@@ -614,11 +609,11 @@
 
                                 <!-- Full Address -->
                                 <div>
-                                    <label for="customer_address" class="block text-sm font-medium text-gray-700">Complete Address Details *</label>
+                                    <label for="customer_address" class="block text-sm font-medium text-gray-700">Complete Address Details</label>
                                     <div class="relative">
                                         <textarea class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
                                                   id="customer_address" name="customer_address" rows="3" 
-                                                  placeholder="e.g., House #, Landmarks, Additional directions" required
+                                                  placeholder="e.g., House #, Landmarks, Additional directions"
                                                   onblur="validateAddressField()">{{ old('customer_address', $customer->address) }}</textarea>
                                         <span id="address_status" class="absolute right-3 top-3 hidden">
                                             <svg id="address_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">

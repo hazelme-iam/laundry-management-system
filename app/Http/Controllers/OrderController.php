@@ -502,6 +502,9 @@ class OrderController extends Controller
         $customer->update([
             'phone' => $data['customer_phone'],
             'address' => $data['customer_address'],
+            'barangay' => $data['barangay'] ?? null,
+            'purok' => $data['purok'] ?? null,
+            'street' => $data['street'] ?? null,
         ]);
 
         // Handle weight based on measurement option
