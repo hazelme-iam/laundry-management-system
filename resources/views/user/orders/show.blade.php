@@ -120,16 +120,7 @@
                             </div>
                         </div>
 
-                        <!-- Folding -->
-                        <div class="flex items-start">
-                            <div class="flex items-center h-5">
-                                <div class="w-4 h-4 rounded-full {{ in_array($order->status, ['folding', 'ready', 'completed']) ? 'bg-blue-600' : 'bg-gray-300' }}"></div>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-900">Folding & Quality Check</p>
-                                <p class="text-xs text-gray-500">Being folded and inspected</p>
-                            </div>
-                        </div>
+                        
 
                         <!-- Ready -->
                         <div class="flex items-start">
