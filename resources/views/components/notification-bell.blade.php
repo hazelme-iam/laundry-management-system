@@ -118,14 +118,13 @@
                                 
                                 <!-- Action Button -->
                                 @if(isset($notification->data['url']))
-                                    <a href="{{ $notification->data['url'] }}" 
-                                       @click="markAsRead({{ $notification->id }}, $event)"
+                                    <button @click="viewDetails('{{ $notification->data['url'] }}', {{ $notification->id }})"
                                        class="inline-flex items-center mt-2 text-xs text-blue-600 hover:text-blue-800 transition-colors">
                                         View Details
                                         <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                         </svg>
-                                    </a>
+                                    </button>
                                 @endif
                             </div>
                             
@@ -164,6 +163,43 @@
 function notificationBellData() {
     return {
         open: false,
+        viewDetails(url, notificationId) {
+            // Mark as read first, then navigate
+            this.markAsReadAndNavigate(notificationId, url);
+        },
+        
+        markAsReadAndNavigate(notificationId, url) {
+            // Get CSRF token safely
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
+            
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                // Still navigate even if marking as read fails
+                window.location.href = url;
+                return;
+            }
+            
+            fetch(`/notifications/${notificationId}/mark-as-read`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({}),
+            })
+            .then(response => {
+                // Navigate regardless of mark-as-read success
+                window.location.href = url;
+            })
+            .catch(error => {
+                console.error('Error marking as read:', error);
+                // Still navigate even if there's an error
+                window.location.href = url;
+            });
+        },
+        
         markAsRead(notificationId, event = null) {
             // Prevent default behavior if event exists
             if (event) {

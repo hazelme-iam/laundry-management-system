@@ -51,7 +51,7 @@ class MachineController extends Controller
         $pendingLoad->update([
             'washer_machine_id' => $washer->id,
             'washing_start' => now(),
-            'washing_end' => now()->addMinutes(1),
+            'washing_end' => now()->addSeconds(20),
             'status' => 'washing'
         ]);
 
@@ -60,7 +60,7 @@ class MachineController extends Controller
             'status' => 'in_use',
             'current_order_id' => $order->id,
             'washing_start' => now(),
-            'washing_end' => now()->addMinutes(1)
+            'washing_end' => now()->addSeconds(20)
         ]);
 
         // Update order status if this is the first load
@@ -72,12 +72,12 @@ class MachineController extends Controller
         if (request()->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'success' => true,
-                'duration' => 1, // 1 minute washing time for testing
-                'message' => "Washer assigned to load ({$pendingLoad->weight}kg). Washing will complete at " . now()->addMinutes(1)->format('H:i')
+                'duration' => 0.33, // 20 seconds washing time for demo
+                'message' => "Washer assigned to load ({$pendingLoad->weight}kg). Washing will complete at " . now()->addSeconds(20)->format('H:i')
             ]);
         }
 
-        return back()->with('success', "Washer assigned to load ({$pendingLoad->weight}kg). Washing will complete at " . now()->addMinutes(1)->format('H:i'));
+        return back()->with('success', "Washer assigned to load ({$pendingLoad->weight}kg). Washing will complete at " . now()->addSeconds(20)->format('H:i'));
     }
 
     public function assignDryer(Request $request, Order $order)
@@ -129,7 +129,7 @@ class MachineController extends Controller
         $load->update([
             'dryer_machine_id' => $dryer->id,
             'drying_start' => now(),
-            'drying_end' => now()->addMinutes(1),
+            'drying_end' => now()->addSeconds(20),
             'status' => 'drying'
         ]);
 
@@ -138,7 +138,7 @@ class MachineController extends Controller
             'status' => 'in_use',
             'current_order_id' => $order->id,
             'drying_start' => now(),
-            'drying_end' => now()->addMinutes(1)
+            'drying_end' => now()->addSeconds(20)
         ]);
 
         // Update order status
@@ -148,12 +148,12 @@ class MachineController extends Controller
         if (request()->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'success' => true,
-                'duration' => 1, // 1 minute drying time for testing
-                'message' => "Dryer assigned to load ({$load->weight}kg). Drying will complete at " . now()->addMinutes(1)->format('H:i')
+                'duration' => 0.33, // 20 seconds drying time for demo
+                'message' => "Dryer assigned to load ({$load->weight}kg). Drying will complete at " . now()->addSeconds(20)->format('H:i')
             ]);
         }
 
-        return back()->with('success', "Dryer assigned to load ({$load->weight}kg). Drying will complete at " . now()->addMinutes(1)->format('H:i'));
+        return back()->with('success', "Dryer assigned to load ({$load->weight}kg). Drying will complete at " . now()->addSeconds(20)->format('H:i'));
     }
 
     public function checkCompletedMachines()

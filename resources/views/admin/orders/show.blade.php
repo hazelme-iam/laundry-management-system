@@ -63,7 +63,7 @@
                                 @elseif(in_array($order->status, ['washing', 'drying', 'folding', 'quality_check'])) bg-blue-100 text-blue-800
                                 @elseif($order->status === 'ready') bg-purple-100 text-purple-800
                                 @else bg-gray-100 text-gray-800
-                                @endif">
+                                @endif" data-order-status="{{ $order->status }}">
                                 {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                             </span>
                             <p class="text-xs text-gray-500 mt-1">Updated: {{ $order->updated_at->diffForHumans() }}</p>
@@ -396,7 +396,7 @@
                                 </div>
                                 <div>
                                     <h4 class="font-medium text-gray-900">Drying</h4>
-                                    <p class="text-sm text-gray-600">15-20 minutes</p>
+                                    <p class="text-sm text-gray-600">40 minutes</p>
                                 </div>
                             </div>
                             @if($order->loads()->where('status', 'drying')->whereNull('dryer_machine_id')->count() > 0)
@@ -1121,5 +1121,36 @@
                 }
             }
         }, 100);
+
+        // Auto-refresh page when order status changes (for drying completion)
+        let lastStatus = '{{ $order->status }}';
+        setInterval(function() {
+            fetch(window.location.href, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Extract current status from the response
+                const parser = new DOMParser();
+                const newDoc = parser.parseFromString(html, 'text/html');
+                
+                // Check if status changed by looking for status indicators
+                const newStatusElement = newDoc.querySelector('[data-order-status]');
+                const currentStatusElement = document.querySelector('[data-order-status]');
+                
+                if (newStatusElement && currentStatusElement) {
+                    const newStatus = newStatusElement.getAttribute('data-order-status');
+                    const currentStatus = currentStatusElement.getAttribute('data-order-status');
+                    
+                    if (newStatus !== currentStatus) {
+                        // Status changed, reload the page
+                        location.reload();
+                    }
+                }
+            })
+            .catch(error => console.log('Auto-refresh check failed:', error));
+        }, 5000); // Check every 5 seconds
     </script>
 </x-sidebar-app>

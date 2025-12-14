@@ -19,10 +19,10 @@ use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
-    private const WASHING_TIME_MINUTES = 38; // Fixed washing time
-    private const DRYING_TIME_PER_KG = 5; // 5 minutes per kg for drying
-    private const MIN_DRYING_TIME = 30; // Minimum 30 minutes
-    private const MAX_DRYING_TIME = 50; // Maximum 50 minutes for 8kg
+    private const WASHING_TIME_MINUTES = 0.33; // 20 seconds for demo
+    private const DRYING_TIME_PER_KG = 0.033; // 20 seconds per kg for demo
+    private const MIN_DRYING_TIME = 0.33; // 20 seconds minimum for demo
+    private const MAX_DRYING_TIME = 0.33; // 20 seconds maximum for demo
 
     /**
      * Display a listing of orders.
