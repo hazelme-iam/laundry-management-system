@@ -223,7 +223,12 @@
                                         $statusColor = 'bg-red-100 text-red-800';
                                         $statusText = 'Unpaid';
                                         
-                                        if ($order->amount_paid >= $order->total_amount) {
+                                        // If order is pending or has no weight/measure at shop, show as pending
+                                        if ($order->status === 'pending' || (!$order->confirmed_weight && !$order->weight)) {
+                                            $paymentStatus = 'pending';
+                                            $statusColor = 'bg-gray-100 text-gray-800';
+                                            $statusText = 'Pending';
+                                        } elseif ($order->isFullyPaid()) {
                                             $paymentStatus = 'fully_paid';
                                             $statusColor = 'bg-green-100 text-green-800';
                                             $statusText = 'Fully Paid';
