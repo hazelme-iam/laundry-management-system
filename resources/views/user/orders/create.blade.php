@@ -7,8 +7,8 @@
                 <!-- Breadcrumb Navigation -->
                 <div class="mb-6">
                     <x-breadcrumbs :items="[
-                        'My Orders' => route('user.orders.index'),
-                        'Create New Order' => null
+                        'My Laundry' => route('user.orders.index'),
+                        'Add New Laundry' => null
                     ]" />
                 </div>
                 
@@ -17,7 +17,7 @@
                     <div class="p-6">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Create New Order</h1>
+                                <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Add New Laundry</h1>
                                 <p class="text-gray-600 mt-1">Submit a new laundry request</p>
                             </div>
                         </div>
@@ -531,7 +531,7 @@
                                             <p class="text-gray-700"><strong>Add-ons:</strong><br>${addOnsDisplay}</p>
                                             <p class="text-gray-700"><strong>Subtotal:</strong> ₱${subtotalValue}</p>
                                             <hr class="my-3">
-                                            <p class="text-sm text-gray-600">Your order will be submitted for admin approval. Discount and final payment will be handled by the admin.</p>
+                                            <p class="text-sm text-gray-600">Your laundry  will be submitted for admin approval. Discount and final payment will be handled by the admin.</p>
                                         </div>
                                     `;
                                     
@@ -773,7 +773,7 @@
                                 <button type="button" 
                                         onclick="validateOrderForm()"
                                         class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                                    Create Order
+                                    Add Laundry 
                                 </button>
                                 <a href="{{ route('user.orders.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
                                     Cancel
@@ -813,18 +813,18 @@
                     </div>
 
                     <!-- Title -->
-                    <h3 class="text-2xl font-semibold text-gray-900 mb-3 text-center">Create New Order</h3>
+                    <h3 class="text-2xl font-semibold text-gray-900 mb-3 text-center">Add New Laundry</h3>
 
                     <!-- Message -->
                     <div class="mt-4 confirmation-message">
-                        <p class="text-gray-600 text-center leading-relaxed">Are you sure you want to create this new order? This action will submit your laundry request.</p>
+                        <p class="text-gray-600 text-center leading-relaxed">Are you sure you want to add this new laundry? This action will submit your laundry request.</p>
                     </div>
                 </div>
 
                 <!-- Footer Buttons -->
                 <div class="px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 sm:flex sm:flex-row-reverse sm:gap-3">
                     <button type="button" id="create-order-btn" onclick="confirmCreateOrderSubmit();" class="w-full sm:w-auto px-6 py-3 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all" data-original-text="Create Order">
-                        <span data-loader-text>Create Order</span>
+                        <span data-loader-text>Add Laundry</span>
                         <span data-loader-spinner class="hidden ml-2 inline-block">
                             <svg class="animate-spin h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

@@ -4,19 +4,19 @@
             <!-- Header -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">My Orders</h1>
-                    <p class="text-gray-600">View and manage your laundry orders</p>
+                    <h1 class="text-2xl font-bold text-gray-900">My Laundry</h1>
+                    <p class="text-gray-600">View and manage your laundry</p>
                 </div>
                 <a href="{{ route('user.orders.create') }}" 
                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
-                    <span class="mr-2">+</span> New Order
+                    <span class="mr-2">+</span> Add New Laundry
                 </a>
             </div>
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
-                    <div class="text-sm text-gray-500">Total Orders</div>
+                    <div class="text-sm text-gray-500">Total Laundry</div>
                     <div class="text-2xl font-bold text-gray-800">{{ $orders->total() }}</div>
                 </div>
                 <div class="bg-white rounded-lg p-4 sm:p-6 shadow border">
@@ -36,7 +36,7 @@
             <!-- Orders Table -->
             <div class="bg-white rounded-lg shadow overflow-hidden">
                 <div class="p-4 sm:p-6 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h2 class="text-lg font-semibold text-gray-900">My Orders</h2>
+                    <h2 class="text-lg font-semibold text-gray-900">My Laundry</h2>
                     <form method="GET" action="{{ route('user.orders.index') }}" class="w-full sm:w-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div>
                             <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort by:</label>
@@ -77,7 +77,7 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Order ID
+                                        Laundry ID
                                     </th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Status

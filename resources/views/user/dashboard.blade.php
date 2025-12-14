@@ -10,7 +10,7 @@
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
                                 <h1 class="text-2xl md:text-3xl font-bold text-gray-900">My Dashboard</h1>
-                                <p class="text-gray-600 mt-1">Manage your laundry orders and account</p>
+                                <p class="text-gray-600 mt-1">Manage your laundry and account</p>
                             </div>
                             <!-- Optional: Add any dashboard actions here -->
                         </div>
@@ -21,13 +21,13 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
-                            <div class="text-sm font-medium text-gray-500">Total Orders</div>
+                            <div class="text-sm font-medium text-gray-500">Total Laundry</div>
                             <div class="text-2xl font-bold text-gray-800">{{ auth()->user()->orders()->count() ?? 0 }}</div>
                         </div>
                     </div>
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
-                            <div class="text-sm font-medium text-gray-500">Active Orders</div>
+                            <div class="text-sm font-medium text-gray-500">Active Laundry</div>
                             <div class="text-2xl font-bold text-blue-600">{{ auth()->user()->orders()->whereIn('status', ['pending', 'in_progress'])->count() ?? 0 }}</div>
                         </div>
                     </div>
@@ -50,7 +50,7 @@
                     <div class="p-6">
                         <!-- Table Header -->
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                            <h2 class="text-lg font-medium text-gray-900">Recent Orders</h2>
+                            <h2 class="text-lg font-medium text-gray-900">Recent Laundry</h2>
                             @if(auth()->user()->orders()->count() > 5)
                                 <a href="{{ route('user.orders.index') }}" 
                                    class="text-blue-600 hover:text-blue-900 font-medium text-sm">
@@ -66,7 +66,7 @@
                                     <thead class="bg-gray-50">
                                         <tr>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Order ID
+                                                Laundry ID
                                             </th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Status
@@ -133,11 +133,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">New Order</h3>
-                            <p class="text-gray-600 text-sm mb-4">Place a new laundry order</p>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">New Laundry</h3>
+                            <p class="text-gray-600 text-sm mb-4">Place a new laundry </p>
                             <a href="{{ route('user.orders.create') }}" 
                                class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition inline-block">
-                                Create Order
+                                Add New Laundry
                             </a>
                         </div>
                     </div>
@@ -149,8 +149,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Order History</h3>
-                            <p class="text-gray-600 text-sm mb-4">View all your past orders</p>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Laundry History</h3>
+                            <p class="text-gray-600 text-sm mb-4">View all your past laundry</p>
                             <a href="{{ route('user.orders.index') }}" 
                                class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition inline-block">
                                 View History

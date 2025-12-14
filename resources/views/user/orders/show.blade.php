@@ -4,13 +4,13 @@
             <!-- Header -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0 px-4 sm:px-0">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Order Details</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">Laundry Details</h1>
                     <p class="text-gray-600">Order #{{ $order->id }}</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
                     <a href="{{ route('user.orders.index') }}" 
                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-center">
-                        Back to Orders
+                        Back to Laundry List 
                     </a>
                     <a href="{{ route('user.orders.receipt', $order) }}" 
                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-center flex items-center justify-center gap-2">
@@ -24,13 +24,13 @@
                         <button type="button" 
                                 onclick="openCancelModal()"
                                 class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                            Cancel Order
+                            Cancel Laundry
                         </button>
                     @endif
                     @if($order->status === 'pending' || $order->status === 'approved')
                         <a href="{{ route('user.orders.create') }}" 
                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-center">
-                            New Order
+                            Add New Laundry
                         </a>
                     @endif
                 </div>
@@ -41,7 +41,7 @@
                 <div class="p-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900 mb-2">Order Status</h2>
+                            <h2 class="text-lg font-semibold text-gray-900 mb-2">Laundry Status</h2>
                             <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
                                 {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : 
                                    ($order->status === 'cancelled' ? 'bg-red-100 text-red-800' : 
@@ -51,7 +51,7 @@
                             </span>
                         </div>
                         <div class="mt-4 sm:mt-0 text-right">
-                            <div class="text-sm text-gray-500">Order Date</div>
+                            <div class="text-sm text-gray-500">Laundry Date</div>
                             <div class="text-lg font-medium text-gray-900">{{ $order->created_at->format('M d, Y') }}</div>
                         </div>
                     </div>
@@ -140,7 +140,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-900">Completed</p>
-                                <p class="text-xs text-gray-500">Order finished</p>
+                                <p class="text-xs text-gray-500">Laundry finished</p>
                             </div>
                         </div>
                     </div>
@@ -182,7 +182,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-lg shadow overflow-hidden">
                         <div class="p-6 border-b">
-                            <h3 class="text-lg font-semibold text-gray-900">Order Details</h3>
+                            <h3 class="text-lg font-semibold text-gray-900">Laundry Details</h3>
                         </div>
                         <div class="p-6">
                             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -341,7 +341,7 @@
             <!-- Timeline -->
             <div class="bg-white rounded-lg shadow overflow-hidden mx-4 sm:mx-0 mt-6">
                 <div class="p-6 border-b">
-                    <h3 class="text-lg font-semibold text-gray-900">Order Timeline</h3>
+                    <h3 class="text-lg font-semibold text-gray-900">Laundry Timeline</h3>
                 </div>
                 <div class="p-6">
                     <div class="space-y-4">
@@ -355,7 +355,7 @@
                                 </div>
                             </div>
                             <div class="flex-1">
-                                <div class="text-sm font-medium text-gray-900">Order Created</div>
+                                <div class="text-sm font-medium text-gray-900">Laundry Created</div>
                                 <div class="text-sm text-gray-500">{{ $order->created_at->format('M d, Y - h:i A') }}</div>
                             </div>
                         </div>
@@ -372,7 +372,7 @@
                                 </div>
                                 <div class="flex-1">
                                     <div class="text-sm font-medium text-gray-900">Order In Progress</div>
-                                    <div class="text-sm text-gray-500">Your order is being processed</div>
+                                    <div class="text-sm text-gray-500">Your laundry is being processed</div>
                                 </div>
                             </div>
                         @endif
@@ -389,7 +389,7 @@
                                 </div>
                                 <div class="flex-1">
                                     <div class="text-sm font-medium text-gray-900">Ready for Pickup</div>
-                                    <div class="text-sm text-gray-500">Your order is ready for pickup</div>
+                                    <div class="text-sm text-gray-500">Your laundry is ready for pickup</div>
                                 </div>
                             </div>
                         @endif
@@ -422,8 +422,8 @@
                                     </div>
                                 </div>
                                 <div class="flex-1">
-                                    <div class="text-sm font-medium text-gray-900">Order Cancelled</div>
-                                    <div class="text-sm text-gray-500">This order has been cancelled</div>
+                                    <div class="text-sm font-medium text-gray-900">Laundry Cancelled</div>
+                                    <div class="text-sm text-gray-500">This laundry has been cancelled</div>
                                 </div>
                             </div>
                         @endif
@@ -438,12 +438,12 @@
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
             <!-- Header -->
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Cancel Order</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Cancel Laundry</h3>
             </div>
 
             <!-- Body -->
             <div class="px-6 py-4">
-                <p class="text-gray-700 mb-4">Are you sure you want to cancel this order? This action cannot be undone.</p>
+                <p class="text-gray-700 mb-4">Are you sure you want to cancel this laundry? This action cannot be undone.</p>
                 <p class="text-sm text-gray-600">Order #{{ $order->id }} will be marked as cancelled and you won't be able to recover it.</p>
             </div>
 
@@ -452,14 +452,14 @@
                 <button type="button" 
                         onclick="closeCancelModal()"
                         class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
-                    Keep Order
+                    Keep Laundry
                 </button>
                 <form action="{{ route('user.orders.cancel', $order) }}" method="POST" style="display: inline;">
                     @csrf
                     @method('PUT')
                     <button type="submit" 
                             class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                        Yes, Cancel Order
+                        Yes, Cancel Laundry
                     </button>
                 </form>
             </div>
