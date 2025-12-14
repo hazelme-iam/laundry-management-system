@@ -53,7 +53,7 @@
                                     <div class="relative">
                                         <input type="tel" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10" 
                                                id="customer_phone" name="customer_phone" value="{{ old('customer_phone', $customer->phone) }}" 
-                                               placeholder="09XXXXXXXXX" required
+                                               placeholder="09XXXXXXXXX" required minlength="11" maxlength="11" pattern="[0-9]{11}"
                                                onblur="validatePhoneField()">
                                         <span id="phone_status" class="absolute right-3 top-3 hidden">
                                             <svg id="phone_check" class="w-5 h-5 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
@@ -66,7 +66,7 @@
                                     </div>
                                     <div id="phone_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                                        Phone number must be exactly 11 digits
+                                        <span id="phone_error_text">Phone number must be exactly 11 digits</span>
                                     </div>
                                     <p class="mt-1 text-xs text-gray-500">Format: 09XXXXXXXXX (11 digits total)</p>
                                 </div>
@@ -272,6 +272,32 @@
                                         checkbox.addEventListener('change', calculateTotalPrice);
                                     });
 
+                                    // Show blank field notice inline
+                                    function showBlankFieldNotice(fieldName, fieldId, errorElementId) {
+                                        const field = document.getElementById(fieldId);
+                                        const errorElement = document.getElementById(errorElementId);
+                                        if (field) {
+                                            field.classList.add('border-red-500', 'border-2');
+                                            field.focus();
+                                        }
+                                        if (errorElement) {
+                                            errorElement.textContent = `${fieldName} is required. Please fill it out.`;
+                                            errorElement.classList.remove('hidden');
+                                        }
+                                    }
+                                    
+                                    // Clear blank field notice
+                                    function clearBlankFieldNotice(fieldId, errorElementId) {
+                                        const field = document.getElementById(fieldId);
+                                        const errorElement = document.getElementById(errorElementId);
+                                        if (field) {
+                                            field.classList.remove('border-red-500', 'border-2');
+                                        }
+                                        if (errorElement) {
+                                            errorElement.classList.add('hidden');
+                                        }
+                                    }
+
                                     // Form validation function
                                     function validateOrderForm() {
                                         const weightOption = document.querySelector('input[name="weight_option"]:checked')?.value;
@@ -288,30 +314,52 @@
                                         }
                                         
                                         // Phone validation
-                                        if (!phone || phone.length !== 11) {
-                                            alert('Phone number must be exactly 11 digits');
+                                        if (!phone) {
+                                            showBlankFieldNotice('Phone Number', 'customer_phone', 'phone_error');
+                                            return false;
+                                        } else {
+                                            clearBlankFieldNotice('customer_phone', 'phone_error');
+                                        }
+                                        
+                                        if (phone.length !== 11) {
+                                            const phoneErrorText = document.getElementById('phone_error_text');
+                                            if (phoneErrorText) phoneErrorText.textContent = 'Phone number must be exactly 11 digits';
+                                            document.getElementById('phone_error')?.classList.remove('hidden');
                                             document.getElementById('customer_phone')?.focus();
                                             return false;
                                         }
                                         
                                         const phonePattern = /^[0-9]{11}$/;
                                         if (!phonePattern.test(phone)) {
-                                            alert('Phone number must contain only numbers');
+                                            const phoneErrorText = document.getElementById('phone_error_text');
+                                            if (phoneErrorText) phoneErrorText.textContent = 'Phone number must contain only numbers';
+                                            document.getElementById('phone_error')?.classList.remove('hidden');
                                             document.getElementById('customer_phone')?.focus();
                                             return false;
                                         }
                                         
                                         // Address validation
                                         if (!address) {
-                                            alert('Please enter your complete address');
-                                            document.getElementById('customer_address')?.focus();
+                                            showBlankFieldNotice('Complete Address', 'customer_address', 'address_error');
                                             return false;
+                                        } else {
+                                            clearBlankFieldNotice('customer_address', 'address_error');
                                         }
                                         
                                         // Weight validation (only if manual_weight selected)
                                         if (weightOption === 'manual_weight') {
-                                            if (!weight || parseFloat(weight) < 1) {
-                                                alert('Weight must be at least 1kg');
+                                            if (!weight) {
+                                                showBlankFieldNotice('Weight', 'weight', 'weight_error');
+                                                return false;
+                                            } else {
+                                                clearBlankFieldNotice('weight', 'weight_error');
+                                            }
+                                            if (parseFloat(weight) < 1) {
+                                                const weightErrorText = document.getElementById('weight_error');
+                                                if (weightErrorText) {
+                                                    weightErrorText.textContent = 'Weight must be at least 1kg';
+                                                    weightErrorText.classList.remove('hidden');
+                                                }
                                                 document.getElementById('weight')?.focus();
                                                 return false;
                                             }
@@ -387,6 +435,7 @@
                                         const phoneCheck = document.getElementById('phone_check');
                                         const phoneX = document.getElementById('phone_x');
                                         const phoneError = document.getElementById('phone_error');
+                                        const phoneErrorText = document.getElementById('phone_error_text');
                                         const phoneStatus = document.getElementById('phone_status');
                                         
                                         if (phone.length === 11 && /^[0-9]{11}$/.test(phone)) {
@@ -394,14 +443,21 @@
                                             phoneX?.classList.add('hidden');
                                             phoneError?.classList.add('hidden');
                                             phoneStatus?.classList.remove('hidden');
-                                        } else if (phone.length > 0) {
+                                        } else if (phone.length === 0) {
+                                            phoneStatus?.classList.add('hidden');
+                                            phoneError?.classList.add('hidden');
+                                        } else if (phone.length > 0 && phone.length < 11) {
                                             phoneCheck?.classList.add('hidden');
                                             phoneX?.classList.remove('hidden');
+                                            phoneErrorText.textContent = 'Phone number must be 11 digits (currently ' + phone.length + ' digits)';
                                             phoneError?.classList.remove('hidden');
                                             phoneStatus?.classList.remove('hidden');
                                         } else {
-                                            phoneStatus?.classList.add('hidden');
-                                            phoneError?.classList.add('hidden');
+                                            phoneCheck?.classList.add('hidden');
+                                            phoneX?.classList.remove('hidden');
+                                            phoneErrorText.textContent = 'Phone number must be exactly 11 digits';
+                                            phoneError?.classList.remove('hidden');
+                                            phoneStatus?.classList.remove('hidden');
                                         }
                                     }
 
@@ -433,6 +489,7 @@
                                         const addressCheck = document.getElementById('address_check');
                                         const addressX = document.getElementById('address_x');
                                         const addressError = document.getElementById('address_error');
+                                        const addressErrorText = document.getElementById('address_error_text');
                                         const addressStatus = document.getElementById('address_status');
                                         
                                         if (address.length > 0) {
@@ -574,7 +631,7 @@
                                     </div>
                                     <div id="address_error" class="mt-1 text-sm text-red-600 hidden flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                                        Please enter your complete address
+                                        <span id="address_error_text">Please enter your complete address</span>
                                     </div>
                                     @error('customer_address')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
