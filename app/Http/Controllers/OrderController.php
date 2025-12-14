@@ -32,32 +32,9 @@ class OrderController extends Controller
         // Use selective eager loading - only load what's needed for the list view
         $query = Order::with(['customer', 'creator', 'payments']);
 
-        // Backlog filter: orders that will be washed tomorrow (exceed today's capacity)
+        // Backlog filter: orders marked as backlog
         if (request('backlog') === 'backlog') {
-            $today = now()->format('Y-m-d');
-            $todayOrders = Order::whereDate('created_at', $today)
-                ->orderBy('created_at', 'asc')
-                ->get();
-            
-            $dailyWasherCapacity = 5 * 12 * 8; // WASHERS_COUNT * OPERATING_HOURS_PER_DAY * CYCLE_CAPACITY_KG
-            $cumulativeWeight = 0;
-            $backlogOrderIds = [];
-            
-            foreach ($todayOrders as $order) {
-                $orderWeight = $order->confirmed_weight ?? $order->weight;
-                if ($cumulativeWeight + $orderWeight > $dailyWasherCapacity) {
-                    $backlogOrderIds[] = $order->id;
-                }
-                $cumulativeWeight += $orderWeight;
-            }
-            
-            // Filter to only backlog orders
-            if (!empty($backlogOrderIds)) {
-                $query->whereIn('id', $backlogOrderIds);
-            } else {
-                // No backlog orders, return empty result
-                $query->whereRaw('1 = 0');
-            }
+            $query->where('is_backlog', true);
         } else {
             // Status filter
             if (request('status')) {
@@ -268,7 +245,11 @@ class OrderController extends Controller
                 if ($todayOrder->id === $order->id) {
                     $isInBacklog = true;
                 }
-                break;
+                // Mark this order as backlog
+                $todayOrder->update(['is_backlog' => true]);
+            } else {
+                // Mark as not backlog
+                $todayOrder->update(['is_backlog' => false]);
             }
             $cumulativeWeight += $orderWeight;
         }
@@ -277,6 +258,9 @@ class OrderController extends Controller
         if ($isInBacklog) {
             NotificationService::orderPlacedInBacklog($order);
         }
+        
+        // Check and send capacity alert if machines are 80%+ full
+        NotificationService::capacityAlert();
         
         $successMessage = 'Order created successfully.';
         if ($isInBacklog) {
@@ -437,6 +421,31 @@ class OrderController extends Controller
     /**
      * Validate if status transition is allowed
      */
+    private function recalculateBacklogStatus()
+    {
+        // Get all orders created today
+        $today = now()->format('Y-m-d');
+        $todayOrders = Order::whereDate('created_at', $today)
+            ->orderBy('created_at', 'asc')
+            ->get();
+        
+        $dailyWasherCapacity = 5 * 12 * 8; // 480kg
+        $cumulativeWeight = 0;
+        
+        foreach ($todayOrders as $order) {
+            $orderWeight = $order->confirmed_weight ?? $order->weight;
+            
+            if ($cumulativeWeight + $orderWeight > $dailyWasherCapacity) {
+                // This order exceeds capacity - mark as backlog
+                $order->update(['is_backlog' => true]);
+            } else {
+                // This order fits within capacity - mark as not backlog
+                $order->update(['is_backlog' => false]);
+            }
+            $cumulativeWeight += $orderWeight;
+        }
+    }
+
     private function isValidStatusTransition($fromStatus, $toStatus)
     {
         $validTransitions = [
@@ -696,6 +705,9 @@ class OrderController extends Controller
 
         // Create loads for approved order
         $loads = $order->createOptimizedLoads();
+        
+        // Recalculate backlog status for all orders created today
+        $this->recalculateBacklogStatus();
 
         return redirect()->route('admin.orders.index')
             ->with('success', "Order #{$order->id} approved successfully! Loads created.");
@@ -806,39 +818,24 @@ class OrderController extends Controller
             $order->createOptimizedLoads();
         }
 
-        // Check if order now exceeds capacity and notify customer if in backlog
-        $today = now()->format('Y-m-d');
-        $todayOrders = Order::whereDate('created_at', $today)
-            ->orderBy('created_at', 'asc')
-            ->get();
+        // Recalculate backlog status for all orders created today
+        $this->recalculateBacklogStatus();
         
-        $dailyWasherCapacity = 5 * 12 * 8; // WASHERS_COUNT * OPERATING_HOURS_PER_DAY * CYCLE_CAPACITY_KG
-        $cumulativeWeight = 0;
-        $isInBacklog = false;
-        
-        foreach ($todayOrders as $todayOrder) {
-            $orderWeight = $todayOrder->confirmed_weight ?? $todayOrder->weight;
-            if ($cumulativeWeight + $orderWeight > $dailyWasherCapacity) {
-                if ($todayOrder->id === $order->id) {
-                    $isInBacklog = true;
-                }
-                break;
-            }
-            $cumulativeWeight += $orderWeight;
-        }
+        // Reload order to get updated is_backlog status
+        $order->refresh();
         
         // Send backlog notification to customer if order is now in backlog
-        if ($isInBacklog) {
+        if ($order->is_backlog) {
             NotificationService::orderPlacedInBacklog($order);
         }
 
         return response()->json([
             'success' => true,
-            'message' => "Weight confirmed: {$confirmedWeight} kg" . (isset($newSubtotal) ? " - Price updated to ₱" . number_format($newSubtotal, 2) : "") . ($isInBacklog ? " - Order placed in backlog due to capacity." : ""),
+            'message' => "Weight confirmed: {$confirmedWeight} kg" . (isset($newSubtotal) ? " - Price updated to ₱" . number_format($newSubtotal, 2) : "") . ($order->is_backlog ? " - Order placed in backlog due to capacity." : ""),
             'confirmed_weight' => $confirmedWeight,
             'subtotal' => $order->subtotal,
             'total_amount' => $order->total_amount,
-            'is_backlog' => $isInBacklog
+            'is_backlog' => $order->is_backlog
         ]);
     }
 
@@ -858,6 +855,9 @@ class OrderController extends Controller
             'updated_by' => Auth::id()
         ]);
 
+        // Reload order to get fresh data
+        $order->refresh();
+
         // Send admin notifications for washing and drying completion
         if ($newStatus === 'washing') {
             // Notify admins when washing starts
@@ -876,7 +876,7 @@ class OrderController extends Controller
         }
 
         // Send automatic notifications to online customers
-        if ($order->customer->user_id) {
+        if ($order->customer && $order->customer->user_id) {
             $user = User::find($order->customer->user_id);
             
             if ($user) {

@@ -38,55 +38,41 @@ class DashboardController extends Controller
             'completionPercentage' => $totalOrders > 0 ? round(($completedOrders / $totalOrders) * 100) : 0
         ];
         
-        // Backlog orders: orders created today that exceed daily capacity
+        // Backlog orders: orders marked as is_backlog = true
         $today = now()->format('Y-m-d');
-        $todayWeight = Order::whereDate('created_at', $today)->sum('weight');
         $dailyWasherCapacity = self::WASHERS_COUNT * self::OPERATING_HOURS_PER_DAY * self::CYCLE_CAPACITY_KG;
         
-        // Only show backlog if today's orders exceed capacity
+        // Get backlog orders from database
         $backlogOrders = [];
         $backlogNotification = null;
-        if ($todayWeight > $dailyWasherCapacity) {
-            // Get today's orders sorted by created_at (oldest first) to show which ones overflow
-            $allTodayOrders = Order::with(['customer'])
-                ->whereDate('created_at', $today)
-                ->whereNotIn('status', ['completed', 'cancelled'])
-                ->orderBy('created_at', 'asc')
-                ->get();
+        $backlogOrdersQuery = Order::with(['customer'])
+            ->where('is_backlog', true)
+            ->whereDate('created_at', $today)
+            ->orderBy('created_at', 'asc')
+            ->take(3)
+            ->get();
+        
+        if ($backlogOrdersQuery->count() > 0) {
+            $firstBacklogOrder = $backlogOrdersQuery->first();
             
-            $cumulativeWeight = 0;
-            $firstBacklogOrder = null;
-            foreach ($allTodayOrders as $order) {
-                $previousWeight = $cumulativeWeight;
-                $cumulativeWeight += $order->weight;
-                // Only include orders that exceed the daily capacity
-                if ($cumulativeWeight > $dailyWasherCapacity) {
-                    $isFirstBacklog = $firstBacklogOrder === null;
-                    if ($isFirstBacklog) {
-                        $firstBacklogOrder = $order;
-                    }
-                    
-                    $backlogOrders[] = [
-                        'id' => str_pad($order->id, 3, '0', STR_PAD_LEFT),
-                        'customer_name' => $order->customer->name ?? 'Unknown',
-                        'weight' => $order->weight,
-                        'service_type' => ucfirst($order->service_type ?? 'Standard'),
-                        'estimated_time' => $order->estimated_finish ? $order->estimated_finish->format('g:i A') : 'N/A',
-                        'is_backlog_trigger' => $isFirstBacklog
-                    ];
-                }
-                if (count($backlogOrders) >= 3) break;
-            }
-            
-            // Create notification for the order that triggered backlog
-            if ($firstBacklogOrder) {
-                $backlogNotification = [
-                    'order_id' => str_pad($firstBacklogOrder->id, 3, '0', STR_PAD_LEFT),
-                    'customer_name' => $firstBacklogOrder->customer->name ?? 'Unknown',
-                    'weight' => $firstBacklogOrder->weight,
-                    'message' => "Order #{$firstBacklogOrder->id} has been placed in backlog as it exceeds today's capacity."
+            foreach ($backlogOrdersQuery as $order) {
+                $backlogOrders[] = [
+                    'id' => str_pad($order->id, 3, '0', STR_PAD_LEFT),
+                    'customer_name' => $order->customer->name ?? 'Unknown',
+                    'weight' => $order->confirmed_weight ?? $order->weight,
+                    'service_type' => ucfirst($order->service_type ?? 'Standard'),
+                    'estimated_time' => $order->estimated_finish ? $order->estimated_finish->format('g:i A') : 'N/A',
+                    'is_backlog_trigger' => $order->id === $firstBacklogOrder->id
                 ];
             }
+            
+            // Create notification for the first backlog order
+            $backlogNotification = [
+                'order_id' => str_pad($firstBacklogOrder->id, 3, '0', STR_PAD_LEFT),
+                'customer_name' => $firstBacklogOrder->customer->name ?? 'Unknown',
+                'weight' => $firstBacklogOrder->confirmed_weight ?? $firstBacklogOrder->weight,
+                'message' => "Order #{$firstBacklogOrder->id} has been placed in backlog as it exceeds today's capacity."
+            ];
         }
         
         // Today's orders with status breakdown

@@ -87,19 +87,50 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, $notificationId): JsonResponse
     {
-        $user = $request->user();
-        $notification = $user->notifications()->find($notificationId);
+        try {
+            $user = $request->user();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 401);
+            }
+            
+            $notification = $user->notifications()->find($notificationId);
 
-        if (!$notification) {
-            return response()->json(['success' => false, 'message' => 'Notification not found'], 404);
+            if (!$notification) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Notification not found'
+                ], 404);
+            }
+
+            // Mark as read using direct update to ensure it persists
+            $notification->update([
+                'is_read' => true,
+                'read_at' => now()
+            ]);
+            
+            // Verify it was actually marked as read
+            $notification->refresh();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification marked as read',
+                'is_read' => $notification->is_read
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error marking notification as read', [
+                'notification_id' => $notificationId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to mark notification as read: ' . $e->getMessage()
+            ], 500);
         }
-
-        $notification->markAsRead();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Notification marked as read'
-        ]);
     }
 
     /**
@@ -107,14 +138,33 @@ class NotificationController extends Controller
      */
     public function markAllAsRead(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $count = $user->unreadNotifications()->update(['read_at' => now()]);
+        try {
+            $user = $request->user();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 401);
+            }
+            
+            // Mark all unread notifications as read
+            $count = $user->unreadNotifications()->update([
+                'is_read' => true,
+                'read_at' => now()
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => "Marked {$count} notifications as read",
-            'count' => $count
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => "Marked {$count} notifications as read",
+                'count' => $count
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to mark all notifications as read: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

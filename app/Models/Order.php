@@ -27,6 +27,7 @@ class Order extends Model
     protected $fillable = [
         'customer_id',
         'status',
+        'is_backlog',
         'weight',
         'confirmed_weight',
         'weight_confirmed_at',

@@ -47,6 +47,10 @@ Route::middleware([
 ])->group(function () {
     Route::get('/admin', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+    // Notification Routes (Admin)
+    Route::post('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('admin.notifications.mark-as-read');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('admin.notifications.mark-all-read');
+    Route::get('/notifications/check-new', [NotificationController::class, 'checkNew'])->name('admin.notifications.check-new');
     
     Route::get('/customers', [CustomerController::class, 'index'])->name('admin.customers.index');
     Route::get('/customers/create', [CustomerController::class, 'create'])->name('admin.customers.create');

@@ -1,7 +1,7 @@
 <!-- Notification Bell Component -->
-<div class="relative" x-data="{ open: false }">
+<div class="relative" x-data="notificationBellData()">
     <!-- Notification Bell -->
-    <button @click="open = !open" class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg">
+    <button @click="open = !open" data-bell-button class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg">
         <!-- Bell Icon -->
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
@@ -9,7 +9,7 @@
         
         <!-- Notification Badge -->
         @if($unreadCount > 0)
-            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+            <span data-unread-count class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
                 {{ $unreadCount > 99 ? '99+' : $unreadCount }}
             </span>
         @endif
@@ -30,17 +30,17 @@
         <div class="px-4 py-3 border-b border-gray-200 flex-shrink-0">
             <h3 class="text-sm font-medium text-gray-900">Notifications</h3>
             @if($unreadCount > 0)
-                <button onclick="markAllAsRead()" class="text-xs text-blue-600 hover:text-blue-800 mt-1">
+                <button @click.stop="markAllAsRead()" type="button" class="text-xs text-blue-600 hover:text-blue-800 mt-1 font-medium">
                     Mark all as read
                 </button>
             @endif
         </div>
 
         <!-- Notifications List -->
-        <div class="overflow-y-auto flex-1">
+        <div class="overflow-y-auto flex-1" data-notifications-list>
             @if($notifications->count() > 0)
                 @foreach($notifications as $notification)
-                    <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 transition-colors">
+                    <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 transition-colors" data-notification-id="{{ $notification->id }}">
                         <!-- Notification Icon based on type -->
                         <div class="flex items-start">
                             <div class="flex-shrink-0">
@@ -119,8 +119,8 @@
                                 <!-- Action Button -->
                                 @if(isset($notification->data['url']))
                                     <a href="{{ $notification->data['url'] }}" 
-                                       onclick="markAsRead({{ $notification->id }})"
-                                       class="inline-flex items-center mt-2 text-xs text-blue-600 hover:text-blue-800">
+                                       @click="markAsRead({{ $notification->id }}, $event)"
+                                       class="inline-flex items-center mt-2 text-xs text-blue-600 hover:text-blue-800 transition-colors">
                                         View Details
                                         <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -129,9 +129,10 @@
                                 @endif
                             </div>
                             
-                            <!-- Mark as Read Button -->
-                            <button onclick="markAsRead({{ $notification->id }})" 
-                                    class="ml-2 text-gray-400 hover:text-gray-600">
+                            <!-- Mark as Read Button (X) -->
+                            <button @click.stop="markAsRead({{ $notification->id }}, $event)" 
+                                    class="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    title="Mark as read">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
@@ -159,40 +160,202 @@
 </div>
 
 <script>
-function markAsRead(notificationId) {
-    fetch(`/notifications/${notificationId}/read`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Content-Type': 'application/json',
+// Notification bell Alpine.js data function
+function notificationBellData() {
+    return {
+        open: false,
+        markAsRead(notificationId, event = null) {
+            // Prevent default behavior if event exists
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            console.log('Marking notification as read:', notificationId);
+            
+            // Get CSRF token safely
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
+            
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                alert('Security token missing. Please refresh the page.');
+                return;
+            }
+            
+            fetch(`/notifications/${notificationId}/mark-as-read`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({}),
+            })
+            .then(response => {
+                console.log('Response status:', response.status, response.statusText);
+                
+                // Handle different response types
+                if (response.status === 401) {
+                    window.location.reload(); // Session expired
+                    return;
+                }
+                
+                if (response.status === 404) {
+                    console.error('Notification not found');
+                    // Remove the notification from DOM
+                    const notificationElement = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                    if (notificationElement) {
+                        notificationElement.remove();
+                    }
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return; // Already handled
+                
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    // Update UI without full page reload
+                    this.updateNotificationUI(notificationId);
+                    
+                    // Update unread count
+                    this.updateUnreadCount();
+                } else {
+                    console.error('Error from server:', data.message);
+                    alert('Error: ' + (data.message || 'Failed to mark as read'));
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                alert('Network error: ' + error.message);
+            });
         },
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        }
-    });
-}
-
-function markAllAsRead() {
-    fetch('/notifications/mark-all-read', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Content-Type': 'application/json',
+        
+        updateNotificationUI(notificationId) {
+            // Remove notification from dropdown
+            const notificationElement = document.querySelector(`[data-notification-id="${notificationId}"]`);
+            if (notificationElement) {
+                notificationElement.classList.add('opacity-50');
+                setTimeout(() => {
+                    notificationElement.remove();
+                    
+                    // If no notifications left, show empty state
+                    const notificationsList = document.querySelector('[data-notifications-list]');
+                    if (notificationsList && notificationsList.children.length === 0) {
+                        notificationsList.innerHTML = `
+                            <div class="px-4 py-8 text-center">
+                                <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                </svg>
+                                <p class="text-sm text-gray-500">No new notifications</p>
+                            </div>
+                        `;
+                    }
+                }, 300);
+            }
         },
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
+        
+        updateUnreadCount() {
+            const unreadBadge = document.querySelector('[data-unread-count]');
+            if (unreadBadge) {
+                const currentCount = parseInt(unreadBadge.textContent) || 0;
+                const newCount = Math.max(0, currentCount - 1);
+                
+                if (newCount > 0) {
+                    unreadBadge.textContent = newCount > 99 ? '99+' : newCount;
+                } else {
+                    unreadBadge.remove();
+                }
+            }
+        },
+        
+        markAllAsRead() {
+            console.log('markAllAsRead called');
+            
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
+            
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                alert('Security token missing. Please refresh the page.');
+                return;
+            }
+            
+            fetch('/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({}),
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                
+                if (response.status === 401) {
+                    window.location.reload();
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    // Clear all notifications from UI
+                    const notificationsList = document.querySelector('[data-notifications-list]');
+                    if (notificationsList) {
+                        notificationsList.innerHTML = `
+                            <div class="px-4 py-8 text-center">
+                                <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                </svg>
+                                <p class="text-sm text-gray-500">No new notifications</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Remove unread badge
+                    const unreadBadge = document.querySelector('[data-unread-count]');
+                    if (unreadBadge) {
+                        unreadBadge.remove();
+                    }
+                    
+                    // Hide "Mark all as read" button
+                    const markAllButton = document.querySelector('[onclick*="markAllAsRead"]');
+                    if (markAllButton) {
+                        markAllButton.remove();
+                    }
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to mark all as read'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Network error: ' + error.message);
+            });
         }
-    });
+    }
 }
 
 // Real-time notification polling for order status updates
 document.addEventListener('DOMContentLoaded', function() {
+    let lastNotificationId = null;
+    
     // Poll for new notifications every 30 seconds
     setInterval(function() {
         fetch('/notifications/check-new', {
@@ -204,11 +367,13 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.hasNewNotifications) {
-                // Show a subtle toast notification
-                showNotificationToast(data.latestNotification);
-                // Reload the notification bell to show updated count
-                location.reload();
+            if (data.hasNewNotifications && data.latestNotification) {
+                // Only show toast if this is a new notification (not already shown)
+                if (lastNotificationId !== data.latestNotification.id) {
+                    lastNotificationId = data.latestNotification.id;
+                    // Show a subtle toast notification
+                    showNotificationToast(data.latestNotification);
+                }
             }
         })
         .catch(error => console.log('Notification check failed:', error));

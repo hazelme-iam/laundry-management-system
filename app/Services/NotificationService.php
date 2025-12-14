@@ -66,34 +66,55 @@ class NotificationService
      */
     public static function capacityAlert(): void
     {
-        $washers = Machine::washers()->get();
-        $dryers = Machine::dryers()->get();
+        // Daily capacity constants
+        $washersCount = 5;
+        $dryersCount = 5;
+        $operatingHoursPerDay = 12;
+        $cycleCapacityKg = 8;
         
-        $totalWasherCapacity = $washers->sum('capacity_kg');
-        $totalDryerCapacity = $dryers->sum('capacity_kg');
+        $dailyWasherCapacity = $washersCount * $operatingHoursPerDay * $cycleCapacityKg; // 480kg
+        $dailyDryerCapacity = $dryersCount * $operatingHoursPerDay * $cycleCapacityKg; // 480kg
         
-        $activeWasherLoad = $washers->where('status', 'in_use')->sum('capacity_kg');
-        $activeDryerLoad = $dryers->where('status', 'in_use')->sum('capacity_kg');
-
-        $washerUtilization = ($activeWasherLoad / $totalWasherCapacity) * 100;
-        $dryerUtilization = ($activeDryerLoad / $totalDryerCapacity) * 100;
+        // Get confirmed weight from orders (approved, in progress, or with confirmed weight)
+        $confirmedWeightOrders = Order::where(function ($query) {
+            $query->whereNotNull('confirmed_weight')
+                ->whereIn('status', ['picked_up', 'washing', 'drying', 'folding', 'quality_check', 'ready'])
+                ->orWhere('status', 'approved');
+        })->get();
+        
+        $confirmedWeight = $confirmedWeightOrders->sum(function ($order) {
+            return $order->confirmed_weight ?? $order->weight;
+        });
+        
+        $washerUtilization = $dailyWasherCapacity > 0 ? round(($confirmedWeight / $dailyWasherCapacity) * 100) : 0;
+        $dryerUtilization = $dailyDryerCapacity > 0 ? round(($confirmedWeight / $dailyDryerCapacity) * 100) : 0;
 
         // Alert when capacity is 80% or more
         if ($washerUtilization >= 80) {
             $adminUsers = User::where('role', 'admin')->get();
             
             foreach ($adminUsers as $admin) {
-                self::create(
-                    $admin,
-                    'capacity_alert',
-                    'Washer Capacity Warning',
-                    "Washer capacity is at {$washerUtilization}%! Consider managing orders.",
-                    [
-                        'washer_utilization' => $washerUtilization,
-                        'dryer_utilization' => $dryerUtilization,
-                        'url' => route('machines.dashboard')
-                    ]
-                );
+                // Check if notification already exists to avoid duplicates
+                $existingNotif = Notification::where('notifiable_type', get_class($admin))
+                    ->where('notifiable_id', $admin->id)
+                    ->where('type', 'capacity_alert')
+                    ->where('is_read', false)
+                    ->where('created_at', '>=', now()->subHours(1))
+                    ->first();
+                
+                if (!$existingNotif) {
+                    self::create(
+                        $admin,
+                        'capacity_alert',
+                        'Washer Capacity Warning',
+                        "Washer capacity is at {$washerUtilization}%! Consider managing orders.",
+                        [
+                            'washer_utilization' => $washerUtilization,
+                            'dryer_utilization' => $dryerUtilization,
+                            'url' => route('machines.dashboard')
+                        ]
+                    );
+                }
             }
         }
 
@@ -101,17 +122,27 @@ class NotificationService
             $adminUsers = User::where('role', 'admin')->get();
             
             foreach ($adminUsers as $admin) {
-                self::create(
-                    $admin,
-                    'capacity_alert',
-                    'Dryer Capacity Warning',
-                    "Dryer capacity is at {$dryerUtilization}%! Consider managing orders.",
-                    [
-                        'washer_utilization' => $washerUtilization,
-                        'dryer_utilization' => $dryerUtilization,
-                        'url' => route('machines.dashboard')
-                    ]
-                );
+                // Check if notification already exists to avoid duplicates
+                $existingNotif = Notification::where('notifiable_type', get_class($admin))
+                    ->where('notifiable_id', $admin->id)
+                    ->where('type', 'capacity_alert')
+                    ->where('is_read', false)
+                    ->where('created_at', '>=', now()->subHours(1))
+                    ->first();
+                
+                if (!$existingNotif) {
+                    self::create(
+                        $admin,
+                        'capacity_alert',
+                        'Dryer Capacity Warning',
+                        "Dryer capacity is at {$dryerUtilization}%! Consider managing orders.",
+                        [
+                            'washer_utilization' => $washerUtilization,
+                            'dryer_utilization' => $dryerUtilization,
+                            'url' => route('machines.dashboard')
+                        ]
+                    );
+                }
             }
         }
     }

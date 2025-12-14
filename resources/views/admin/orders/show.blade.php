@@ -352,12 +352,23 @@
                             </div>
                             @if($order->status === 'picked_up' || $order->loads()->where('status', 'pending')->count() > 0)
                                 <div class="flex items-center space-x-2">
+                                    @php
+                                        // Calculate number of loads needed based on confirmed weight
+                                        $confirmedWeight = $order->confirmed_weight ?? $order->weight ?? 0;
+                                        $machineCapacity = 8.0;
+                                        $numberOfLoads = ceil($confirmedWeight / $machineCapacity);
+                                        $pendingLoads = $order->loads()->where('status', 'pending')->count();
+                                    @endphp
+                                    <div class="text-sm text-gray-600">
+                                        <span class="font-medium">{{ $confirmedWeight }}kg ÷ {{ $machineCapacity }}kg = {{ $numberOfLoads }} load(s)</span>
+                                        <span class="text-xs text-gray-500">({{ $pendingLoads }} pending)</span>
+                                    </div>
                                     <form method="POST" action="{{ route('machines.assign-washer', $order->id) }}" class="flex items-center space-x-2" id="washer-form">
                                         @csrf
                                         <select name="washer_id" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                            <option value="">Select Washer</option>
+                                            <option value="">Select Washer ({{ $numberOfLoads }} needed)</option>
                                             @foreach(\App\Models\Machine::washers()->idle()->get() as $washer)
-                                                <option value="{{ $washer->id }}">{{ $washer->name }}</option>
+                                                <option value="{{ $washer->id }}">{{ $washer->name }} ({{ $washer->capacity_kg }}kg)</option>
                                             @endforeach
                                         </select>
                                         <button type="button" onclick="openAssignWasherModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">

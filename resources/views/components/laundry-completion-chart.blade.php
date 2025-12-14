@@ -59,16 +59,6 @@
                         <span class="truncate">Today's Load:</span>
                         <span class="font-semibold truncate">{{ $capacityData['today_weight'] ?? 0 }}kg</span>
                     </div>
-                    <div class="flex justify-between text-[11px] xs:text-xs text-blue-600">
-                        <span class="truncate">Confirmed Kilos:</span>
-                        <span class="font-semibold truncate">{{ $capacityData['confirmed_weight'] ?? 0 }}kg</span>
-                    </div>
-                    @if(($capacityData['backlog_weight'] ?? 0) > 0)
-                    <div class="flex justify-between text-[11px] xs:text-xs text-red-600">
-                        <span class="truncate">Backlog:</span>
-                        <span class="font-semibold truncate">{{ $capacityData['backlog_weight'] ?? 0 }}kg</span>
-                    </div>
-                    @endif
                 </div>
             </div>
         </div>

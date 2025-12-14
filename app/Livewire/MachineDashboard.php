@@ -18,7 +18,6 @@ class MachineDashboard extends Component
     public function mount()
     {
         $this->loadMachines();
-        $this->checkForCompletedCycles();
     }
 
     public function loadMachines()

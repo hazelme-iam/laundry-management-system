@@ -1,4 +1,4 @@
-<div>
+<div wire:poll-5000="loadMachines">
     <!-- Auto-refresh indicator -->
     <div class="px-4 sm:px-0 flex items-center justify-between mb-4">
         <div class="flex items-center space-x-2">
